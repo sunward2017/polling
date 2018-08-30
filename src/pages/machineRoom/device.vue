@@ -349,7 +349,7 @@
 			</el-form>
 		</el-dialog>
 
-		<el-dialog v-else :title="tagFormTtile" :visible.sync="tagFormVisible" :close-on-click-modal="false" size="tiny" @close="resetForm()">
+		<el-dialog v-else :title="tagFormTtile" custom-class="custom_rfid" :visible.sync="tagFormVisible" :close-on-click-modal="false" >
 			<TagForm v-if="tagFormVisible" :tagData="tagData" @closeTagForm="closeTagForm" @refreshList="refreshList" ref="tag_form"></TagForm>
 		</el-dialog>
 
@@ -360,733 +360,833 @@
 </template>
 
 <script>
-	// import util from '../../common/util';
-	import NProgress from 'nprogress';
-	import { guid, parseTime } from 'utils';
-	import { warnTypes, warnTypesForObj, templateCls, LIGHTTYPES, TESTTYPES } from '@/const';
-	import Upload from 'components/upload/upload';
-	import { getRoomList } from 'api/room';
-	import draggable from 'vuedraggable'
-	import { Request, Response } from 'utils/Cipher'
+// import util from '../../common/util';
+import NProgress from "nprogress";
+import { guid, parseTime } from "utils";
+import {
+  warnTypes,
+  warnTypesForObj,
+  templateCls,
+  LIGHTTYPES,
+  TESTTYPES
+} from "@/const";
+import Upload from "components/upload/upload";
+import { getRoomList } from "api/room";
+import draggable from "vuedraggable";
+import { Request, Response } from "utils/Cipher";
 
-	import RadioUpload from 'components/upload';
-	import TagForm from "components/electronicTag/TagForm";
+import RadioUpload from "components/upload";
+import TagForm from "components/electronicTag";
 
-	export default {
-		components: {
-			Upload,
-			draggable,
-			RadioUpload,
-			TagForm,
-		},
-		data() {
-			var checkNum = (rule, value, callback) => {
-				value += '';
-				setTimeout(() => {
-					if(value !== '') {
-						if(isNaN(value) || value.replace(/^\s+|\s+$/gm, '') === '') {
-							callback(new Error('请输入数字型'));
-						} else {
-							callback();
-						}
-					} else {
-						callback();
-					}
-				}, 500);
-			};
-			var checkEle = (rule, value, callback) => {
-				value += '';
-				setTimeout(() => {
-					if(value !== '') {
-						if(isNaN(value) || value.replace(/^\s+|\s+$/gm, '') === '') {
-							callback(new Error('请输入数字型'));
-						} else {
-							callback();
-						}
-					} else {
-						callback();
-					}
-				}, 500);
-			};
-			return {
-				filters: {
-					roomId: '',
-				},
-				rooms: [],
-				rows: [],
-				lightTypes: LIGHTTYPES,
-				testTypes: TESTTYPES,
-				listLoading1: false,
-				customs: [],
-				isMore: false,
-				message: 'More>>',
-				allCustom: [],
-				editFormVisible: false, //编辑界面显是否显示
-				uploadVisible: false,
-				columns: templateCls,
-				editFormTitle: '编辑', //编辑界面标题
-				//编辑界面数据
-				currentStatus: "加载中",
-				timmer: null,
-				dialogVisible: false,
-				deviceId: '',
-				roomId: '',
-				rfid: '',
-				isFj: false,
-				rfidLoading: false,
-				rfidBtnText: '提交',
+export default {
+  components: {
+    Upload,
+    draggable,
+    RadioUpload,
+    TagForm
+  },
+  data() {
+    var checkNum = (rule, value, callback) => {
+      value += "";
+      setTimeout(() => {
+        if (value !== "") {
+          if (isNaN(value) || value.replace(/^\s+|\s+$/gm, "") === "") {
+            callback(new Error("请输入数字型"));
+          } else {
+            callback();
+          }
+        } else {
+          callback();
+        }
+      }, 500);
+    };
+    var checkEle = (rule, value, callback) => {
+      value += "";
+      setTimeout(() => {
+        if (value !== "") {
+          if (isNaN(value) || value.replace(/^\s+|\s+$/gm, "") === "") {
+            callback(new Error("请输入数字型"));
+          } else {
+            callback();
+          }
+        } else {
+          callback();
+        }
+      }, 500);
+    };
+    return {
+      filters: {
+        roomId: ""
+      },
+      rooms: [],
+      rows: [],
+      lightTypes: LIGHTTYPES,
+      testTypes: TESTTYPES,
+      listLoading1: false,
+      customs: [],
+      isMore: false,
+      message: "More>>",
+      allCustom: [],
+      editFormVisible: false, //编辑界面显是否显示
+      uploadVisible: false,
+      columns: templateCls,
+      editFormTitle: "编辑", //编辑界面标题
+      //编辑界面数据
+      currentStatus: "加载中",
+      timmer: null,
+      dialogVisible: false,
+      deviceId: "",
+      roomId: "",
+      rfid: "",
+      isFj: false,
+      rfidLoading: false,
+      rfidBtnText: "提交",
 
-				//tagList
-				tagFormTtile: "新增",
-				tagFormVisible: false,
-				tagData: {
-					id: 0,
-					roomId: "",
-					rfidId: "",
-					rfidTypes: [],
-					lightDistribution: [],
-					numDistribution: [],
-					bgType: '0',
-					bgDistribution: [],
-					lightColor: '',
-				},
-				editForm: {
-					deviceId: '',
-					deviceName: '',
-					deviceSerail: '',
-					rfidId: '',
-					deviceType: '',
-					deviceModel: '',
-					deviceCompany: '',
-					deviceLength: '',
-					deviceWide: '',
-					deviceHeight: '',
-					meterHeight: '',
-					meterWide: '',
-					meterLiftoff: '',
-					meterOffset: '',
-					warnList: [],
-					deviceX: '',
-					deviceY: '',
-					meterOrientation: '',
-					deviceDistance: '',
-					neckHeight: '',
-					levelAngle: '',
-					elevation: '',
-					lightType: '',
-					testType: '',
-					roomId: '',
-					illumination: '1',
-					isPhoto: true,
-					isPolling: true,
-					isDiscern: true,
-					temp: '',
-				},
-				rules: {
-					deviceName: [{
-						required: true,
-						message: '请输入设备名称',
-						trigger: 'blur'
-					}],
-					deviceSerial: [{
-						required: true,
-						message: '请输入设备编号',
-						trigger: 'blur'
-					}],
+      //tagList
+      tagFormTtile: "新增",
+      tagFormVisible: false,
+      tagData: {
+        id: 0,
+        roomId: "",
+        rfidId: "",
+        rfidTypes: [],
+        lightDistribution: [],
+        numDistribution: [],
+        bgType: "0",
+        bgDistribution: [],
+        lightColor: ""
+      },
+      editForm: {
+        deviceId: "",
+        deviceName: "",
+        deviceSerail: "",
+        rfidId: "",
+        deviceType: "",
+        deviceModel: "",
+        deviceCompany: "",
+        deviceLength: "",
+        deviceWide: "",
+        deviceHeight: "",
+        meterHeight: "",
+        meterWide: "",
+        meterLiftoff: "",
+        meterOffset: "",
+        warnList: [],
+        deviceX: "",
+        deviceY: "",
+        meterOrientation: "",
+        deviceDistance: "",
+        neckHeight: "",
+        levelAngle: "",
+        elevation: "",
+        lightType: "",
+        testType: "",
+        roomId: "",
+        illumination: "1",
+        isPhoto: true,
+        isPolling: true,
+        isDiscern: true,
+        temp: ""
+      },
+      rules: {
+        deviceName: [
+          {
+            required: true,
+            message: "请输入设备名称",
+            trigger: "blur"
+          }
+        ],
+        deviceSerial: [
+          {
+            required: true,
+            message: "请输入设备编号",
+            trigger: "blur"
+          }
+        ],
 
-					deviceLength: [{
-						validator: checkNum,
-						trigger: 'blur'
-					}],
-					deviceWide: [{
-						validator: checkNum,
-						trigger: 'blur'
-					}],
-					deviceHeight: [{
-						validator: checkNum,
-						trigger: 'blur'
-					}],
-					meterHeight: [{
-						validator: checkNum,
-						trigger: 'blur'
-					}],
-					meterWide: [{
-						validator: checkNum,
-						trigger: 'blur'
-					}],
-					meterLiftoff: [{
-						validator: checkNum,
-						trigger: 'blur'
-					}],
-					meterOffset: [{
-						validator: checkNum,
-						trigger: 'blur'
-					}],
-					deviceX: [{
-						validator: checkNum,
-						trigger: 'blur'
-					}],
-					deviceY: [{
-						validator: checkNum,
-						trigger: 'blur'
-					}],
-					deviceDistance: [{
-						validator: checkNum,
-						trigger: 'blur'
-					}],
-					neckHeight: [{
-						validator: checkNum,
-						trigger: 'blur'
-					}],
-					elevation: [{
-						validator: checkEle,
-						trigger: 'blur'
-					}],
-					levelAngle: [{
-						validator: checkNum,
-						trigger: 'blur'
-					}],
-				},
-				editLoading: false,
-				btnEditText: '提 交',
-				//warning
-				warnFormVisible: false,
-				warnFormTtile: '新增',
-				warnForm: {
-					warnId: "",
-					warnType: "仪表温度",
-					normalValue: "",
-					generalMin1: '',
-					generalMax1: '',
-					generalMin2: '',
-					generalMax2: '',
-					warnMin: '',
-					warnMax: '',
-					warnDescription: "",
-					serial: '',
-					lightColor: ''
-				},
-				warnTypes: warnTypes,
-				warnTypesForObj: warnTypesForObj,
-				type: true,
-				lamps: ['亮', '灭', '闪烁'],
-				unit: '',
-				warnAction: "",
-				warnFormRules: {
-					warnType: [{
-						required: true,
-						message: '请输入告警类型',
-						trigger: 'blur'
-					}],
-					normalValue: [{
-						required: true,
-						message: '请输入正确的值',
-						trigger: 'blur'
-					}],
-					generalMin1: [{
-						validator: checkNum,
-						trigger: 'blur'
-					}],
-					generalMax1: [{
-						validator: checkNum,
-						trigger: 'blur'
-					}],
-					generalMin2: [{
-						validator: checkNum,
-						trigger: 'blur'
-					}],
-					generalMax2: [{
-						validator: checkNum,
-						trigger: 'blur'
-					}],
-					warnMin: [{
-						validator: checkNum,
-						trigger: 'blur'
-					}],
-					warnMax: [{
-						validator: checkNum,
-						trigger: 'blur'
-					}],
-					normalValue: [{
-						validator: checkNum,
-						trigger: 'blur'
-					}],
-				}
+        deviceLength: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ],
+        deviceWide: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ],
+        deviceHeight: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ],
+        meterHeight: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ],
+        meterWide: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ],
+        meterLiftoff: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ],
+        meterOffset: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ],
+        deviceX: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ],
+        deviceY: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ],
+        deviceDistance: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ],
+        neckHeight: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ],
+        elevation: [
+          {
+            validator: checkEle,
+            trigger: "blur"
+          }
+        ],
+        levelAngle: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ]
+      },
+      editLoading: false,
+      btnEditText: "提 交",
+      //warning
+      warnFormVisible: false,
+      warnFormTtile: "新增",
+      warnForm: {
+        warnId: "",
+        warnType: "仪表温度",
+        normalValue: "",
+        generalMin1: "",
+        generalMax1: "",
+        generalMin2: "",
+        generalMax2: "",
+        warnMin: "",
+        warnMax: "",
+        warnDescription: "",
+        serial: "",
+        lightColor: ""
+      },
+      warnTypes: warnTypes,
+      warnTypesForObj: warnTypesForObj,
+      type: true,
+      lamps: ["亮", "灭", "闪烁"],
+      unit: "",
+      warnAction: "",
+      warnFormRules: {
+        warnType: [
+          {
+            required: true,
+            message: "请输入告警类型",
+            trigger: "blur"
+          }
+        ],
+        normalValue: [
+          {
+            required: true,
+            message: "请输入正确的值",
+            trigger: "blur"
+          }
+        ],
+        generalMin1: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ],
+        generalMax1: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ],
+        generalMin2: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ],
+        generalMax2: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ],
+        warnMin: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ],
+        warnMax: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ],
+        normalValue: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ]
+      }
+    };
+  },
+  computed: {
+    isEmpty: function() {
+      return this.rows.length === 0;
+    }
+  },
+  methods: {
+    //获取用户列表
+    getList() {
+      let param = {
+        roomId: this.filters.roomId
+      };
+      NProgress.start();
+      let _this = this;
+      this.timmer = setInterval(function() {
+        if (_this.currentStatus === "加载中...") {
+          _this.currentStatus = "加载中";
+        }
+        _this.currentStatus += ".";
+      }, 1000);
+      Request(_this, "/web/getDevicesByRoomId.action", param).then(res => {
+        clearInterval(_this.timmer);
+        _this.timmer = null;
+        NProgress.done();
+        if (res.data.data) {
+          this.rows = JSON.parse(Response(res.data.data)).map(item => {
+            let opt = item.others.split(",");
+            item.isPhoto = opt[0] === "1" ? true : false;
+            item.isPolling = opt[1] === "1" ? true : false;
+            item.isDiscern = opt[2] === "1" ? true : false;
+            item.illumination = opt[3] ? opt[3] : 1;
+            return item;
+          });
+        } else {
+          this.rows = [];
+          this.currentStatus = "无数据";
+        }
+      });
+    },
+    open() {
+      this.isMore = !this.isMore;
+      this.message = this.isMore ? "Hide>>" : "More>>";
+    },
+    getRooms() {
+      let para = {
+        page: 0,
+        roomstatus: 1,
+        pageSize: 0
+      };
+      let self = this;
+      getRoomList(self, para).then(res => {
+        if (res.data.data) {
+          this.rooms = res.body.data.rows;
+          this.filters.roomId = this.rooms[0].roomId;
+          //this.getList();
+        }
+      });
+    },
+    getData(evt) {
+      evt.draggedContext.element.isActive = true;
+    },
+    handleEditTag(r) {
+      let _this = this;
+      let param = {};
+      param.roomId = this.tagData.roomId = r.roomId;
+      param.rfidId = this.tagData.rfidId = r.rfidId;
+      Request(_this, "/web/getDeviceRfidDetail.action", param).then(res => {
+        if (res.data && res.data.data) {
+          let tag = JSON.parse(Response(res.data.data));
+          tag.lightDistribution = tag.lightDistribution
+            ? tag.lightDistribution.split(",").map(i => {
+                return {
+                  value: i
+                };
+              })
+            : [
+                {
+                  value: 1
+                }
+              ];
+          tag.numDistribution = tag.numDistribution
+            ? tag.numDistribution.split(",").map(i => {
+                return {
+                  value: i
+                };
+              })
+            : [
+                {
+                  value: 1
+                }
+              ];
+          tag.bgDistribution = tag.bgDistribution
+            ? tag.bgDistribution.split(",").map(i => {
+                return {
+                  value: i
+                };
+              })
+            : [
+                {
+                  value: 1
+                }
+              ];
+          tag.rfidType = /^[0,1,2]/.test(tag.rfidType)
+            ? tag.rfidType + ""
+            : "0" + tag.rfidType;
+          tag.bgType = tag.bgType + "";
+          this.tagData = Object.assign(param, tag);
+          (this.tagFormTtile = "编辑"), (this.tagFormVisible = true);
+        } else {
+          this.tagData = Object.assign(param, {
+            id: 0,
+            rfidType: "0",
+            lightDistribution: [
+              {
+                value: 1
+              }
+            ],
+            numDistribution: [
+              {
+                value: 1
+              }
+            ],
+            bgType: "0",
+            bgDistribution: [
+              {
+                value: 1
+              }
+            ]
+          });
+          this.tagFormTtile = "新增";
+          this.tagFormVisible = true;
+        }
+        //					 console.log('get',this.tagData)
+      });
+    },
+    handleEditVedio(r) {
+      this.deviceId = r.deviceId;
+      this.dialogVisible = true;
+    },
+    //显示编辑界面
+    handleEdit(item) {
+      this.editFormVisible = true;
+      this.editFormTitle = "编辑";
+      for (var k in this.editForm) {
+        this.editForm[k] = "";
+      }
+      this.editForm.warnList = [];
+      for (var k in item) {
+        this.editForm[k] = item[k];
+      }
+      this.editForm.lightType += "";
+      this.editForm.testType += "";
+    },
+    closeTagForm() {
+      this.tagFormVisible = false;
+    },
+    refreshList() {
+      this.tagFormVisible = false;
+      this.$refs.tag_list.getRfids();
+    },
+    
+    handleDel(row) {
+      if (!row.deviceId) {
+        let rows = this.rows,
+          index;
+        for (var i = 0, len = rows.length; i < len; i++) {
+          if (rows[i].temp === row.temp) {
+            index = i;
+            break;
+          }
+        }
+        this.rows.splice(index, 1);
+        return;
+      }
+      var _this = this;
+      this.$confirm("确认删除设备: " + row.deviceName + "？", "提示", {
+        type: "danger"
+      }).then(() => {
+        NProgress.start();
+        let para = {
+          deviceId: row.deviceId
+        };
+        Request(
+          _this,
+          "/web/deletDevice.action",
+          para,
+          `删除设备${row.deviceName}`
+        ).then(res => {
+          NProgress.done();
+          if (res.body.result == 200) {
+            let param = JSON.parse(JSON.stringify(this.rows)).map(
+              (item, index) => {
+                item.orderBy = index;
+                return item;
+              }
+            );
+            Request(_this, "/web/updateDevices.action", {
+              deviceList: param
+            }).then(() => {
+              _this.$notify({
+                title: "成功",
+                message: "删除成功",
+                type: "success"
+              });
+              _this.getList();
+            });
+          } else {
+            _this.$notify({
+              title: "失败",
+              message: res.body.message,
+              type: "error"
+            });
+          }
+        });
+      });
+    },
+    closeEditFrom() {
+      this.editFormVisible = false;
+      this.$refs.editForm.resetFields();
+    },
+    //编辑 or 新增
+    handleSave() {
+      var _this = this;
 
-			}
-		},
-		computed: {
-			isEmpty: function() {
-				return(this.rows.length === 0)
-			}
-		},
-		methods: {
-			//获取用户列表
-			getList() {
-				let param = {
-					roomId: this.filters.roomId
-				}
-				NProgress.start();
-				let _this = this;
-				this.timmer = setInterval(function() {
-					if(_this.currentStatus === '加载中...') {
-						_this.currentStatus = '加载中'
-					}
-					_this.currentStatus += "."
-				}, 1000)
-				Request(_this, "/web/getDevicesByRoomId.action", param).then((res) => {
-					clearInterval(_this.timmer);
-					_this.timmer = null;
-					NProgress.done();
-					if(res.data.data) {
+      _this.$refs.editForm.validate(valid => {
+        if (valid) {
+          let para = JSON.parse(JSON.stringify(this.editForm));
+          para.isActive = true;
 
-						this.rows = JSON.parse(Response(res.data.data)).map((item) => {
-							let opt = item.others.split(',')
-							item.isPhoto = opt[0] === '1' ? true : false;
-							item.isPolling = opt[1] === "1" ? true : false;
-							item.isDiscern = opt[2] === "1" ? true : false;
-							item.illumination = opt[3] ? opt[3] : 1;
-							return item
-						})
+          if (this.editFormTitle === "新增") {
+            this.rows.push(para);
+          } else {
+            let deviceId = para.deviceId,
+              temp = para.temp,
+              rows = this.rows,
+              index;
+            index = deviceId
+              ? rows.findIndex(v => v.deviceId === deviceId)
+              : rows.findIndex(v => v.temp === temp);
+            this.rows.splice(index, 1, para);
+          }
+          this.editFormVisible = false;
+        }
+      });
+    },
+    editSubmit() {
+      let _this = this;
+      _this
+        .$confirm("确认提交吗？", "提示", {})
+        .then(() => {
+          _this.editLoading = true;
+          NProgress.start();
+          _this.btnEditText = "提交中";
+          let param = JSON.parse(JSON.stringify(this.rows)).map(
+            (item, index) => {
+              item.orderBy = index;
+              let isPhoto = item.isPhoto ? "1" : "0";
+              let isPolling = item.isPolling ? "1" : "0";
+              let isDiscern = item.isDiscern ? "1" : "0";
+              item.others =
+                isPhoto +
+                "," +
+                isPolling +
+                "," +
+                isDiscern +
+                "," +
+                item.illumination;
+              return item;
+            }
+          );
 
-					} else {
-						this.rows = []
-						this.currentStatus = "无数据"
-					}
-				})
-			},
-			open() {
-				this.isMore = !this.isMore;
-				this.message = this.isMore ? "Hide>>" : 'More>>'
-			},
-			getRooms() {
-				let para = {
-					page: 0,
-					roomstatus: 1,
-					pageSize: 0
-				};
-				let self = this;
-				getRoomList(self, para).then((res) => {
-					if(res.data.data) {
-						this.rooms = res.body.data.rows;
-						this.filters.roomId = this.rooms[0].roomId;
-						//this.getList();
-					}
-				})
-			},
-			getData(evt) {
-				evt.draggedContext.element.isActive = true;
-			},
-			handleEditTag(r) {
-				let _this = this;
-				let param = {};
-				param.roomId = this.tagData.roomId = r.roomId;
-				param.rfidId = this.tagData.rfidId = r.rfidId;
-				Request(_this, "/web/getDeviceRfidDetail.action", param).then((res) => {
-					if(res.data && res.data.data) {
-						let tag = JSON.parse(Response(res.data.data))
-						tag.lightDistribution = tag.lightDistribution ? tag.lightDistribution.split(",").map(i => {
-							return {
-								value: i
-							}
-						}) : [{
-							value: 1
-						}];
-						tag.numDistribution = tag.numDistribution ? tag.numDistribution.split(",").map(i => {
-							return {
-								value: i
-							}
-						}) : [{
-							value: 1
-						}];
-						tag.bgDistribution = tag.bgDistribution ? tag.bgDistribution.split(",").map(i => {
-							return {
-								value: i
-							}
-						}) : [{
-							value: 1
-						}];
-						tag.rfidType = /^[0,1,2]/.test(tag.rfidType) ? (tag.rfidType + '') : ('0' + tag.rfidType);
-						tag.bgType = tag.bgType + '';
-						this.tagData = Object.assign(param, tag);
-						this.tagFormTtile = "编辑",
-							this.tagFormVisible = true;
-					} else {
-						this.tagData = Object.assign(param, {
-							id: 0,
-							rfidType: '0',
-							lightDistribution: [{
-								value: 1
-							}],
-							numDistribution: [{
-								value: 1
-							}],
-							bgType: '0',
-							bgDistribution: [{
-								value: 1
-							}],
-						});
-						this.tagFormTtile = "新增";
-						this.tagFormVisible = true;
-					}
-					//					 console.log('get',this.tagData)
-				})
-			},
-			handleEditVedio(r) {
-				this.deviceId = r.deviceId;
-				this.dialogVisible = true;
-			},
-			//显示编辑界面
-			handleEdit(item) {
-				this.editFormVisible = true;
-				this.editFormTitle = '编辑';
-				for(var k in this.editForm) {
-					this.editForm[k] = '';
-				}
-				this.editForm.warnList = [];
-				for(var k in item) {
-					this.editForm[k] = item[k];
-				}
-				this.editForm.lightType += '';
-				this.editForm.testType += '';
-			},
-			closeTagForm() {
-				this.tagFormVisible = false;
-			},
-			refreshList() {
-				this.tagFormVisible = false;
-				this.$refs.tag_list.getRfids();
-			},
-			resetForm() {
-				this.$refs.tag_form.resetForm()
-			},
-			handleDel(row) {
-				if(!row.deviceId) {
-					let rows = this.rows,
-						index;
-					for(var i = 0, len = rows.length; i < len; i++) {
-						if(rows[i].temp === row.temp) {
-							index = i;
-							break;
-						}
-					}
-					this.rows.splice(index, 1);
-					return;
-				};
-				var _this = this;
-				this.$confirm('确认删除设备: ' + row.deviceName + '？', '提示', {
-					type: 'danger'
-				}).then(() => {
-					NProgress.start();
-					let para = {
-						deviceId: row.deviceId,
-					};
-					Request(_this, "/web/deletDevice.action", para, `删除设备${row.deviceName}`).then((res) => {
-						NProgress.done();
-						if(res.body.result == 200) {
-							let param = JSON.parse(JSON.stringify(this.rows)).map((item, index) => {
-								item.orderBy = index;
-								return item;
-							});
-							Request(_this, '/web/updateDevices.action', {
-								deviceList: param
-							}, ).then(() => {
-								_this.$notify({
-									title: '成功',
-									message: '删除成功',
-									type: 'success'
-								});
-								_this.getList();
-							})
-						} else {
-							_this.$notify({
-								title: '失败',
-								message: res.body.message,
-								type: 'error'
-							});
-						}
+          Request(
+            _this,
+            "/web/updateDevices.action",
+            {
+              deviceList: param
+            },
+            "更新设备列表"
+          ).then(res => {
+            _this.editLoading = false;
+            NProgress.done();
+            _this.btnEditText = "提 交";
+            if (res.body.result == 200) {
+              _this.$notify({
+                title: "成功",
+                message: "更新成功",
+                type: "success"
+              });
+            } else {
+              _this.$notify({
+                title: "失败",
+                message: "更新失败",
+                type: "error"
+              });
+            }
+            _this.editFormVisible = false;
+            _this.getList();
+          });
+        })
+        .catch(() => {});
+    }, //显示新增界面
+    handleAdd() {
+      var _this = this;
 
-					});
+      this.editFormVisible = true;
+      this.editFormTitle = "新增";
+      for (var k in _this.editForm) {
+        _this.editForm[k] = "";
+      }
+      this.isMore = false;
+      this.editForm.isPhoto = true;
+      this.editForm.isPolling = true;
+      this.editForm.isDiscern = true;
+      this.editForm.warnList = [];
+      this.editForm.roomId = this.filters.roomId;
+      this.editForm.temp = new Date().valueOf();
+      this.editForm.illumination = "1";
+    },
+    //告警编辑
+    addWarning() {
+      this.warnFormVisible = true;
+      this.warnFormTtile = "新增";
+      this.warnAction = "add";
 
-				})
-			},
-			closeEditFrom() {
-				this.editFormVisible = false;
-				this.$refs.editForm.resetFields();
-			},
-			//编辑 or 新增
-			handleSave() {
-				var _this = this;
+      this.warnForm.warnId = guid();
+      this.warnForm.warnType = "仪表温度";
+      this.warnForm.normalValue = "";
+      this.warnForm.generalMin1 = "";
+      this.warnForm.generalMax1 = "";
+      this.warnForm.generalMin2 = "";
+      this.warnForm.generalMax2 = "";
+      this.warnForm.warnMin = "";
+      this.warnForm.warnMax = "";
+      this.warnForm.warnDescription = "";
+    },
+    setUnit() {
+      let curWarnType = this.warnForm.warnType;
 
-				_this.$refs.editForm.validate((valid) => {
-					if(valid) {
-						let para = JSON.parse(JSON.stringify(this.editForm));
-						para.isActive = true;
-
-						if(this.editFormTitle === "新增") {
-							this.rows.push(para)
-						} else {
-							let deviceId = para.deviceId,
-								temp = para.temp,
-								rows = this.rows,
-								index;
-							index =deviceId?rows.findIndex(v=>(v.deviceId ===deviceId)):rows.findIndex(v=>(v.temp===temp));
-							this.rows.splice(index, 1, para);
-						}
-						this.editFormVisible = false;
-					}
-				})
-			},
-			editSubmit() {
-				let _this = this;
-				_this.$confirm('确认提交吗？', '提示', {}).then(() => {
-					_this.editLoading = true;
-					NProgress.start();
-					_this.btnEditText = '提交中';
-					let param = JSON.parse(JSON.stringify(this.rows)).map((item, index) => {
-						item.orderBy = index;
-						let isPhoto = item.isPhoto ? "1" : "0";
-						let isPolling = item.isPolling ? "1" : "0";
-						let isDiscern = item.isDiscern ? "1" : "0";
-						item.others = isPhoto + ',' + isPolling + ',' + isDiscern + ',' + item.illumination;
-						return item;
-					});
-
-					Request(_this, '/web/updateDevices.action', {
-						deviceList: param
-					}, "更新设备列表").then((res) => {
-						_this.editLoading = false;
-						NProgress.done();
-						_this.btnEditText = '提 交';
-						if(res.body.result == 200) {
-							_this.$notify({
-								title: '成功',
-								message: '更新成功',
-								type: 'success'
-							});
-						} else {
-							_this.$notify({
-								title: '失败',
-								message: '更新失败',
-								type: 'error'
-							});
-						}
-						_this.editFormVisible = false;
-						_this.getList();
-					});
-
-				}).catch(() => {});
-
-			}, //显示新增界面
-			handleAdd() {
-				var _this = this;
-
-				this.editFormVisible = true;
-				this.editFormTitle = '新增';
-				for(var k in _this.editForm) {
-					_this.editForm[k] = '';
-				}
-				this.isMore = false;
-				this.editForm.isPhoto = true;
-				this.editForm.isPolling = true;
-				this.editForm.isDiscern = true;
-				this.editForm.warnList = [];
-				this.editForm.roomId = this.filters.roomId;
-				this.editForm.temp = new Date().valueOf();
-				this.editForm.illumination = "1"
-			},
-			//告警编辑
-			addWarning() {
-				this.warnFormVisible = true;
-				this.warnFormTtile = "新增";
-				this.warnAction = "add";
-
-				this.warnForm.warnId = guid();
-				this.warnForm.warnType = "仪表温度";
-				this.warnForm.normalValue = "";
-				this.warnForm.generalMin1 = '';
-				this.warnForm.generalMax1 = '';
-				this.warnForm.generalMin2 = '';
-				this.warnForm.generalMax2 = '';
-				this.warnForm.warnMin = '';
-				this.warnForm.warnMax = '';
-				this.warnForm.warnDescription = "";
-
-			},
-			setUnit() {
-				let curWarnType = this.warnForm.warnType;
-
-				if(curWarnType && curWarnType != "指示灯") {
-					this.type = true;
-					let warnType = this.warnTypes.filter(function(v) {
-						return v.value === curWarnType
-					})
-					this.unit = warnType[0].unit;
-
-				} else {
-					this.warnForm.serial = '',
-						this.type = false;
-				}
-			},
-			warnSubmit() {
-				let _this = this;
-				_this.$refs.warningForm.validate((valid) => {
-					if(valid) {
-						if(_this.warnAction === "add") {
-							let obj = JSON.parse(JSON.stringify(_this.warnForm))
-							_this.editForm.warnList.push(obj);
-						} else {
-							let index, Id = _this.warnForm.warnId;
-							for(let i = 0, warns = _this.editForm.warnList, len = warns.length; i < len; i++) {
-								if(warns[i].warnId == Id) {
-									index = i;
-									break;
-								}
-							}
-							let obj = JSON.parse(JSON.stringify(_this.warnForm))
-							_this.editForm.warnList.splice(index, 1, obj)
-						}
-						_this.warnFormVisible = false;
-					}
-				});
-			},
-			cancel() {
-				this.type = true;
-				this.$nextTick(() => {
-					this.$refs.warningForm.resetFields();
-					this.warnFormVisible = false;
-				})
-			},
-			edtiWarning(r) {
-				this.warnFormVisible = true;
-				this.warnFormTtile = "编辑";
-				this.warnAction = "edit";
-				this.type = r.warnType == "指示灯" ? false : true;
-				//this.warnForm = Object.assign({},r);
-				this.warnForm = JSON.parse(JSON.stringify(r))
-			},
-			warningDel(r) {
-				var _this = this;
-				this.$confirm('确认删除该记录吗?', '提示', {
-					//type: 'warning'
-				}).then(() => {
-					let index, Id = _this.warnForm.warnId;
-					for(let i = 0, warns = _this.editForm.warnList, len = warns.length; i < len; i++) {
-						if(warns[i].warnId == Id) {
-							index = i;
-							break;
-						}
-					}
-					_this.editForm.warnList.splice(index, 1)
-				}).catch(() => {
-
-				});
-			},
-			handleUpload() {
-				this.uploadVisible = true;
-			},
-			closeUp() {
-				this.uploadVisible = false;
-			},
-			rfidSubmit() {
-				if(!this.tagData.lightColor) return;
-				let _this = this;
-				let param = _this.tagData;
-				param.bgDistribution = null;
-				param.lightDistribution = null;
-				param.numDistribution = null;
-				_this.rfidLoading = true;
-				_this.rfidBtnText = '提交中...';
-				Request(_this, "/web/setDeviceRfidDetail.action", param).then((res) => {
-					NProgress.done();
-					_this.rfidLoading = false;
-					_this.rfidBtnText = '提交';
-					if(res.body.result == 200) {
-						_this.$notify({
-							title: '成功',
-							message: '提交成功',
-							type: 'success'
-						});
-					} else {
-						_this.$notify({
-							title: '失败',
-							message: '提交失败',
-							type: 'error'
-						});
-					}
-					_this.tagFormVisible = false;
-				})
-			}
-		},
-		mounted() {
-			this.getRooms();
-			this.isFj = this.$store.state.user.customId === "a6a4b85d74d44341bfd53265521248a5";
-		}
-	}
+      if (curWarnType && curWarnType != "指示灯") {
+        this.type = true;
+        let warnType = this.warnTypes.filter(function(v) {
+          return v.value === curWarnType;
+        });
+        this.unit = warnType[0].unit;
+      } else {
+        (this.warnForm.serial = ""), (this.type = false);
+      }
+    },
+    warnSubmit() {
+      let _this = this;
+      _this.$refs.warningForm.validate(valid => {
+        if (valid) {
+          if (_this.warnAction === "add") {
+            let obj = JSON.parse(JSON.stringify(_this.warnForm));
+            _this.editForm.warnList.push(obj);
+          } else {
+            let index,
+              Id = _this.warnForm.warnId;
+            for (
+              let i = 0, warns = _this.editForm.warnList, len = warns.length;
+              i < len;
+              i++
+            ) {
+              if (warns[i].warnId == Id) {
+                index = i;
+                break;
+              }
+            }
+            let obj = JSON.parse(JSON.stringify(_this.warnForm));
+            _this.editForm.warnList.splice(index, 1, obj);
+          }
+          _this.warnFormVisible = false;
+        }
+      });
+    },
+    cancel() {
+      this.type = true;
+      this.$nextTick(() => {
+        this.$refs.warningForm.resetFields();
+        this.warnFormVisible = false;
+      });
+    },
+    edtiWarning(r) {
+      this.warnFormVisible = true;
+      this.warnFormTtile = "编辑";
+      this.warnAction = "edit";
+      this.type = r.warnType == "指示灯" ? false : true;
+      //this.warnForm = Object.assign({},r);
+      this.warnForm = JSON.parse(JSON.stringify(r));
+    },
+    warningDel(r) {
+      var _this = this;
+      this.$confirm("确认删除该记录吗?", "提示", {
+        //type: 'warning'
+      })
+        .then(() => {
+          let index,
+            Id = _this.warnForm.warnId;
+          for (
+            let i = 0, warns = _this.editForm.warnList, len = warns.length;
+            i < len;
+            i++
+          ) {
+            if (warns[i].warnId == Id) {
+              index = i;
+              break;
+            }
+          }
+          _this.editForm.warnList.splice(index, 1);
+        })
+        .catch(() => {});
+    },
+    handleUpload() {
+      this.uploadVisible = true;
+    },
+    closeUp() {
+      this.uploadVisible = false;
+    },
+    rfidSubmit() {
+      if (!this.tagData.lightColor) return;
+      let _this = this;
+      let param = _this.tagData;
+      param.bgDistribution = null;
+      param.lightDistribution = null;
+      param.numDistribution = null;
+      _this.rfidLoading = true;
+      _this.rfidBtnText = "提交中...";
+      Request(_this, "/web/setDeviceRfidDetail.action", param).then(res => {
+        NProgress.done();
+        _this.rfidLoading = false;
+        _this.rfidBtnText = "提交";
+        if (res.body.result == 200) {
+          _this.$notify({
+            title: "成功",
+            message: "提交成功",
+            type: "success"
+          });
+        } else {
+          _this.$notify({
+            title: "失败",
+            message: "提交失败",
+            type: "error"
+          });
+        }
+        _this.tagFormVisible = false;
+      });
+    }
+  },
+  mounted() {
+    this.getRooms();
+    this.isFj =
+      this.$store.state.user.customId === "a6a4b85d74d44341bfd53265521248a5";
+  }
+};
 </script>
 
 <style scoped>
-	.title {
-		font-size: 16px;
-		color: #fff;
-		background: #2178f1 linear-gradient(90deg, #2178f1 0%, #2178f1 0%, #20b6f9 100%, #20b6f9 100%);
-		width: 100%;
-		height: 35px;
-		font-family: inherit;
-		line-height: 35px;
-		font-weight: 100;
-		margin-bottom: 5px;
-		border-bottom: 1px solid #E0E0E0;
-	}
-	
-	.empty {
-		border: 1px solid #ccc;
-		height: 50px;
-		line-height: 50px;
-		text-align: center;
-	}
-	
-	.el-col {
-		border-top-right-radius: 5px;
-		border-top-left-radius: 5px;
-	}
-	
-	.thead {
-		min-height: 36px;
-		line-height: 36px;
-		border: 1px solid #ccc;
-		font-size: 14px;
-		text-align: center;
-		margin-bottom: 0 !important;
-		border-bottom: none;
-	}
-	
-	.active {
-		background: #93C4F5;
-	}
-	
-	.common {
-		background: #fff;
-	}
-	
-	.msg {
-		color: #0070D9;
-		float: right;
-		margin-right: 50px;
-	}
-	
-	.msg:hover {
-		color: #00D3A9;
-	}
-	
-	.item {
-		width: 32%;
-		display: inline-block;
-	}
-	
-	.unit {
-		text-align: center;
-		font-weight: bold;
-		font-size: 16px;
-	}
+.title {
+  font-size: 16px;
+  color: #fff;
+  background: #2178f1
+    linear-gradient(90deg, #2178f1 0%, #2178f1 0%, #20b6f9 100%, #20b6f9 100%);
+  width: 100%;
+  height: 35px;
+  font-family: inherit;
+  line-height: 35px;
+  font-weight: 100;
+  margin-bottom: 5px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.empty {
+  border: 1px solid #ccc;
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+}
+
+.el-col {
+  border-top-right-radius: 5px;
+  border-top-left-radius: 5px;
+}
+
+.thead {
+  min-height: 36px;
+  line-height: 36px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 0 !important;
+  border-bottom: none;
+}
+
+.active {
+  background: #93c4f5;
+}
+
+.common {
+  background: #fff;
+}
+
+.msg {
+  color: #0070d9;
+  float: right;
+  margin-right: 50px;
+}
+
+.msg:hover {
+  color: #00d3a9;
+}
+
+.item {
+  width: 32%;
+  display: inline-block;
+}
+
+.unit {
+  text-align: center;
+  font-weight: bold;
+  font-size: 16px;
+}
+
 </style>

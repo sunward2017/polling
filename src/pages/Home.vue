@@ -32,7 +32,7 @@
 
 			<section class="panel-c-c">
 				<div :class="isDashboard?'bg-purple-light':''">
-					<el-col :span="24" style="margin-bottom:15px;" v-if="isDashboard">
+					<el-col :span="24" class="breadcrumb" v-if="isDashboard">
 						<strong style="width:200px;float:left;color: #475669;">{{currentPathName}}</strong>
 						<el-breadcrumb separator="/" style="float:right;">
 							<el-breadcrumb-item :to="{ path:'/dashboard' }">首页</el-breadcrumb-item>
@@ -56,197 +56,208 @@
 </template>
 
 <script>
-	export default {
-		data() {
-			return {
-				currentPath: '/dashboard',
-				isDashboard: false,
-				currentPathName: '',
-				currentPathNameParent: '',
-				customer: '',
-				isCollapse: true,
-				form: {
-					name: '',
-					region: '',
-					date1: '',
-					date2: '',
-					delivery: false,
-					type: [],
-					resource: '',
-					desc: ''
-				}
-			}
-		},
-		watch: {
-			'$route' (to, from) { //监听路由改变
-				this.currentPath = to.path;
-				this.isDashboard = to.path === "/dashboard" ? false : true,
-					this.currentPathName = to.name;
-				this.currentPathNameParent = to.matched[0].name;
-			},
+export default {
+  data() {
+    return {
+      currentPath: "/dashboard",
+      isDashboard: false,
+      currentPathName: "",
+      currentPathNameParent: "",
+      customer: "",
+      isCollapse: true,
+      form: {
+        name: "",
+        region: "",
+        date1: "",
+        date2: "",
+        delivery: false,
+        type: [],
+        resource: "",
+        desc: ""
+      }
+    };
+  },
+  watch: {
+    $route(to, from) {
+      //监听路由改变
+      this.currentPath = to.path;
+      (this.isDashboard = to.path === "/dashboard" ? false : true),
+        (this.currentPathName = to.name);
+      this.currentPathNameParent = to.matched[0].name;
+    }
+  },
+  created: function() {
+    // var username = localStorage.getItem("user");
 
-		},
-		created: function() {
-			// var username = localStorage.getItem("user");
-
-			this.user = this.$store.state.user.account;
-		},
-		methods: {
-			onSubmit() {
-				//console.log('submit!');
-			},
-			handleopen() {
-				//console.log('handleopen');
-			},
-			handleclose() {
-				//console.log('handleclose');
-			},
-			handleselect: function(a, b) {},
-			//退出登录
-			logout: function() {
-				var _this = this;
-				this.$confirm('确认退出吗?', '提示', {
-					//type: 'warning'
-				}).then(() => {
-					_this.$router.replace('/login');
-				}).catch(() => {
-
-				});
-
-			}
-		},
-		mounted() {
-			if(this.$store.state.user.customName) {
-				this.customer = this.$store.state.user.customName;
-			}
-			this.currentPath = this.$route.fullPath;
-			this.currentPathName = this.$route.name;
-			this.currentPathNameParent = this.$route.matched[0].name
-		}
-	}
+    this.user = this.$store.state.user.account;
+  },
+  methods: {
+    onSubmit() {
+      //console.log('submit!');
+    },
+    handleopen() {
+      //console.log('handleopen');
+    },
+    handleclose() {
+      //console.log('handleclose');
+    },
+    handleselect: function(a, b) {},
+    //退出登录
+    logout: function() {
+      var _this = this;
+      this.$confirm("确认退出吗?", "提示", {
+        //type: 'warning'
+      })
+        .then(() => {
+          _this.$router.replace("/login");
+        })
+        .catch(() => {});
+    }
+  },
+  mounted() {
+    if (this.$store.state.user.customName) {
+      this.customer = this.$store.state.user.customName;
+    }
+    this.currentPath = this.$route.fullPath;
+    this.currentPathName = this.$route.name;
+    this.currentPathNameParent = this.$route.matched[0].name;
+  }
+};
 </script>
 
 <style scoped>
-	.fade-enter-active,
-	.fade-leave-active {
-		transition: opacity .5s
-	}
-	
-	.fade-enter,
-	.fade-leave-active {
-		opacity: 0
-	}
-	
-	.panel {
-		position: absolute;
-		top: 0px;
-		bottom: 0px;
-		width: 100%;
-		height:95%;
-	}
-	
-	.title span {
-		background-image: -webkit-gradient(linear, 0 0, right 0, from(#40e4d5), to(#008aff));
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		font-size: 26px;
-		font-weight: bold;
-	}
-	
-	.panel-top {
-		height: 60px;
-		line-height: 60px;
-		background: #090635;
-		color: #c0ccda;
-	}
-	
-	.panel-right {
-		text-align: right;
-	}
-	
-	.banners {
-		margin-right: 25px;
-		margin-top: 36px;
-		color: #A6B4C9;
-		cursor: pointer;
-	}
-	
-	.panel-center {
-		position: absolute;
-		top: 60px;
-		bottom: 0px;
-		height: 95%;
-		overflow-y: auto;
-	}
-	
-	.panel-c-t {
-		float: left;
-		width: 230px;
-	}
-	
-	.panel-c-c {
-		background: #f1f2f6;
-		margin-left: 230px;
-	}
-	
-	.bg-purple-light {
-		padding: 20px;
-		min-height: 80vh;
-	}
-	
-	.bg-purple-light:after {
-		content: ".";
-		display: block;
-		height: 0;
-		clear: both;
-		visibility: hidden;
-	}
-	
-	.logo {
-		width: 40px;
-		float: left;
-		margin: 20px 10px 20px 38px;
-	}
-	
-	.admin {
-		color: #c0ccda;
-		text-align: center;
-	}
-	
-	.link-type .link-type:focus {
-		color: #337ab7;
-		cursor: pointer;
-	}
-	
-	@-webkit-keyframes fadeInRight {
-		0% {
-			opacity: 0;
-			-webkit-transform: translateX(40px);
-			transform: translateX(40px);
-		}
-		100% {
-			opacity: 1;
-			-webkit-transform: translateX(0);
-			transform: translateX(0);
-		}
-	}
-	
-	@keyframes fadeInRight {
-		0% {
-			opacity: 0;
-			-webkit-transform: translateX(40px);
-			-ms-transform: translateX(40px);
-			transform: translateX(40px);
-		}
-		100% {
-			opacity: 1;
-			-webkit-transform: translateX(0);
-			-ms-transform: translateX(0);
-			transform: translateX(0);
-		}
-	}
-	
-	.fadeIn-enter-active {
-		animation: fadeInRight 1.5s;
-	}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+
+.fade-enter,
+.fade-leave-active {
+  opacity: 0;
+}
+
+.panel {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  width: 100%;
+  height: 95%;
+}
+
+.title span {
+  background-image: -webkit-gradient(
+    linear,
+    0 0,
+    right 0,
+    from(#40e4d5),
+    to(#008aff)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 26px;
+  font-weight: bold;
+}
+.breadcrumb {
+  padding: 11px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #ccc;
+  background: #d6dce2;
+}
+
+.panel-top {
+  height: 60px;
+  line-height: 60px;
+  background: #090635;
+  color: #c0ccda;
+}
+
+.panel-right {
+  text-align: right;
+}
+
+.banners {
+  margin-right: 25px;
+  margin-top: 36px;
+  color: #a6b4c9;
+  cursor: pointer;
+}
+
+.panel-center {
+  position: absolute;
+  top: 60px;
+  bottom: 0px;
+  height: 95%;
+  overflow-y: auto;
+}
+
+.panel-c-t {
+  float: left;
+  width: 230px;
+}
+
+.panel-c-c {
+  background: #f1f2f6;
+  margin-left: 230px;
+}
+
+.bg-purple-light {
+  padding: 20px;
+  min-height: 90vh;
+}
+
+.bg-purple-light:after {
+  content: ".";
+  display: block;
+  height: 0;
+  clear: both;
+  visibility: hidden;
+}
+
+.logo {
+  width: 40px;
+  float: left;
+  margin: 20px 10px 20px 38px;
+}
+
+.admin {
+  color: #c0ccda;
+  text-align: center;
+}
+
+.link-type .link-type:focus {
+  color: #337ab7;
+  cursor: pointer;
+}
+
+@-webkit-keyframes fadeInRight {
+  0% {
+    opacity: 0;
+    -webkit-transform: translateX(40px);
+    transform: translateX(40px);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: translateX(0);
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  0% {
+    opacity: 0;
+    -webkit-transform: translateX(40px);
+    -ms-transform: translateX(40px);
+    transform: translateX(40px);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: translateX(0);
+    -ms-transform: translateX(0);
+    transform: translateX(0);
+  }
+}
+
+.fadeIn-enter-active {
+  animation: fadeInRight 1.5s;
+}
 </style>

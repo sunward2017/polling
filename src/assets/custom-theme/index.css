@@ -24,6 +24,9 @@
 	display: table;
 	content: ""
 }
+.custom_rfid{
+	min-width:1090px;
+}
 /*******menu*************/
 .custom-theme .el-menu--dark .el-submenu .el-menu{
 	background:#172d44;

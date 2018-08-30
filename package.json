@@ -9,8 +9,13 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "babel-helper-vue-jsx-merge-props": "^2.0.3",
+    "babel-plugin-syntax-jsx": "^6.18.0",
+    "babel-plugin-transform-vue-jsx": "^3.7.0",
     "echarts": "^3.3.2",
     "flex.css": "^1.1.6",
+    "html2canvas": "^1.0.0-alpha.12",
+    "jspdf": "^1.4.1",
     "nprogress": "^0.2.0",
     "vue": "^2.1.10",
     "vuedraggable": "^2.15.0",

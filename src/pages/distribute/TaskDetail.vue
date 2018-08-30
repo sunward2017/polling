@@ -1,18 +1,18 @@
-<template>
+ <template>
 	<section>
 		<el-col :span="24" class="toolbar">
 			<el-form :inline="true" :model="filters">
 				<el-col :span="6">
-					<el-select v-model="filters.robotId" style="width:90%" @change="getList">
-						<el-option v-for="item in robots" :key="item.robotId" :label="item.robotName" :value="item.robotId">
+					 <el-select v-model="filters.roomId" style="width:90%" @change="getList">
+						<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 						</el-option>
 					</el-select>
 				</el-col>
 				<!-- <el-form-item>
-					<el-button icon="search" type="primary" v-on:click="getList">刷新</el-button>
+					<el-button icon="search" type="primary" v-on:click="getList">搜索</el-button>
 				</el-form-item> -->
 				<el-form-item>
-					<el-button icon="edit" type="primary" @click="handlerAdd">任务计划制定</el-button>
+					<el-button icon="edit" type="primary" @click="handlerAdd">临时任务制定</el-button>
 				</el-form-item>
 			</el-form>
 		</el-col>
@@ -29,20 +29,21 @@
 				</el-table-column>
 				<el-table-column prop="taskName" label="任务名称" align="center" width="180">
 				</el-table-column>
-
-				<el-table-column prop="taskTime" label="执行时间" align="center">
+                <el-table-column prop="taskType" label="任务类型" align="center">
 				</el-table-column>
-				<el-table-column prop="taskType" label="任务类型" align="center">
+				<el-table-column prop="taskTime" label="执行时间" align="center">
 				</el-table-column>
 				<el-table-column prop="createTime" label="创建时间" width="240" align="center" sortable>
 					<template scope="scope">
 						<span style="margin-left: 10px">{{ formatTime(scope.row) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column prop="status" label="操作" align="center" width="240">
+				<el-table-column prop="status" label="操作" align="center" width="280">
 					<template scope="scope">
-						<el-button type="darnge" icon="share" size="small" @click="handleDetail(scope.row)">巡检详情</el-button>
-						<el-button type="warning" icon="delete" size="small" @click="handleDel(scope.row)">删除</el-button>
+					  <router-link :to="{path:'workerDetail',query:{taskId:scope.row.taskId}}" >
+					     <el-button type="darnge" icon="share" size="small">任务执行详情</el-button>
+				    </router-link>
+					  <el-button type="warning" icon="delete" size="small" @click="handleStop(scope.row)">终止任务</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
@@ -141,7 +142,7 @@ export default {
     };
     return {
       filters: {
-        robotId: ""
+        roomId: ""
       },
       total: 0,
       page: 1,
@@ -220,20 +221,6 @@ export default {
       this.size = size;
       this.getList();
     },
-    getRobots() {
-      let para = {
-        page: 0,
-        roomstatus: 1,
-        pageSize: 0
-      };
-      let self = this;
-      getRobotList(self, para).then(res => {
-        if (res.data.data) {
-          this.robots = res.body.data.list;
-          this.filters.robotId = this.robots[0].robotId;
-        }
-      });
-    },
     cancel() {
       this.$refs.editForm.resetFields();
     },
@@ -241,7 +228,7 @@ export default {
       let para = {
         page: this.page,
         pageSize: this.size,
-        robotId: this.filters.robotId
+        roomId: this.filters.roomId
       };
       this.listLoading = true;
       NProgress.start();
@@ -252,7 +239,7 @@ export default {
           this.total = res.data.data.total;
         } else {
           this.total = 0;
-          this.rows = [];
+          this.rows = [{ taskName: "1", taskId: "111", taskType: "临时" }];
         }
         this.listLoading = false;
         NProgress.done();
@@ -341,10 +328,10 @@ export default {
         }
       });
     },
-   
-    handleDel(row) {
+    handleDetail(row) {},
+    handleStop(row) {
       var _this = this;
-      this.$confirm("确认删除吗", "提示", {
+      this.$confirm("确定要终止吗?终止后任务将不在执行", "提示", {
         //type: 'warning'
       })
         .then(() => {
@@ -353,29 +340,6 @@ export default {
           let para = {
             taskId: row.taskId
           };
-          Request(
-            _this,
-            "/deleteTaskSchedule.do",
-            para,
-            `删除任务${row.taskName}`
-          ).then(res => {
-            _this.listLoading = false;
-            NProgress.done();
-            if (res.body.result == 200) {
-              _this.$notify({
-                title: "成功",
-                message: "删除成功",
-                type: "success"
-              });
-            } else {
-              _this.$notify({
-                title: "失败",
-                message: res.body.message,
-                type: "error"
-              });
-            }
-            _this.getList();
-          });
         })
         .catch(() => {});
     },
@@ -447,25 +411,6 @@ export default {
         }
       });
     },
-    handleCommand(command) {
-      this.$notify({
-        title: "提示",
-        message: "正在开发中。。。。",
-        type: "info"
-      });
-      //				switch(command) {
-      //					case 'a':
-      //						this.execTemp();
-      //						break;
-      //					case 'b':
-      //						console.log(command);
-      //						break;
-      //					case 'c':
-      //						console.log(command);
-      //						break;
-      //					default:
-      //				}
-    },
     execTemp() {
       this.tempTaskVisible = true;
       this.devices = this.robots.map(item => {
@@ -508,7 +453,7 @@ export default {
     }
   },
   mounted() {
-    this.getRobots();
+    this.getRooms();
   }
 };
 </script>

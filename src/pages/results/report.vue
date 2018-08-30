@@ -25,13 +25,13 @@
 					<th style="width:70%">阶段时间-任务完成比例</th>
 				</tr>
 				<template v-for="(item,index) in taskExec">
-					<tr>
+					<tr :key="index">
 						<td rowspan="2">{{++index}}</td>
 						<td rowspan="2">{{item.Date}}</td>
 						<td>巡检任务</td>
 						<td class="taskDes">{{item.fileTask}}</td>
 					</tr>
-					<tr>
+					<tr :key="item.thermometTask">
 						<td>定点测温</td>
 						<td class="taskDes">{{item.thermometTask}}</td>
 					</tr>

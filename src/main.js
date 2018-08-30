@@ -16,8 +16,12 @@ const Reset = r => require.ensure([], () => r(require('./pages/login/Reset.vue')
 const Home = r => require.ensure([], () => r(require('./pages/Home.vue')), 'Home');
 const Robot = r => require.ensure([], () => r(require('./pages/robot/Table.vue')), 'Robot');
 const Workers = r => require.ensure([], () => r(require('./pages/workers/Table.vue')), 'Workers');
+
 const Room = r => require.ensure([], () => r(require('./pages/machineRoom/Table.vue')), 'Room');
 const Device = r => require.ensure([], () => r(require('./pages/machineRoom/device.vue')), 'Device');
+const Lane = r => require.ensure([], () => r(require('./pages/machineRoom/Lane.vue')), 'Lane');
+const Stagnation = r => require.ensure([], () => r(require('./pages/machineRoom/Stagnation.vue')), 'Stagnation');
+
 const Template = r => require.ensure([], () => r(require('./pages/template/Table.vue')), 'Template');
 const Admin = r => require.ensure([], () => r(require('./pages/admin/Table.vue')), 'Admin');
 const warningSend = r => require.ensure([], () => r(require('./pages/template/warning.vue')), 'warningSend');
@@ -27,15 +31,21 @@ const SmokeWarning = r => require.ensure([], () => r(require('./pages/results/sm
 const NoiseWarning = r => require.ensure([], () => r(require('./pages/results/noiseWarning.vue')), 'NoiseWarning');
 const Thermal = r => require.ensure([], () => r(require('./pages/results/Thermal.vue')), 'Thermal');
 const PhotoReport = r => require.ensure([], () => r(require('./pages/results/photoReport.vue')), 'PhotoReport');
-const Source = r => require.ensure([], () => r(require('./pages/results/sourceRec.vue')), 'Source');
 
 const HistoryVideo = r => require.ensure([], () => r(require('./pages/supervision/historyVideo.vue')), 'HistoryVideo');
 const Supervision = r => require.ensure([], () => r(require('./pages/supervision/supervision.vue')), 'Supervision');
 const Super = r => require.ensure([], () => r(require('./pages/supervision/realTime.vue')), 'Super');
+
 const TaskList = r => require.ensure([], () => r(require('./pages/distribute/TaskList.vue')), 'TaskList');
+const TaskDetail = r => require.ensure([], () => r(require('./pages/distribute/TaskDetail.vue')), 'TaskDetail');
+const TaskTemplate = r => require.ensure([], () => r(require('./pages/distribute/TaskTemplate.vue')), 'TaskTemplate');
+const ActionCategory = r => require.ensure([], () => r(require('./pages/distribute/Category.vue')), 'ActionCategory');
+const WorkerDetail = r => require.ensure([], () => r(require('./pages/distribute/WorkerDetail.vue')), 'WorkerDetail');
+
 const Dashboard = r => require.ensure([], () => r(require('./pages/dashboard/dashboard.vue')), 'Dashboard');
 const Site = r => require.ensure([], () => r(require('./pages/results/site.vue')), 'site');
 const report = r => require.ensure([], () => r(require('./pages/results/report.vue')), 'report')
+
 
 import vueResource from 'vue-Resource'
 import VueLazyLoad from 'vue-lazyload'
@@ -53,158 +63,190 @@ Vue.use(Vuex)
 Vue.use(vueResource);
 
 const routes = [{
-		path: '/login',
-		component: Login,
-		hidden: true
-	}, {
-		path: '/reset',
-		component: Reset,
-		hidden: true
-	}, {
-		path: '/',
-		component: Home,
-		redirect: '/dashboard',
-		name: "INDEX",
-		leaf: true,
-		iconCls: 'fa fa-area-chart',
-		hidden: false,
-		children: [{
-			path: 'dashboard',
-			component: Dashboard,
-			name: '首页'
-		}]
-	}, {
-		path: '/',
-		component: Home,
-		name: '巡检结果',
-		iconCls: 'fa fa-address-book', //图标样式class
-		children: [{
-				path: '/photoReport',
-				component: PhotoReport,
-				name: '巡检照片'
-			},
-			{
-				path: '/Collection',
-				component: CollectionResult,
-				name: '图像识别'
-			}, {
-				path: '/Source',
-				component: Source,
-				name: '资源识别'
-			}, {
-				path: '/thermalResult',
-				component: Thermal,
-				name: '热能均衡'
-			}, {
-				path: '/site',
-				component: Site,
-				name: '定点测温'
-			},  {
-				path: '/report',
-				component: report,
-				name: '运行报告'
-			}
-		]
-	},
-	{
-		path: '/',
-		component: Home,
-		name: '巡检任务',
-		iconCls: 'fa fa-address-book', //图标样式class
-		children: [{
-			path: '/histTask',
-			component: TaskList,
-			name: '任务派发'
-		}]
-	},
-	{
-		path: '/',
-		component: Home,
-		name: '机房管理',
-		iconCls: 'fa fa-address-card',
-		leaf: false, //只有一个节点
-		children: [{
-			path: '/machineRoom',
-			component: Room,
-			name: '机房列表'
+	path: '/login',
+	component: Login,
+	hidden: true
+}, {
+	path: '/reset',
+	component: Reset,
+	hidden: true
+}, {
+	path: '/',
+	component: Home,
+	redirect: '/dashboard',
+	name: "INDEX",
+	leaf: true,
+	iconCls: 'fa fa-area-chart',
+	hidden: false,
+	children: [{
+		path: 'dashboard',
+		component: Dashboard,
+		name: '首页'
+	}]
+}, {
+	path: '/',
+	component: Home,
+	name: '巡检结果',
+	iconCls: 'fa fa-address-book', //图标样式class
+	children: [
+		{
+			path: '/photoReport',
+			component: PhotoReport,
+			name: '巡检照片'
+		},
+		{
+			path: '/Collection',
+			component: CollectionResult,
+			name: '图像识别'
 		}, {
-			path: '/device',
-			component: Device,
-			name: '设备管理'
-		}]
-	}, {
-		path: '/',
-		component: Home,
-		name: '机器人管理',
-		iconCls: 'fa fa-male', //图标样式class
-		children: [{
-				path: '/robot',
-				component: Robot,
-				name: '机器人列表'
-			},
-			// { path: '/user', component: user, name: '列表' },
-		]
-	}, {
-		path: '/',
-		component: Home,
-		name: '告警管理',
-		iconCls: 'fa fa-address-card-o',
-		children: [{
-				path: '/template',
-				component: Template,
-				name: '模板配置'
-			}, {
-				path: '/warning',
-				component: warningSend,
-				name: '告警发送'
-			},
-			// { path: '/echarts', component: echarts, name: 'echarts' }
-		]
-	}, {
-		path: '/',
-		component: Home,
-		name: '人员管理',
-		iconCls: 'fa fa-id-card-o',
-		hidden: false,
-		children: [{
-			path: '/admin',
-			component: Admin,
-			hidden: true,
-			name: '系统管理员'
+			path: '/thermalResult',
+			component: Thermal,
+			name: '热能均衡'
 		}, {
-			path: '/worker',
-			component: Workers,
-			name: '机器人操作员'
-		}, ]
+			path: '/site',
+			component: Site,
+			name: '定点测温'
+		}, {
+			path: '/smokeWarning',
+			component: SmokeWarning,
+			name: '异味检测'
+
+		}, {
+			path: '/noiseWarning',
+			component: NoiseWarning,
+			name: '异响检测'
+		}
+		, {
+			path: '/report',
+			component: report,
+			name: '运行报告'
+		}
+	]
+},
+{
+	path: '/',
+	component: Home,
+	name: '任务管理',
+	iconCls: 'fa fa-address-book', //图标样式class
+	children: [{
+		path: 'histTask',
+		component: TaskList,
+		name: '计划任务'
+	}, {
+		path: 'taskDetail',
+		component: TaskDetail,
+		name: '任务查看'
+	}, {
+		path: 'workerDetail',
+		component: WorkerDetail,
+		name: '巡检详情',
+		hidden: true,
+	}, {
+		path: 'taskTemplate',
+		component: TaskTemplate,
+		name: '任务模版'
+	}, {
+		path: 'actionCategory',
+		component: ActionCategory,
+		name: '巡检类别'
+	}]
+},
+{
+	path: '/',
+	component: Home,
+	name: '机房管理',
+	iconCls: 'fa fa-address-card',
+	leaf: false, //只有一个节点
+	children: [{
+		path: 'machineRoom',
+		component: Room,
+		name: '机房列表'
+	}, {
+		path: 'device',
+		component: Device,
+		name: '机房设备'
+	}, {
+		path: 'machineArea',
+		component: Lane,
+		name: '机房巷道'
+	}, {
+		path: 'stagnation',
+		component: Stagnation,
+		name: '巡检点配置'
+	}]
+}, {
+	path: '/',
+	component: Home,
+	name: '机器人管理',
+	iconCls: 'fa fa-male', //图标样式class
+	children: [{
+		path: 'robot',
+		component: Robot,
+		name: '机器人列表'
+	},
+		// { path: '/user', component: user, name: '列表' },
+	]
+}, {
+	path: '/',
+	component: Home,
+	name: '告警管理',
+	iconCls: 'fa fa-address-card-o',
+	children: [{
+		path: 'template',
+		component: Template,
+		name: '模板配置'
+	}, {
+		path: 'warning',
+		component: warningSend,
+		name: '告警发送'
+	},
+		// { path: '/echarts', component: echarts, name: 'echarts' }
+	]
+}, {
+	path: '/',
+	component: Home,
+	name: '人员管理',
+	iconCls: 'fa fa-id-card-o',
+	hidden: false,
+	children: [{
+		path: 'admin',
+		component: Admin,
+		hidden: true,
+		name: '系统管理员'
+	}, {
+		path: 'worker',
+		component: Workers,
+		name: '机器人操作员'
+	},]
+},
+{
+	path: '/',
+	component: Home,
+	name: '随工监督',
+	iconCls: 'fa fa-address-book', //图标样式class
+	children: [{
+		path: 'realTime',
+		component: Super,
+		name: '实时监控'
 	},
 	{
-		path: '/',
-		component: Home,
-		name: '随工监督',
-		iconCls: 'fa fa-address-book', //图标样式class
-		children: [{
-				path: '/realTime',
-				component: Super,
-				name: '实时监控'
-			},
-			{
-				path: '/supervision',
-				component: Supervision,
-				name: '工单监督',
-				hidden: true,
-			},
-			{
-				path: '/historyVideo',
-				component: HistoryVideo,
-				name: '历史视频'
-			}
-		]
+		path: 'supervision',
+		component: Supervision,
+		name: '工单监督',
+		hidden: true,
 	},
 	{
-		path: '*',
-		redirect: '/login',
-		hidden: true
+		path: 'historyVideo',
+		component: HistoryVideo,
+		name: '历史视频'
 	}
+	]
+},
+{
+	path: '*',
+	redirect: '/login',
+	hidden: true
+}
 ]
 
 const router = new VueRouter({
@@ -218,10 +260,10 @@ const router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
 	NProgress.start();
-	if(to.path == "/login" || to.path == "/reset") {
+	if (to.path == "/login" || to.path == "/reset") {
 		next();
 	} else {
-		if(!store.state.user) {
+		if (!store.state.user) {
 			next({
 				path: "/login"
 			})
@@ -247,16 +289,16 @@ var app = new Vue({
 }).$mount('#app')
 
 Vue.http.interceptors.push((request, next) => {
-	if(request.method === "JSONP") {
-		if(store.state.user && store.state.user.account !== "admin") {
+	if (request.method === "JSONP") {
+		if (store.state.user && store.state.user.account !== "admin") {
 			request.params.adminId = store.state.user.adminId;
 			request.params.customId = store.state.user.customId;
 		}
-	} else if(request.method === "POST") {
+	} else if (request.method === "POST") {
 		request.headers.set('Content-Type', "application/x-www-form-urlencoded"); //setting request.headers
 	}
 	next((res) => {
-		if(request.msg) {
+		if (request.msg) {
 			let detail = store.state.user ? `${store.state.user.account}${request.msg}` : `${request.msg}`;
 			sendLogs(app, detail)
 		}
