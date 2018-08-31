@@ -33,7 +33,7 @@
 			<section class="panel-c-c">
 				<div :class="isDashboard?'bg-purple-light':''">
 					<el-col :span="24" class="breadcrumb" v-if="isDashboard">
-						<strong style="width:200px;float:left;color: #475669;">{{currentPathName}}</strong>
+						<strong style="width:200px;float:left;color: #fff;">{{currentPathName}}</strong>
 						<el-breadcrumb separator="/" style="float:right;">
 							<el-breadcrumb-item :to="{ path:'/dashboard' }">首页</el-breadcrumb-item>
 							<el-breadcrumb-item v-if="currentPathNameParent!=''">{{currentPathNameParent}}</el-breadcrumb-item>
@@ -160,8 +160,7 @@ export default {
 .breadcrumb {
   padding: 11px;
   margin-bottom: 15px;
-  border-bottom: 1px solid #ccc;
-  background: #d6dce2;
+  border: 1px solid rgba(250,250,250,0.15)
 }
 
 .panel-top {
@@ -196,7 +195,8 @@ export default {
 }
 
 .panel-c-c {
-  background: #f1f2f6;
+  background:url(../assets/blue.jpg);
+  background-size: cover;
   margin-left: 230px;
 }
 

@@ -45,7 +45,6 @@
     </el-form>
 		<el-table
 			:data="rfidData1"
-			stripe
 			style="margin-bottom:20px;">
 			<el-table-column
 			prop="date"
@@ -83,7 +82,6 @@
 		 </el-form>
 		<el-table
 			:data="rfidData"
-			stripe
 			style="width: 100%">
 			<el-table-column
 			prop="date"

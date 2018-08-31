@@ -91,9 +91,8 @@
 	}
 	
 	.toolbar {
-		background: #fff;
 		padding: 15px 0 10px 10px;
-		border: 1px solid #dee5e7;
+		border: 1px solid rgba(250,250,250,0.15);
 		border-radius: 4px;
 		-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
 		box-shadow: 0 1px 1px rgba(0, 0, 0, .05);

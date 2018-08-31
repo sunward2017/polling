@@ -3,7 +3,7 @@
 		<!--工具条-->
 		<el-col :span="24" class="toolbar">
 			<el-form :inline="true" :model="filters">
-				<el-col :span="8">
+				<el-col :span="6">
 					<el-select v-model="filters.roomId" style="width:90%">
 						<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 						</el-option>
@@ -20,7 +20,7 @@
 				</el-table-column>
 				<el-table-column prop="robotName" label="巡检机器人" width="140" sortable>
 					<template scope="scope">
-						<el-tag type="primary">{{scope.row.robotName}}</el-tag>
+						<el-tag type="warning">{{scope.row.robotName}}</el-tag>
 					</template>
 				</el-table-column>
 				<el-table-column prop="taskName" label="任务名称" align="center" sortable>

@@ -194,16 +194,13 @@
 						</el-radio-group>
 					</el-col>
 					<el-col :span="5">
-						是否巡检：
-						<el-checkbox v-model="editForm.isPolling"></el-checkbox>
+						<el-checkbox v-model="editForm.isPolling">巡检</el-checkbox>
 					</el-col>
 					<el-col :span="5">
-						是否拍照：
-						<el-checkbox v-model="editForm.isDiscern"></el-checkbox>
+						<el-checkbox v-model="editForm.isDiscern">拍照</el-checkbox>
 					</el-col>
 					<el-col :span="6">
-						图像识别：
-						<el-checkbox v-model="editForm.isPhoto"></el-checkbox>
+						<el-checkbox v-model="editForm.isPhoto">图像识别</el-checkbox>
 					</el-col>
 
 					<!--</el-form-item>
@@ -1128,14 +1125,14 @@ export default {
   font-size: 16px;
   color: #fff;
   background: #2178f1
-    linear-gradient(90deg, #2178f1 0%, #2178f1 0%, #20b6f9 100%, #20b6f9 100%);
+  linear-gradient(90deg, #2178f1 0%, #2178f1 0%, #20b6f9 100%, #20b6f9 100%);
   width: 100%;
   height: 35px;
   font-family: inherit;
   line-height: 35px;
   font-weight: 100;
   margin-bottom: 5px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid rgba(250,250,250,.15);
 }
 
 .empty {
@@ -1145,28 +1142,22 @@ export default {
   text-align: center;
 }
 
-.el-col {
-  border-top-right-radius: 5px;
-  border-top-left-radius: 5px;
-}
-
 .thead {
   min-height: 36px;
   line-height: 36px;
-  border: 1px solid #ccc;
+  border: 1px solid rgba(250,250,250,.15);
   font-size: 14px;
   text-align: center;
   margin-bottom: 0 !important;
   border-bottom: none;
+  color:#fff;
+  background:rgba(0,0,0,.35);
 }
 
-.active {
-  background: #93c4f5;
+.active,.thead:hover {
+  background: rgba(250,169,60,.35);
 }
 
-.common {
-  background: #fff;
-}
 
 .msg {
   color: #0070d9;

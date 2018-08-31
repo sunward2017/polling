@@ -176,19 +176,23 @@ export default {
             </span>
             <span style="float: right; margin-right: 20px">
               <el-button size="mini" on-click={() => this.append(store, data)}>
-                添加
-              </el-button>
-              <el-button size="mini" on-click={() => this.remove(store, data)}>
-                删除
+                添加巷道
               </el-button>
             </span>
           </span>
         );
       }else{
 		  return(
-			<span>
-              <span>{node.label}</span>
-            </span>  
+        <span>
+		   	  <span>
+            <span>{node.label}</span>
+           </span>
+            <span style="float: right; margin-right: 20px">
+              <el-button size="mini" on-click={() => this.remove(store, data)}>
+                删除巷道
+              </el-button>
+            </span>
+        </span>  
 		  ) 
 	  }
     }
