@@ -30,3 +30,7 @@ export const WARNMSGCOLUMNS = [{value:"robotName",label:"机器人名称"},{valu
 export const LIGHTTYPES =  [{ value: '1',label: '状态指示灯'}, { value: '2', label: '背光面板'}, { value: '3', label: '不带背光面板'}, {  value: '4',label: 'LED数字'}];
 
 export const TESTTYPES = [{value:'1',label:'图像识别'},{value:'2',label:'温度湿度'},{value:'3',label:'热成像'}];
+
+export const CMDTYPES = [{value:"1",label:"拍照"},{value:"2",label:"红外"},{value:"3",label:"温湿度"},{value:"4",label:"异味"},{value:"5",label:"异响"}];
+
+export const TASKEXECTYPES = {"0":"未执行","1":"执行中","2":"执行完毕","3":"超时","4":"中断"};

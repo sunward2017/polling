@@ -19,7 +19,6 @@ const Workers = r => require.ensure([], () => r(require('./pages/workers/Table.v
 
 const Room = r => require.ensure([], () => r(require('./pages/machineRoom/Table.vue')), 'Room');
 const Device = r => require.ensure([], () => r(require('./pages/machineRoom/device.vue')), 'Device');
-const Lane = r => require.ensure([], () => r(require('./pages/machineRoom/Lane.vue')), 'Lane');
 const Stagnation = r => require.ensure([], () => r(require('./pages/machineRoom/Stagnation.vue')), 'Stagnation');
 
 const Template = r => require.ensure([], () => r(require('./pages/template/Table.vue')), 'Template');
@@ -39,7 +38,6 @@ const Super = r => require.ensure([], () => r(require('./pages/supervision/realT
 const TaskList = r => require.ensure([], () => r(require('./pages/distribute/TaskList.vue')), 'TaskList');
 const TaskDetail = r => require.ensure([], () => r(require('./pages/distribute/TaskDetail.vue')), 'TaskDetail');
 const TaskTemplate = r => require.ensure([], () => r(require('./pages/distribute/TaskTemplate.vue')), 'TaskTemplate');
-const ActionCategory = r => require.ensure([], () => r(require('./pages/distribute/Category.vue')), 'ActionCategory');
 const WorkerDetail = r => require.ensure([], () => r(require('./pages/distribute/WorkerDetail.vue')), 'WorkerDetail');
 
 const Dashboard = r => require.ensure([], () => r(require('./pages/dashboard/dashboard.vue')), 'Dashboard');
@@ -49,7 +47,7 @@ const report = r => require.ensure([], () => r(require('./pages/results/report.v
 
 import vueResource from 'vue-Resource'
 import VueLazyLoad from 'vue-lazyload'
-
+import { mapState } from 'vuex'
 import { sendLogs } from './api/admin';
 
 Vue.use(VueLazyLoad, {
@@ -145,10 +143,6 @@ const routes = [{
 		path: 'taskTemplate',
 		component: TaskTemplate,
 		name: '任务模版'
-	}, {
-		path: 'actionCategory',
-		component: ActionCategory,
-		name: '巡检类别'
 	}]
 },
 {
@@ -165,10 +159,6 @@ const routes = [{
 		path: 'device',
 		component: Device,
 		name: '机房设备'
-	}, {
-		path: 'machineArea',
-		component: Lane,
-		name: '机房巷道'
 	}, {
 		path: 'stagnation',
 		component: Stagnation,
@@ -294,8 +284,6 @@ Vue.http.interceptors.push((request, next) => {
 			request.params.adminId = store.state.user.adminId;
 			request.params.customId = store.state.user.customId;
 		}
-	} else if (request.method === "POST") {
-		request.headers.set('Content-Type', "application/x-www-form-urlencoded"); //setting request.headers
 	}
 	next((res) => {
 		if (request.msg) {
@@ -305,5 +293,7 @@ Vue.http.interceptors.push((request, next) => {
 		return res;
 	});
 });
+
+
 
 //router.replace('/login')

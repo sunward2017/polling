@@ -1294,8 +1294,8 @@
 	position: absolute;
 	left: 50%;
 	transform: translateX(-50%);
-	background: url(../blue.jpg) no-repeat;
-	background-size:cover;
+	background: url(../bg.jpg) no-repeat;
+	background-size:200% 200%;
 	border-radius: 2px;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
 	box-sizing: border-box
@@ -1343,19 +1343,8 @@
 	color: #073069
 }
 
-.custom-theme .el-dialog__title {
-	line-height: 1;
-	font-size: 16px;
-	font-weight: 700;
-	color: #1f283d
-}
 
-.custom-theme .el-dialog__body {
-	padding: 30px 20px;
-	color: #48516a;
-	font-size: 14px
-}
-
+ 
 .custom-theme .el-dialog__headerbtn {
 	float: right
 }
@@ -5770,10 +5759,6 @@
 	margin-right: 4px;
 	font-size: 14px;
 	color: #97a1be
-}
-
-.custom-theme .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
-	background-color: #ebeef3
 }
 
 .custom-theme .el-alert {

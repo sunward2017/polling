@@ -228,6 +228,10 @@
   border:1px solid #F00;
 }
 
+.section{
+	min-height:80vh;
+	background:rgba(0,0,0,.35);
+}
 .floor-item-content-wrap>div{
 	text-align: center;
 	line-height: 22px;

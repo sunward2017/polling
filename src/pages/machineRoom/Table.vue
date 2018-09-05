@@ -99,16 +99,16 @@
 					</el-table-column>
 					<el-table-column prop="deviceCompany" label="设备厂商" sortable>
 					</el-table-column>
-					<el-table-column prop="deviceSerial" label="设备编号" width="120" sortable>
+					<el-table-column prop="deviceSerial" label="设备编号" width="180" sortable>
 					</el-table-column>
 					<el-table-column prop="deviceStatus" width="80" label="状态">
 						<template scope="scope">
 							<el-tag :type="scope.row.deviceStatus==1?'success':'danger'">{{scope.row.deviceStatus==1?"启用":"禁用"}}</el-tag>
 						</template>
 					</el-table-column>
-					<el-table-column prop="deviceType" label="设备类型" align="center" width="120">
+					<el-table-column prop="deviceType" label="设备类型" align="center" width="100">
 					</el-table-column>
-					<el-table-column prop="deviceModel" label="设备型号" align="center" width="120">
+					<el-table-column prop="deviceModel" label="设备型号" align="center" width="100">
 					</el-table-column>
 				</el-table>
 			</div>

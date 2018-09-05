@@ -160,7 +160,8 @@ export default {
 .breadcrumb {
   padding: 11px;
   margin-bottom: 15px;
-  border: 1px solid rgba(250,250,250,0.15)
+  border: 1px solid rgba(250,250,250,0.15);
+  background: #2178f1 linear-gradient(90deg, #2178f1 0%, #2178f1 0%, #20b6f9 100%, #20b6f9 100%);
 }
 
 .panel-top {

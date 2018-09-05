@@ -202,16 +202,6 @@
 					<el-col :span="6">
 						<el-checkbox v-model="editForm.isPhoto">图像识别</el-checkbox>
 					</el-col>
-
-					<!--</el-form-item>
-				<el-form-item label="是否巡检">-->
-
-					<!--</el-form-item>
-				<el-form-item label="是否拍照"   class="item">-->
-
-					<!--</el-form-item>
-				<el-form-item label="图像识别" class="item">-->
-
 				</el-form-item>
 
 				<el-form-item>
@@ -1114,8 +1104,7 @@ export default {
   },
   mounted() {
     this.getRooms();
-    this.isFj =
-      this.$store.state.user.customId === "a6a4b85d74d44341bfd53265521248a5";
+    this.isFj = this.$store.state.user.customId === "a6a4b85d74d44341bfd53265521248a5";
   }
 };
 </script>
@@ -1136,7 +1125,7 @@ export default {
 }
 
 .empty {
-  border: 1px solid #ccc;
+  border: 1px solid rgba(250,250,250,.15);
   height: 50px;
   line-height: 50px;
   text-align: center;
@@ -1155,7 +1144,7 @@ export default {
 }
 
 .active,.thead:hover {
-  background: rgba(250,169,60,.35);
+  background-color: rgba(250,169,60,.35);
 }
 
 

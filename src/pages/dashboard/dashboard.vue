@@ -1,6 +1,6 @@
 <template>
 	<section class="chart">
-		<el-row :gutter="10">
+		<el-row :gutter="12">
 			<el-col :span="18">
 				<el-col :span="12" class="tip">
 					<div>&emsp;温度走势统计(℃)</div>
@@ -17,7 +17,9 @@
 				</el-col>
 			</el-col>
 			<el-col :span="6" class="robotInfo">
-
+                <div class="msg">
+                	机房选择：
+                </div>
 				<div class="msg">
 					<el-select v-model="filters.roomId" style="width:80%" size="mini" @change="roomData">
 						<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
@@ -37,7 +39,9 @@
 				<div class="msg">
 					坐标:&emsp;X:{{ robotCoorX}}&emsp;Y:{{ robotCoorY}}
 				</div>
-
+                <div class="msg">
+                	剩余电量：
+                </div>
 				<div id="energy" class="panel_energy"></div>
 
 			</el-col>
@@ -330,7 +334,8 @@
 								normal: {
 									color: "#248AB9"
 								}
-							}
+							},
+							
 						},
 						{
 							name: "最小值",
@@ -428,11 +433,11 @@
 									barBorderRadius: 5,
 									color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
 											offset: 0,
-											color: "#14c8d4"
+											color: "#44c8d4"
 										},
 										{
 											offset: 1,
-											color: "#43eec6"
+											color: "#83eec6"
 										}
 									])
 								}
@@ -448,15 +453,15 @@
 								normal: {
 									color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
 											offset: 0,
-											color: "rgba(20,200,212,0.5)"
+											color: "rgba(200,200,212,0.5)"
 										},
 										{
 											offset: 0.2,
-											color: "rgba(20,200,212,0.2)"
+											color: "rgba(200,200,212,0.2)"
 										},
 										{
 											offset: 1,
-											color: "rgba(20,200,212,0)"
+											color: "rgba(200,200,212,0)"
 										}
 									])
 								}
@@ -470,8 +475,9 @@
 							symbol: "rect",
 							itemStyle: {
 								normal: {
-									color: "#0f375f"
+									//color: "#0f375f"
 									//color:'#19f182',
+									color:'rgba(64,233,145,.35)'
 									// color:"#0b0a0f"
 								}
 							},
@@ -550,6 +556,11 @@
 									}
 								}
 							},
+							lineStyle:{
+								normal:{
+									color:"#AFD8F8"
+								}
+							},
 							data: _this.maxTemperature,
 						},
 						{
@@ -561,6 +572,11 @@
 									areaStyle: {
 										color: 'rgba(250,250,250,.25)'
 									}
+								}
+							},
+							lineStyle:{
+								normal:{
+									color:"#EDC240"
 								}
 							},
 							data: _this.minTemperature,
@@ -586,7 +602,7 @@
 	.chart {
 		background: #0f375f url(../../assets/blue.jpg);
 		background-size: 100% 100%;
-		padding: 15px 10px;
+		padding: 15px 20px 15px 10px;
 	}
 	
 	.chart:after {
