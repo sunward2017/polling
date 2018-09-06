@@ -3,7 +3,7 @@ import baseUrl from "./api";
 export const getCollectionResults = (self, params) => { return self.$http.jsonp(baseUrl + '/getCollectionResults.action', { params: params, jsonp: "callback" }) };
 
 //export const getwarningReport = (self,params)=>{ return self.$http.get(baseUrl+"/web/getResultList.action",{params:params}) };
-
+//任务计划
 export const getTaskList = (self, params) => { return self.$http.post(baseUrl + "/v1/listTaskSchedules.action", params, { emulateJSON: true }) };
 
 export const addTask = (self, param) => { return self.$http.post(baseUrl + '/v1/createTaskSchedule.action', param, { emulateJSON: true }) };
@@ -11,6 +11,12 @@ export const addTask = (self, param) => { return self.$http.post(baseUrl + '/v1/
 export const updateTask = (self, param) => { return self.$http.post(baseUrl + '/v1/updateTaskSchedule.action', param, { emulateJSON: true }) };
 
 export const deleteTask = (self, param) => { return self.$http.post(baseUrl + '/v1/deleteTaskSchedule.action', param, { emulateJSON: true }) };
+
+//任务查看
+export const currentTask = (self, params) => { return self.$http.post(baseUrl + "/v1/listCurrentTasks.action", params, { emulateJSON: true }) };
+
+export const currentTaskDetail = (self, params) => { return self.$http.post(baseUrl + "/v1/listTaskDetailsByTask.action", params, { emulateJSON: true }) };
+
 
 export const getThermalResults = (self, params) => { return self.$http.get("/web/getTaskResultList.action", { params: params }) };
 

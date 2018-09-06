@@ -259,7 +259,7 @@ export default {
       let self = this;
       getTaskList(self, para).then(res => {
         if (res.data.result === 200) {
-          this.rows = res.data.data;
+          this.rows = res.data.data?res.data.data:[];
         } else {
           this.rows = [];
         }
@@ -467,7 +467,7 @@ export default {
             let cmdData = _this.cmdData;
             for (var i = 0, l = cmdData.length; i < l; i++) {
               for (var k = 0, len = data.length; k < len; k++) {
-                if (cmdData[i].areaId == data[k].areaId) {
+                if (cmdData[i].nvPointId == data[k].nvPointId) {
                   cmdData[i].cmdType = data[k].commandTypes.split(",");
                 }
               }
@@ -483,7 +483,7 @@ export default {
       this.selectCmdData = this.cmdData
         .filter(i => i.cmdType.length > 0)
         .map(i => ({
-          areaId: i.areaId,
+          nvPointId: i.nvPointId,
           areaName: areas[i.areaId],
           commandTypes: i.cmdType.join(",")
         }));

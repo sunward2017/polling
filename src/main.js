@@ -30,6 +30,7 @@ const SmokeWarning = r => require.ensure([], () => r(require('./pages/results/sm
 const NoiseWarning = r => require.ensure([], () => r(require('./pages/results/noiseWarning.vue')), 'NoiseWarning');
 const Thermal = r => require.ensure([], () => r(require('./pages/results/Thermal.vue')), 'Thermal');
 const PhotoReport = r => require.ensure([], () => r(require('./pages/results/photoReport.vue')), 'PhotoReport');
+const Source = r => require.ensure([], () => r(require('./pages/results/sourceRec.vue')), 'Source');
 
 const HistoryVideo = r => require.ensure([], () => r(require('./pages/supervision/historyVideo.vue')), 'HistoryVideo');
 const Supervision = r => require.ensure([], () => r(require('./pages/supervision/supervision.vue')), 'Supervision');
@@ -42,7 +43,8 @@ const WorkerDetail = r => require.ensure([], () => r(require('./pages/distribute
 
 const Dashboard = r => require.ensure([], () => r(require('./pages/dashboard/dashboard.vue')), 'Dashboard');
 const Site = r => require.ensure([], () => r(require('./pages/results/site.vue')), 'site');
-const report = r => require.ensure([], () => r(require('./pages/results/report.vue')), 'report')
+const report = r => require.ensure([], () => r(require('./pages/results/report.vue')), 'report');
+
 
 
 import vueResource from 'vue-Resource'
@@ -101,6 +103,10 @@ const routes = [{
 			component: Thermal,
 			name: '热能均衡'
 		}, {
+			path: '/Source',
+			component: Source,
+			name: '资源识别'
+		}, {
 			path: '/site',
 			component: Site,
 			name: '定点测温'
@@ -129,7 +135,7 @@ const routes = [{
 	children: [{
 		path: 'histTask',
 		component: TaskList,
-		name: '计划任务'
+		name: '任务计划'
 	}, {
 		path: 'taskDetail',
 		component: TaskDetail,

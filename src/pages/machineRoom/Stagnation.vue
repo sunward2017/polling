@@ -53,7 +53,7 @@
 			</el-table-column>
       <el-table-column prop="cameraId" label="检测仪器">
          <template scope="scope">
-             <span>{{cameras.find(i=>(i.id==scope.row.cameraId)).label}}</span>
+             <span>{{formatCamera(scope.row)}}</span>
          </template>
 			</el-table-column>
       <el-table-column prop="cameraZoom" label="焦距">
@@ -184,7 +184,7 @@
            </el-form-item>
         </template>
         <template v-else>
-				<el-form-item label="持续时长" prop="waitTime">
+				<el-form-item label="持续时长" prop="waitTime" required>
 					<el-input v-model="workerForm.waitTime" placeholder="请输入等待时长"></el-input> 
 				</el-form-item>
         </template> 
@@ -535,6 +535,9 @@ export default {
           _this.getWorkerListByStag();
         });
       });
+    },
+    formatCamera(r){
+      return  r.cameraId?(this.cameras.find(i=>(i.id==r.cameraId)).label):'无';
     },
     renderContent(h, { node, data, store }) {
       if (data.rbAreaInfoList) {

@@ -34,21 +34,21 @@
 				</el-table-column>
 				<el-table-column prop="robotName" label="机器人名称" width="200" sortable>
 					<template scope="scope">
-						<el-tag type="primary">{{scope.row.robotName}}</el-tag>
+						<el-tag type="success">{{scope.row.robotName}}</el-tag>
 					</template>
 				</el-table-column>
 				<el-table-column prop="robotSerial" label="机器人编号" width="220" sortable>
 				</el-table-column>
-				<el-table-column prop="sysVer" label="版本号" width="100">
-				</el-table-column>
-				<el-table-column prop="sysName" label="版本名称" width="120">
-				</el-table-column>
 				<el-table-column v-if="isShow" prop="customName" label="所属机构" width="200"  >
 				</el-table-column>
-				<el-table-column prop="roomName" label="管辖机房"  >
+				<el-table-column prop="roomName" label="所属机房" width="200" >
 				</el-table-column>
 				<!-- <el-table-column prop="status" label="当前状态" width="200" :formatter="formatStatus" > -->
 				<!--</el-table-column>-->
+				<el-table-column prop="sysVer" label="软件版本" width="120" >
+				</el-table-column>
+				<el-table-column prop="sysName" label="版本名称" >
+				</el-table-column>
 				<el-table-column prop="realtimeStatus" label="状态" width="100">
 					<template scope="scope" >
 						<el-tag v-if="scope.row.customName" :type="type(scope.row.realtimeStatus)">{{formatRealTimeStatus(scope.row)}}</el-tag>

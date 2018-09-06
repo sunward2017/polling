@@ -37,7 +37,7 @@
 				</div>
 
 				<div class="msg">
-					坐标:&emsp;X:{{ robotCoorX}}&emsp;Y:{{ robotCoorY}}
+					当前位置:&emsp;X:&nbsp;{{ robotCoorX}}&emsp;Y:&nbsp;{{ robotCoorY}}
 				</div>
                 <div class="msg">
                 	剩余电量：
@@ -645,6 +645,7 @@
 	}
 	
 	.panel_energy{
-		height:40vh;
+		margin-top:50px;
+		height:30vh;
 	}
 </style>

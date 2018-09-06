@@ -1,63 +1,57 @@
- <template>
+<template>
 	<section>
 		<el-col :span="24" class="toolbar">
 			<el-form :inline="true" :model="filters">
-				<el-col :span="6">
-					 <el-select v-model="filters.roomId" style="width:90%" @change="getList">
+				<el-form-item label="巡检机房">
+					<el-select style="width:90%" @change="changeRoom" v-model="filters.roomId">
 						<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 						</el-option>
 					</el-select>
-				</el-col>
-				<!-- <el-form-item>
-					<el-button icon="search" type="primary" v-on:click="getList">搜索</el-button>
-				</el-form-item> -->
+				</el-form-item>
 				<el-form-item>
-					<el-button icon="edit" type="primary" @click="handlerAdd">临时任务制定</el-button>
+					<el-button icon="refreash" type="primary" @click="getTaskByRoom">查询</el-button>
+				</el-form-item>
+				<el-form-item>
+					<el-button icon="edit" type="primary" @click="handlerAdd">任务计划</el-button>
 				</el-form-item>
 			</el-form>
 		</el-col>
 		<template>
 			<el-table :data="rows" highlight-current-row v-loading="listLoading">
-				<el-table-column type="index" width="80" label="序号" align="center">
+				<el-table-column type="index" width="60" label="#" align="center">
 				</el-table-column>
-				<el-table-column prop="roomName" label="巡检房间" align="center" width="260">
+				<el-table-column prop="roomId" label="巡检机房" width="160" :formatter="formatterRoom">
 				</el-table-column>
-				<el-table-column prop="robotName" label="巡检机器人" width="220" align="center">
+				<el-table-column prop="taskName" label="任务名称" align="center">
+				</el-table-column>
+				<el-table-column prop="status" label="执行状态" align="center" width="120">
 					<template scope="scope">
-						<el-tag>{{scope.row.robotName}}</el-tag>
+						<el-tag type="success">{{formatStatus(scope.row)}}</el-tag>
 					</template>
 				</el-table-column>
-				<el-table-column prop="taskName" label="任务名称" align="center" width="180">
+				<el-table-column prop="robotId" label="巡检机器人" align="center" :formatter="formatterRobot">
 				</el-table-column>
-                <el-table-column prop="taskType" label="任务类型" align="center">
+				<el-table-column prop="startTime" label="开始时间"  width="200"  align="center" sortable :formatter="formatTimeSction">
 				</el-table-column>
-				<el-table-column prop="taskTime" label="执行时间" align="center">
+				<el-table-column prop="creatTime" label="创建时间" width="200" align="center" sortable :formatter="formatArea">
 				</el-table-column>
-				<el-table-column prop="createTime" label="创建时间" width="240" align="center" sortable>
-					<template scope="scope">
-						<span style="margin-left: 10px">{{ formatTime(scope.row) }}</span>
-					</template>
-				</el-table-column>
-				<el-table-column prop="status" label="操作" align="center" width="280">
-					<template scope="scope">
+			 
+				<el-table-column prop="status" label="操作" align="center" width="300">
+                    <template scope="scope">
 					  <router-link :to="{path:'workerDetail',query:{taskId:scope.row.taskId}}" >
-					     <el-button type="darnge" icon="share" size="small">任务执行详情</el-button>
-				    </router-link>
+					     <el-button type="info" size="small">执行详情</el-button>
+				      </router-link>
 					  <el-button type="warning" icon="delete" size="small" @click="handleStop(scope.row)">终止任务</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
 		</template>
-		<!--分页-->
-		<el-col :span="24" class="toolbar" style="padding-bottom:10px;">
-			<el-pagination layout="prev, pager, next,total,sizes,jumper" @current-change="handleCurrentChange" :page-sizes="[10, 15, 30, 40]" :page-size="size" :current-page="page" :total="total" style="float:right;" @size-change="handleSizeChange">
-			</el-pagination>
-		</el-col>
+		 
 		<!--编辑界面-->
-		<el-dialog :title="editFormTtile" v-model="editFormVisible" :close-on-click-modal="false" size="tiny" @close="cancel">
+		<el-dialog :title="editFormTtile" v-model="editFormVisible" :close-on-click-modal="false" size="tiny">
 			<el-form :model="editForm" label-width="100px" :rules="editFormRules" ref="editForm">
-				<el-form-item label='巡检房间' prop="roomId">
-					<el-select style="width:100%" @change="getDevices" v-model="editForm.roomId">
+				<el-form-item label='巡检机房' prop="roomId">
+					<el-select style="width:100%" v-model="editForm.roomId" @change="changeFormRoom">
 						<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 						</el-option>
 					</el-select>
@@ -71,9 +65,43 @@
 						</el-option>
 					</el-select>
 				</el-form-item>
-				<el-form-item label='巡检设备' prop="devices" style="max-height:200px;overflow-y:auto;">
-					<el-tree show-checkbox default-expand-all node-key="id" ref="tree" highlight-current :data="devices">
-					</el-tree>
+				 
+				<el-form-item required label="使用模版">
+					<el-col :span="6">
+						<el-form-item prop="useTemplate">
+							<el-radio-group v-model="editForm.useTemplate">
+								<el-radio-button :label="true">是</el-radio-button>
+								<el-radio-button :label="false">否</el-radio-button>
+							</el-radio-group>
+						</el-form-item>
+					</el-col>
+					<el-col :span="18" v-if="editForm.useTemplate">
+						<el-form-item prop="templateId">
+							<el-select v-model="editForm.templateId" placeholder="请选择模版" style="width:100%">
+								<el-option v-for="item in templates" :key="item.templateId" :label="item.templateName" :value="item.templateId">
+								</el-option>
+							</el-select>
+						</el-form-item>
+					</el-col>
+          <el-col :span="18" v-else>
+              <el-form-item>
+                <el-button @click="addcmd">任务指令</el-button>
+              </el-form-item>
+          </el-col>
+				</el-form-item>
+				<el-form-item label="避开巷道" prop="prohibitedAreaId">
+					<el-select v-model="editForm.prohibitedAreaId" placeholder="请选择避开巷道" style="width:100%">
+						<el-option v-for="(k,v) in prohibitedAreas" :key="v" :label="k" :value="v">
+						</el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="避开时区">
+					 <el-date-picker
+            v-model="editForm.timeSection"
+            type="datetimerange"
+            :picker-options="dateOpt"
+            placeholder="选择时间范围">
+          </el-date-picker>
 				</el-form-item>
 				<el-form-item v-for="(domain, index) in editForm.domains" :label="'巡检时间' + index" :key="domain.key" :prop="'domains.' + index + '.value'" :rules="{
 				     type: 'date', required: true, message: '时间不能为空', trigger: 'change'
@@ -81,89 +109,77 @@
 					<el-time-picker v-model="domain.value" placeholder="请选择时间" style="width:80%">
 					</el-time-picker>
 					<el-button @click.prevent="removeDomain(domain)" style="float:right">删除</el-button>
-			  </el-form-item>
+				</el-form-item>
 			</el-form>
-			<div slot="footer" class="dialog-footer">
-				<el-button @click.native="editFormVisible=false" icon="circle-cross">取 消</el-button>
-				<el-button icon="plus" type="info" @click="addDomain">新增时间</el-button>
-				<el-button icon="upload2" type="primary" @click.native="editSubmit" :loading="editLoading">{{btnEditText}}</el-button>
+      <div slot='footer' class="dialog-footer">
+					<el-button type="info" @click="addDomain">新增时间</el-button>
+          <el-button type="primary" @click.native="editSubmit" :loading="editLoading">{{btnEditText}}</el-button>
 			</div>
 		</el-dialog>
-		<el-dialog title="临时任务" v-model="tempTaskVisible" :close-on-click-modal="false" size="tiny">
-			<el-row :gutter="20">
-				<el-col :span="18">
-					<el-select v-model="address" placeholder="请选择地址" style="width:100%">
-						<el-option v-for="item in robots" :key="item.robotId" :label="item.robotName" :value="item.robotId">
-						</el-option>
-					</el-select>
-				</el-col>
-				<el-col :span="6">
-					<el-button type="success">开始执行</el-button>
-				</el-col>
-			</el-row>
-			<el-row :gutter="20">
-				<el-col :span="18">
-					<el-autocomplete style="width:100%" v-model="tempTaskDeviceId" :fetch-suggestions="querySearch" placeholder="请输入设备名称" :trigger-on-focus="false" @select="handleSelect"></el-autocomplete>
-				</el-col>
-				<el-col :span="3">
-					<el-button type="success">开始执行</el-button>
-				</el-col>
-			</el-row>
-			<el-row :gutter="20">
-				<el-col :span="18">
-					<el-button>随工监督</el-button>
-				</el-col>
-				<el-col :span="6">
-					<el-button type="success">开始执行</el-button>
-				</el-col>
-			</el-row>
-		</el-dialog>
+    <el-dialog title="导航点指令" v-model="cmdVisible" :close-on-click-modal="false">
+         <el-table :data="cmdData"  ref="multipleTable">
+            <el-table-column type="index" width="55"></el-table-column>
+            <el-table-column prop="nvPointName" label="导航点名称" width="150"></el-table-column>
+            <el-table-column property="areaId" label="所属巷道" :formatter="formatArea1" width="200"></el-table-column>
+            <el-table-column property="commandTypes" label="导航点指令">
+               <template scope="scope">
+                  <el-checkbox-group v-model="scope.row.cmdType">
+                     <el-checkbox v-for="type in scope.row.commandTypes" :label="`${type}`" :key="type">{{cmdName(type)}}</el-checkbox>
+                  </el-checkbox-group>
+               </template>
+            </el-table-column>
+         </el-table>
+         <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="selectCmd" size="small">确 定</el-button>
+         </div>
+    </el-dialog>
 	</section>
 </template>
 
 <script>
 import NProgress from "nprogress";
 import { parseTime, compare } from "utils";
-import { Request } from "utils/Cipher";
 import { getRobotList } from "api/robot";
-import { getTaskList } from "api/results";
-import { getRoomList, getRoomDetail } from "api/room";
+import {
+  currentTask,
+  addTask,
+  updateTask,
+  deleteTask,
+  cmdListByRoom
+} from "api/results";
+import { getRoomList, getRoomDetail, roadwayList } from "api/room";
+import { TASKEXECTYPES, CMDTYPES } from "@/const";
 
 export default {
   data() {
-    var checkDev = (rule, value, callback) => {
-      setTimeout(() => {
-        if (value && value.length <= 0) {
-          callback(new Error("请选择设备"));
-        } else {
-          callback();
-        }
-      }, 500);
-    };
     return {
       filters: {
-        roomId: ""
+        roomId: "",
+        roomName: "",
       },
-      total: 0,
-      page: 1,
-      size: 15,
-      robots: [],
+      robotList: [],
+      roomRobots: [],
       rows: [],
       rooms: [],
+      templates: [],
+      roadwayData: [],
+      prohibitedAreas: {},
       listLoading: false,
       editFormTtile: "新增",
       editFormVisible: false,
       editForm: {
         roomId: "",
         robotId: "",
-        devices: [],
+        useTemplate: "",
+        prohibitedAreaId: "",
+        timeSection: [],
+        templateId: "",
         domains: [
           {
             value: ""
           }
         ]
       },
-      roomRobots: [],
       editFormRules: {
         roomId: [
           {
@@ -197,21 +213,17 @@ export default {
       },
       editLoading: false,
       btnEditText: "提交",
-      //tempTask
-      tempTaskVisible: false,
-      devices: [],
-      tempTaskDeviceId: "",
-      address: ""
+      cmdVisible: false,
+      cmdData: [],
+      selectCmdData: [],
+      dateOpt: {
+        disabledDate(time) {
+          return time.getTime() < Date.now() - 8.64e7;
+        }
+      }
     };
   },
   methods: {
-    formatTime(r, c) {
-      return parseTime(r.createTime, "{y}-{m}-{d} {h}:{i}");
-    },
-    formatterStatus(row, column) {
-      let statu = row.warnStatus === 1 ? "异常" : "正常";
-      return statu;
-    },
     handleCurrentChange(val) {
       this.page = val;
       this.getList();
@@ -221,25 +233,18 @@ export default {
       this.size = size;
       this.getList();
     },
-    cancel() {
-      this.$refs.editForm.resetFields();
-    },
-    getList() {
+    getTaskByRoom() {
       let para = {
-        page: this.page,
-        pageSize: this.size,
-        roomId: this.filters.roomId
+        roomtId: this.filters.roomId,
       };
       this.listLoading = true;
       NProgress.start();
       let self = this;
-      getTaskList(self, para).then(res => {
-        if (res.data.data && res.data.data.list) {
-          this.rows = res.data.data.list;
-          this.total = res.data.data.total;
+      currentTask(self, para).then(res => {
+        if (res.data.result === 200) {
+          this.rows = res.data.data?res.data.data:[];
         } else {
-          this.total = 0;
-          this.rows = [{ taskName: "1", taskId: "111", taskType: "临时" }];
+          this.rows = [];
         }
         this.listLoading = false;
         NProgress.done();
@@ -248,101 +253,107 @@ export default {
     handlerAdd() {
       this.editFormTitle = "新增";
       this.editFormVisible = true;
-      this.editForm.roomId = "";
-      this.devices = [];
-      this.roomRobots = [];
-      this.editForm.domains = [{ value: "" }];
-      this.getRooms();
+      this.editForm = {
+        roomId: this.filters.roomId,
+        domains: [
+          {
+            value: ""
+          }
+        ],
+        useTemplate: false
+      };
+      let id = this.editForm.roomId,
+        _this = this;
+      this.roomRobots = this.rooms.find(item => item.roomId === id).robotList;
+      this.roadwayData
+        .find(item => item.roomId === id)
+        .rbAreaInfoList.forEach(r => {
+          _this.prohibitedAreas[r.areaId] = r.areaName;
+        });
+    },
+    getRoadway() {
+      let self = this;
+      roadwayList(self, {
+        customerId: self.$store.state.user.customId
+      }).then(res => {
+        if (res.data.result === 200) {
+          self.roadwayData = res.data.data;
+          self.getRooms();
+        } else {
+          self.roadwayData = [];
+          self.$message("通信故障");
+        }
+      });
     },
     editSubmit() {
-      var _this = this,
-        devs = _this.$refs.tree.getCheckedNodes();
+      var _this = this;
       _this.$refs.editForm.validate(valid => {
         if (valid) {
-          if (!devs.length) {
-            _this.$notify({
-              title: "提示",
-              message: "必须至少选一个设备",
-              type: "info"
+          _this.editLoading = true;
+          _this.btnEditText = "提交中...";
+          let times = _this.editForm.domains.map(item => {
+            return parseTime(item.value, "{h}:{i}:{s}");
+          });
+          let detail = this.editFormDetail || this.selectCmdData;
+          let params = {
+            roomId: _this.editForm.roomId,
+            taskName: _this.editForm.taskName,
+            robotId: _this.editForm.robotId,
+            prohibitedAreaId: _this.editForm.prohibitedAreaId,
+            useTemplate: _this.editForm.useTemplate,
+            templateId: _this.editForm.templateId,
+            taskTimes: times.join(","),
+            prohibitedStartTime: parseTime(_this.editForm.timeSection[0]),
+            prohibitedEndTime: parseTime(_this.editForm.timeSection[1]),
+            taskDetails: JSON.stringify(detail)
+          };
+          if (!_this.editForm.scheduleId) {
+            addTask(_this, params).then(res => {
+              _this.editLoading = false;
+              _this.btnEditText = "提交";
+              this.filters.roomId = this.editForm.roomId;
+              if (res.data.result == 200) {
+                _this.$notify({
+                  title: "成功",
+                  message: "任务计划创建成功",
+                  type: "success"
+                });
+              } else {
+                _this.$notify({
+                  title: "失败",
+                  message: "任务计划创建失败",
+                  type: "error"
+                });
+              }
+              _this.editFormVisible = false;
+              _this.getTaskByRoom();
             });
           } else {
-            _this.$confirm("确认提交吗？", "提示", {}).then(() => {
-              _this.editLoading = true;
-              NProgress.start();
-              _this.btnEditText = "提交中";
-              let devices = [],
-                rfids = [];
-              if (devs[0].id === "ALL") {
-                devs.shift();
+            params.scheduleId = _this.editForm.scheduleId;
+            updateTask(_this, params).then(res => {
+              if (res.body.result == 200) {
+                _this.$notify({
+                  title: "成功",
+                  message: "任务计划更新成功",
+                  type: "success"
+                });
+              } else {
+                _this.$notify({
+                  title: "失败",
+                  message: "任务计划更新失败",
+                  type: "error"
+                });
               }
-              devs.sort(compare("orderBy")).forEach(item => {
-                devices.push(item.id);
-                rfids.push(item.rfid);
-              });
-
-              let times = _this.editForm.domains.map(item => {
-                return parseTime(item.value, "{h}:{i}:{s}");
-              });
-
-              let param = {
-                roomId: _this.editForm.roomId,
-                robotId: _this.editForm.robotId,
-                taskName: _this.editForm.taskName,
-                devices: devices.join(","),
-                rfids: rfids.join(","),
-                taskTime: times.join(",")
-              };
-              Request(
-                _this,
-                "/saveTaskSchedule.do",
-                param,
-                `下发任务${param.taskName}`
-              ).then(
-                res => {
-                  _this.editLoading = false;
-                  NProgress.done();
-                  _this.btnEditText = "提 交";
-                  if (res.body.result == 200) {
-                    _this.$notify({
-                      title: "成功",
-                      message: "新增成功",
-                      type: "success"
-                    });
-                    _this.filters.robotId = _this.editForm.robotId;
-                  } else {
-                    _this.$notify({
-                      title: "失败",
-                      message: res.body.message,
-                      type: "error"
-                    });
-                  }
-                  _this.editFormVisible = false;
-                  _this.getList();
-                },
-                err => {
-                  console.log(err);
-                }
-              );
+              _this.editLoading = false;
+              _this.btnEditText = "提交";
+              _this.editFormVisible = false;
+              _this.getTaskByRoom();
             });
           }
         }
       });
     },
-    handleDetail(row) {},
-    handleStop(row) {
-      var _this = this;
-      this.$confirm("确定要终止吗?终止后任务将不在执行", "提示", {
-        //type: 'warning'
-      })
-        .then(() => {
-          _this.listLoading = true;
-          NProgress.start();
-          let para = {
-            taskId: row.taskId
-          };
-        })
-        .catch(() => {});
-    },
+
     getRooms() {
       let para = {
         page: 0,
@@ -352,92 +363,89 @@ export default {
       let self = this;
       getRoomList(self, para).then(res => {
         if (res.body.data && res.body.data.rows) {
-          this.rooms = res.body.data.rows.map(item => {
-            return {
-              roomId: item.roomId,
-              roomName: item.roomName
-            };
-          });
+          this.rooms = res.body.data.rows;
+          this.filters.roomId = this.rooms[0].roomId;
+          this.getTaskByRoom();
         } else {
           this.rooms = [];
+          this.filters.roomId = "";
         }
       });
     },
-    getDevices(roomId) {
-      //console.log(roomId);
-      this.editForm.robotId = "";
-      this.editForm.devices = [];
-      this.editForm.execTime = "";
-      let self = this;
-      let para = {
-        roomId: roomId
-      };
-      NProgress.start();
-      getRoomDetail(self, para).then(res => {
-        //console.log(res)
-        NProgress.done();
-        if (res.body.data) {
-          if (res.body.data.deviceList) {
-            var devices = res.body.data.deviceList.map(item => {
-              return {
-                id: item.deviceId,
-                label: item.deviceName,
-                rfid: item.rfidId,
-                orderBy: item.orderBy
-              };
+    changeRoom() {
+      let id = this.filters.roomId;
+      const currentroom = this.rooms.find(item => item.roomId === id);
+      this.robotList = currentroom.robotList;
+      this.filters.roomName = currentroom.roomName;
+    },
+    changeFormRoom(v) {
+      let id = this.editForm.roomId;
+      this.roomRobots = this.rooms.find(item => item.roomId === id).robotList;
+    },
+    addcmd() {
+      this.cmdVisible = true;
+      this.getCmdByRoom();
+    },
+    cmdName(type) {
+      return CMDTYPES.find(i => i.value == type).label;
+    },
+    getCmdByRoom() {
+      let _this = this;
+      cmdListByRoom(_this, { roomId: _this.editForm.roomId }).then(res => {
+        if (res.data.result === 200) {
+          _this.cmdData = res.data.data
+            .filter(r => r.commandTypes.length > 0)
+            .map(r => {
+              r.cmdType = [];
+              return r;
             });
-            this.devices = [
-              {
-                id: "ALL",
-                label: "全选",
-                children: devices
+          if (this.editForm.scheduleId) {
+            const data = JSON.parse(this.editForm.taskDetails);
+            let cmdData = _this.cmdData;
+            for (var i = 0, l = cmdData.length; i < l; i++) {
+              for (var k = 0, len = data.length; k < len; k++) {
+                if (cmdData[i].areaId == data[k].areaId) {
+                  cmdData[i].cmdType = data[k].commandTypes.split(",");
+                }
               }
-            ];
-          } else {
-            this.devices = [];
-          }
-
-          if (res.body.data.robotList) {
-            this.roomRobots = res.body.data.robotList.map(item => {
-              return {
-                robotId: item.robotId,
-                robotName: item.robotName
-              };
-            });
-          } else {
-            this.roomRobots = [];
+            }
           }
         } else {
+          _this.cmdData = [];
         }
       });
     },
-    execTemp() {
-      this.tempTaskVisible = true;
-      this.devices = this.robots.map(item => {
-        let obj = {};
-        obj.id = item.robotId;
-        obj.value = item.robotName;
-        return obj;
-      });
+    selectCmd() {
+      let areas = this.prohibitedAreas;
+      this.selectCmdData = this.cmdData
+        .filter(i => i.cmdType.length > 0)
+        .map(i => ({
+          areaId: i.areaId,
+          areaName: areas[i.areaId],
+          commandTypes: i.cmdType.join(",")
+        }));
+      this.cmdVisible = false;
     },
-    //临时任务
-    querySearch(queryString, cb) {
-      var devices = this.devices;
-      var results = queryString
-        ? devices.filter(this.createFilter(queryString))
-        : devices;
-      // 调用 callback 返回建议列表的数据
-
-      cb(results);
+    formatterRoom(r, c) {
+      return this.rooms.find(item => r.roomId === item.roomId).roomName;
     },
-    createFilter(queryString) {
-      return devices => {
-        var res = devices.value.indexOf(queryString.toLowerCase()) === 0;
-        return res;
-      };
+    formatterRobot(r, c) {
+      const robot = this.robotList.find(item => r.robotId === item.robotId);
+      return robot ? robot.robotName : r.robotId;
     },
-    handleSelect(item) {
-      //console.log(item)
+    formatTimeSction(r, c) {
+      return (
+        parseTime(r.startTime)  
+      );
+    },
+    formatStatus(r) {
+      return TASKEXECTYPES[r.taskStatus];
+    },
+    formatArea(r, c) {
+      return parseTime(r.createTime)
+    },
+    formatArea1(r, c) {
+      return r.areaName || this.prohibitedAreas[r.areaId] || "未知";
     },
     removeDomain(item) {
       var index = this.editForm.domains.indexOf(item);
@@ -453,7 +461,7 @@ export default {
     }
   },
   mounted() {
-    this.getRooms();
+    this.getRoadway();
   }
 };
 </script>
