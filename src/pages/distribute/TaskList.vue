@@ -8,10 +8,10 @@
 						</el-option>
 					</el-select>
 				</el-form-item>
-				<el-form-item label="状态">
+				<el-form-item label="任务状态">
 					<el-select style="width:90%" v-model="filters.active" clearable>
-						<el-option label="启用" value="true"></el-option>
-						<el-option label="禁用" value="false"></el-option>
+						<el-option label="执行" value="1"></el-option>
+						<el-option label="挂起" value="0"></el-option>
 					</el-select>
 				</el-form-item>
 				<el-form-item>
@@ -30,7 +30,7 @@
 				</el-table-column>
 				<el-table-column prop="taskName" label="任务名称" align="center" width="120">
 				</el-table-column>
-				<el-table-column prop="status" label="执行状态" align="center" width="120">
+				<el-table-column prop="status" label="计划状态" align="center" width="120">
 					<template scope="scope">
 						<el-tag type="success">{{formatStatus(scope.row)}}</el-tag>
 					</template>
@@ -43,21 +43,21 @@
 				</el-table-column>
 				<el-table-column prop="active" label="状态">
 					<template scope="scope">
-						<el-tag :type="scope.row.active?'success':'danger'">{{scope.row.active?"启用":"禁用"}}</el-tag>
+						<el-tag :type="scope.row.active?'success':'danger'">{{scope.row.active?"执行":"挂起"}}</el-tag>
 					</template>
 				</el-table-column>
 				<el-table-column prop="status" label="操作" align="center" width="300">
 					<template scope="scope">
-						<el-button type="darnge" icon="share" size="small" @click="handleDetail(scope.row)">修改</el-button>
-						<el-button type="warning" icon="delete" size="small" @click="handleDel(scope.row)">删除</el-button>
-						<el-button type="danger" icon="circle-cross" size="small">挂起</el-button>
+						<el-button type="darnge" icon="edit" size="small" @click="handleDetail(scope.row)">修改</el-button>
+						<el-button type="warning" icon="delete" size="small" @click="handleDel(scope.row)" v-loading="delLoading">删除</el-button>
+						<el-button :type="scope.row.active?'danger':'success'" size="small" @click="pause(scope.row)">{{scope.row.active?"挂起":"执行"}}</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
 		</template>
 		 
 		<!--编辑界面-->
-		<el-dialog :title="editFormTtile" v-model="editFormVisible" :close-on-click-modal="false" size="tiny">
+		<el-dialog :title="editFormTile" v-model="editFormVisible" :close-on-click-modal="false" size="samll">
 			<el-form :model="editForm" label-width="100px" :rules="editFormRules" ref="editForm">
 				<el-form-item label='巡检机房' prop="roomId">
 					<el-select style="width:100%" v-model="editForm.roomId" @change="changeFormRoom">
@@ -74,14 +74,14 @@
 						</el-option>
 					</el-select>
 				</el-form-item>
-				<el-form-item prop="active" label="任务状态">
+				<!-- <el-form-item prop="active" label="任务状态">
 					<el-radio-group v-model="editForm.active">
 						<el-radio-button :label="true" size="small">启用</el-radio-button>
 						<el-radio-button :label="false" size="small">禁用</el-radio-button>
 					</el-radio-group>
-				</el-form-item>
+				</el-form-item> -->
 				<el-form-item required label="使用模版">
-					<el-col :span="6">
+					<el-col :span="12">
 						<el-form-item prop="useTemplate">
 							<el-radio-group v-model="editForm.useTemplate">
 								<el-radio-button :label="true">是</el-radio-button>
@@ -89,7 +89,7 @@
 							</el-radio-group>
 						</el-form-item>
 					</el-col>
-					<el-col :span="18" v-if="editForm.useTemplate">
+					<el-col :span="12" v-if="editForm.useTemplate">
 						<el-form-item prop="templateId">
 							<el-select v-model="editForm.templateId" placeholder="请选择模版" style="width:100%">
 								<el-option v-for="item in templates" :key="item.templateId" :label="item.templateName" :value="item.templateId">
@@ -97,7 +97,7 @@
 							</el-select>
 						</el-form-item>
 					</el-col>
-          <el-col :span="18" v-else>
+          <el-col :span="12" v-else>
               <el-form-item>
                 <el-button @click="addcmd">任务指令</el-button>
               </el-form-item>
@@ -130,6 +130,8 @@
           <el-button type="primary" @click.native="editSubmit" :loading="editLoading">{{btnEditText}}</el-button>
 			</div>
 		</el-dialog>
+
+    <!-- 导航点指令 -->
     <el-dialog title="导航点指令" v-model="cmdVisible" :close-on-click-modal="false">
          <el-table :data="cmdData"  ref="multipleTable">
             <el-table-column type="index" width="55"></el-table-column>
@@ -159,7 +161,9 @@ import {
   addTask,
   updateTask,
   deleteTask,
-  cmdListByRoom
+  templateList,
+  cmdListByRoom,
+  pauseTask
 } from "api/results";
 import { getRoomList, getRoomDetail, roadwayList } from "api/room";
 import { TASKEXECTYPES, CMDTYPES } from "@/const";
@@ -170,7 +174,7 @@ export default {
       filters: {
         roomId: "",
         roomName: "",
-        active: ""
+        active: "1"
       },
       robotList: [],
       roomRobots: [],
@@ -180,7 +184,7 @@ export default {
       roadwayData: [],
       prohibitedAreas: {},
       listLoading: false,
-      editFormTtile: "新增",
+      editFormTile: "新增",
       editFormVisible: false,
       editForm: {
         roomId: "",
@@ -189,7 +193,6 @@ export default {
         prohibitedAreaId: "",
         timeSection: [],
         templateId: "",
-        active: "",
         domains: [
           {
             value: ""
@@ -228,6 +231,7 @@ export default {
         ]
       },
       editLoading: false,
+      delLoading:false,
       btnEditText: "提交",
       cmdVisible: false,
       cmdData: [],
@@ -251,7 +255,7 @@ export default {
     },
     getTaskByRoom() {
       let para = {
-        roomtId: this.filters.roomId,
+        roomId: this.filters.roomId,
         active: this.filters.active
       };
       this.listLoading = true;
@@ -268,7 +272,7 @@ export default {
       });
     },
     handlerAdd() {
-      this.editFormTitle = "新增";
+      this.editFormTile = "新增";
       this.editFormVisible = true;
       this.editForm = {
         roomId: this.filters.roomId,
@@ -277,7 +281,6 @@ export default {
             value: ""
           }
         ],
-        active: true,
         useTemplate: false
       };
       let id = this.editForm.roomId,
@@ -305,26 +308,33 @@ export default {
     },
     editSubmit() {
       var _this = this;
+      let detail = this.editFormDetail || this.selectCmdData;
+    
       _this.$refs.editForm.validate(valid => {
         if (valid) {
+          if(!this.editForm.useTemplate&&detail.length===0){
+              this.$message.error('指令不可为空');
+              return;
+          }
           _this.editLoading = true;
           _this.btnEditText = "提交中...";
           let times = _this.editForm.domains.map(item => {
             return parseTime(item.value, "{h}:{i}:{s}");
           });
-          let detail = this.editFormDetail || this.selectCmdData;
           let params = {
             roomId: _this.editForm.roomId,
             taskName: _this.editForm.taskName,
             robotId: _this.editForm.robotId,
-            prohibitedAreaId: _this.editForm.prohibitedAreaId,
+            prohibitedAreaId: _this.editForm.prohibitedAreaId?_this.editForm.prohibitedAreaId:null,
             useTemplate: _this.editForm.useTemplate,
-            templateId: _this.editForm.templateId,
+            templateId: _this.editForm.templateId&&_this.editForm.useTemplate?_this.editForm.templateId:null,
             taskTimes: times.join(","),
-            prohibitedStartTime: parseTime(_this.editForm.timeSection[0]),
-            prohibitedEndTime: parseTime(_this.editForm.timeSection[1]),
-            taskDetails: JSON.stringify(detail)
+            taskDetails: _this.editForm.useTemplate?null:JSON.stringify(detail)
           };
+          if(_this.editForm.timeSection&&_this.editForm.timeSection.length>1){
+              params.prohibitedStartTime= parseTime(_this.editForm.timeSection[0]);
+              params.prohibitedEndTime=parseTime(_this.editForm.timeSection[1]);
+          }
           if (!_this.editForm.scheduleId) {
             addTask(_this, params).then(res => {
               _this.editLoading = false;
@@ -372,10 +382,10 @@ export default {
       });
     },
     handleDetail(r) {
-      let id = r.roomId,
+      let  id = r.roomId,
         _this = this;
+      this.editFormTile = "编辑";
       this.roomRobots = this.rooms.find(item => item.roomId === id).robotList;
-
       this.roadwayData
         .find(item => item.roomId === id)
         .rbAreaInfoList.forEach(r => {
@@ -383,10 +393,11 @@ export default {
         });
       this.editForm = {
         ...r,
-        timeSection: [
+        timeSection:r.prohibitedStartTime&&r.prohibitedEndTime? [
           new Date(r.prohibitedStartTime),
           new Date(r.prohibitedEndTime)
-        ],
+        ]:[],
+        templateId:r.templateId?r.templateId:'',
         domains: r.taskTimes
           .split(",")
           .map(item => ({ value: new Date("2020-12-12 " + item) }))
@@ -398,13 +409,14 @@ export default {
       this.$confirm("确认删除吗", "提示", {
         //type: 'warning'
       }).then(() => {
-        _this.listLoading = true;
+        _this.delLoading = true;
         NProgress.start();
         let para = {
           scheduleId: row.scheduleId
         };
         deleteTask(_this, para).then(res => {
           NProgress.done();
+          _this.delLoading =false;
           if (res.data.result === 200) {
             _this.$message({
               message: "删除成功",
@@ -429,6 +441,7 @@ export default {
           this.rooms = res.body.data.rows;
           this.filters.roomId = this.rooms[0].roomId;
           this.getTaskByRoom();
+          this.getTemplates(); 
         } else {
           this.rooms = [];
           this.filters.roomId = "";
@@ -463,7 +476,7 @@ export default {
               return r;
             });
           if (this.editForm.scheduleId) {
-            const data = JSON.parse(this.editForm.taskDetails);
+            const data =this.editForm.taskDetails?JSON.parse(this.editForm.taskDetails):[];
             let cmdData = _this.cmdData;
             for (var i = 0, l = cmdData.length; i < l; i++) {
               for (var k = 0, len = data.length; k < len; k++) {
@@ -479,6 +492,7 @@ export default {
       });
     },
     selectCmd() {
+      this.cmdVisible = false;
       let areas = this.prohibitedAreas;
       this.selectCmdData = this.cmdData
         .filter(i => i.cmdType.length > 0)
@@ -487,7 +501,6 @@ export default {
           areaName: areas[i.areaId],
           commandTypes: i.cmdType.join(",")
         }));
-      this.cmdVisible = false;
     },
     formatterRoom(r, c) {
       return this.rooms.find(item => r.roomId === item.roomId).roomName;
@@ -497,12 +510,16 @@ export default {
       return robot ? robot.robotName : r.robotId;
     },
     formatTimeSction(r, c) {
-      return (
-        parseTime(r.prohibitedStartTime) + "~" + parseTime(r.prohibitedEndTime)
-      );
+      if(r.prohibitedStartTime&&r.prohibitedEndTime){
+        return (
+          parseTime(r.prohibitedStartTime) + "~" + parseTime(r.prohibitedEndTime)
+        );
+      }else{
+         return  '';
+      }
     },
     formatStatus(r) {
-      return TASKEXECTYPES[r.status];
+      return r.status===1?"已下发":"未下发";
     },
     formatArea(r, c) {
       const area = this.roadwayData
@@ -524,6 +541,36 @@ export default {
         value: "",
         key: Date.now()
       });
+    },
+    getTemplates() {
+      let _this = this;
+      templateList(_this, { roomId: _this.filters.roomId }).then(res => {
+        if (res.data.result === 200) {
+          this.templates = res.data.data?res.data.data:[];
+        } else {
+          this.$message.error("查询模版失败");
+           this.templates =[];
+        }
+      });
+    },
+    pause(r){
+      let _this = this;
+      let para = {
+            active:r.active?"0":"1",
+            scheduleId:r.scheduleId,
+          }; 
+      pauseTask(_this, para).then(res => {
+         let state = para.active==="0"?"挂起":"执行" 
+         if(res.data.result===200){
+            _this.$message({
+              message:"任务"+state+"成功",
+              type: "success" 
+            })
+         }else{
+            _this.$message.error("任务"+state+"失败");
+         }
+          _this.getTaskByRoom();
+      })  
     }
   },
   mounted() {

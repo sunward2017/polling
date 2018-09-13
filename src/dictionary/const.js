@@ -34,3 +34,5 @@ export const TESTTYPES = [{value:'1',label:'图像识别'},{value:'2',label:'温
 export const CMDTYPES = [{value:"1",label:"拍照"},{value:"2",label:"红外"},{value:"3",label:"温湿度"},{value:"4",label:"异味"},{value:"5",label:"异响"}];
 
 export const TASKEXECTYPES = {"0":"未执行","1":"执行中","2":"执行完毕","3":"超时","4":"中断"};
+
+export const CMDSTATUS={'1':'gray','2':'primary','3':'success','4':'warning','5':'danger'}; 

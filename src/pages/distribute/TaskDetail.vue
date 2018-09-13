@@ -12,7 +12,7 @@
 					<el-button icon="refreash" type="primary" @click="getTaskByRoom">查询</el-button>
 				</el-form-item>
 				<el-form-item>
-					<el-button icon="edit" type="primary" @click="handlerAdd">任务计划</el-button>
+					<!-- <el-button icon="edit" type="primary" @click="handlerAdd">临时任务</el-button> -->
 				</el-form-item>
 			</el-form>
 		</el-col>
@@ -235,7 +235,7 @@ export default {
     },
     getTaskByRoom() {
       let para = {
-        roomtId: this.filters.roomId,
+        roomId: this.filters.roomId,
       };
       this.listLoading = true;
       NProgress.start();
@@ -376,6 +376,7 @@ export default {
       let id = this.filters.roomId;
       const currentroom = this.rooms.find(item => item.roomId === id);
       this.robotList = currentroom.robotList;
+      
       this.filters.roomName = currentroom.roomName;
     },
     changeFormRoom(v) {

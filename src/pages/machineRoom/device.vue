@@ -20,15 +20,15 @@
 			</el-form>
 		</el-col>
 		 <el-table :data="devRows" v-loading="devListLoading">
-			<el-table-column prop="index" label="#" width="50"> </el-table-column>
-			<el-table-column prop="deviceName" label="设备名称" width="220"> </el-table-column>
-			<el-table-column  prop="nvPointId" label="导航点" width="180" :formatter="formatStag">
+			<el-table-column type="index" width="60" label="#" align="center"></el-table-column>
+			<el-table-column prop="deviceName" label="设备名称"  width="300" align="center"> </el-table-column>
+			<el-table-column  prop="nvPointId" label="导航点" :formatter="formatStag" align="center">
 			</el-table-column>
-			<el-table-column prop="name" label="姓名" width="300">
+			<!-- <el-table-column prop="name" label="姓名" width="300">
 			</el-table-column>
 			<el-table-column prop="address" label="地址">
-			</el-table-column>
-			<el-table-column prop="action" label="操作" width="200">
+			</el-table-column> -->
+			<el-table-column prop="action" label="操作" width="240">
 				<template scope="scope">
 					<el-button size="small" icon="edit" @click="handleEdit(scope.row)">编辑</el-button>
 			    	<el-button type="warning" icon="delete" size="small" @click="handleDel(scope.row)">删除</el-button>

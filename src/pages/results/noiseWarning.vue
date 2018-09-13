@@ -3,16 +3,16 @@
 		<!--工具条-->
 		<el-col :span="24" class="toolbar">
 			<el-form :inline="true" :model="filters">
-				<el-col :span="4">
+				<el-form-item>
 					<el-select v-model="filters.roomId" style="width:90%">
 						<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 						</el-option>
 					</el-select>
-				</el-col>
-				<el-col :span="8">
+				</el-form-item>	
+			    <el-form-item>
 					<el-date-picker style="width:90%" v-model="filters.timeStamp" type="daterange" unlink-panels range-separator=" __至__" start-placeholder="开始日期" value-format="yyyy-MM-dd" end-placeholder="结束日期" :picker-options="pickerOptions2">
 					</el-date-picker>
-				</el-col>
+				</el-form-item> 
 				<el-form-item>
 					<el-button icon="search" type="primary" v-on:click="getList">查询</el-button>
 				</el-form-item>
@@ -20,24 +20,24 @@
 		</el-col>
 		<template>
 			<el-table :data="rows" highlight-current-row v-loading="listLoading" style="width: 100%;">
-				<el-table-column type="index" width="80" label="序号" align="center">
+				<el-table-column type="index" width="80" label="#" align="center">
 				</el-table-column>
 				<el-table-column prop="roomName" label="巡检机房" width="260" align="center">
 					 
 				</el-table-column>
-				<el-table-column prop="robotName" label="巡检机器人" width="260" align="center" sortable>
+				<el-table-column prop="robotName" label="巡检机器人" width="260" align="center">
 					<template scope="scope">
 						<el-tag>{{scope.row.robotName}}</el-tag>
 					</template>
 				</el-table-column>
-				<el-table-column prop="createTime" label="创建时间"  align="center" sortable>
-					<template scope="scope">
-						<span style="margin-left: 10px">{{ formatTime(scope.row) }}</span>
-					</template>
-				</el-table-column>
-				<el-table-column prop="voiceUrl" label="异常音频下载" width="260" align="center">
+				<el-table-column prop="voiceUrl" label="异常音频下载"  align="center">
 					<template scope="scope">
 					   <a class="el-button el-button--warning el-button--small" :href="`${scope.row.voiceUrl}`" download>下载音频</a>
+					</template>
+				</el-table-column>
+				<el-table-column prop="createTime" label="创建时间"  width="260" align="center" sortable>
+					<template scope="scope">
+						<span style="margin-left: 10px">{{ formatTime(scope.row) }}</span>
 					</template>
 				</el-table-column>
 				<!--<el-table-column prop="warnStatus" label="处理标记" align="center" width="180">

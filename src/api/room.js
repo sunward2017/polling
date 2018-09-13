@@ -25,6 +25,11 @@ export const createArea = (self, param) => { return self.$http.post(baseUrl + '/
 
 export const roadwayList = (self, param) => { return self.$http.post(baseUrl + '/v1/listAreaInfosByCustomerId.action', param, { emulateJSON: true }) };
 
+export const listAreaByRoom = (self, param) => { return self.$http.post(baseUrl + '/v1/listAreaInfosByRoomId.action', param, { emulateJSON: true }) };
+
+export const deleteArea = (self, param) => { return self.$http.post(baseUrl + '/v1/deleteAreaInfo.action', param, { emulateJSON: true }) };
+
+
 //导航点
 export const stagList = (self, param) => { return self.$http.post(baseUrl + '/v1/listNavigationPoints.action', param, { emulateJSON: true }) };
 

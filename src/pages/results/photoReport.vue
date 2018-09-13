@@ -25,7 +25,7 @@
 		</el-form>
 
 		<el-row class="section">
-			<div :class="item.detectFlag!==0?'floor-item-content-wrap warn':'floor-item-content-wrap'" v-for="(item,index) in imgGather" >
+			<div :class="item.detectFlag!==0?'floor-item-content-wrap warn':'floor-item-content-wrap'" v-for="(item,index) in imgGather" :key="index" >
 				<img class="floor-item-img" v-lazy="baseImgUrl+item.thumbnailUrl">
 				<div class="floor-item-title">设备:{{ item.deviceName }}&emsp;<span @click="showBigImg(item.deviceName,item.fileUrl)">大图&emsp;</span><span v-if="item.detectFlag!==0" @click="showBigImg(item.deviceName,'/'+item.detectResultUrl)">识别图</span></div>
 				<div class="floor-time">{{ formatTTime(item.timeStamp) }}</div>
@@ -230,7 +230,7 @@
 
 .section{
 	min-height:80vh;
-	background:rgba(0,0,0,.35);
+	background:rgba(0,0,0,.15);
 }
 .floor-item-content-wrap>div{
 	text-align: center;

@@ -20,12 +20,12 @@
 				<el-menu style="border-top: 1px solid #475669;" text-color="#c0ccda" active-text-color="rgb(32, 160, 255)" :default-active="currentPath" class="el-menu-vertical-demo" @open="handleopen" @close="handleclose" @select="handleselect" theme="dark" unique-opened router>
 					<template v-for="(item,index) in $router.options.routes" v-if="!item.hidden">
 						<!--查找路由配置$router.options.routes-->
-						<el-submenu :index="index+''" v-if="!item.leaf">
+						<el-submenu :index="index+''" v-if="!item.leaf" :key="index">
 							<template slot="title"><i :class="item.iconCls"></i>{{item.name}}</template>
-							<el-menu-item v-for="child in item.children" :index="child.path" v-if="!child.hidden">{{child.name}}</el-menu-item>
+							<el-menu-item v-for="child in item.children" :index="child.path" v-if="!child.hidden" :key="child.name">{{child.name}}</el-menu-item>
 						</el-submenu>
 						<!--只有一个节点的菜单-->
-						<el-menu-item v-if="item.leaf&&item.children.length>0" :index="item.children[0].path"><i :class="item.iconCls"></i>{{item.children[0].name}}</el-menu-item>
+						<el-menu-item v-if="item.leaf&&item.children.length>0" :index="item.children[0].path" :key="index"><i :class="item.iconCls"></i>{{item.children[0].name}}</el-menu-item>
 					</template>
 				</el-menu>
 			</aside>

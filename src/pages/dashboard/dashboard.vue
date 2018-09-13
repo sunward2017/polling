@@ -615,7 +615,7 @@
 	
 	.tip>div {
 		color: #fff;
-		background: rgba(0, 0, 0, 0.35);
+		background: rgba(0, 0, 0, 0.5);
 	}
 	
 	.wrap {

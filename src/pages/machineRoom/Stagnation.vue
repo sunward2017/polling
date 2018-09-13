@@ -13,7 +13,7 @@
 				<el-table :data="stagData" height="260" @row-click.self="changeStag" v-loading="stagLoading"  highlight-current-row>
 					<el-table-column type="index" width="50">
 					</el-table-column>
-					<el-table-column prop="nvPointName" label="导航点名称">
+					<el-table-column prop="nvPointName" label="导航点名称" align="center">
 					</el-table-column>
 					<el-table-column prop="orderId" label="排序" width="120">
 					</el-table-column>
@@ -24,7 +24,7 @@
 					<el-table-column label="操作" width="160">
 						<template scope="scope">
 							<el-button size="small" @click.stop="handleEditStag(scope.row)">编辑</el-button>
-							<el-button size="small" type="danger" @click.stop="handleDeleteStag(scope.row)">删除</el-button>
+							<el-button size="small" type="warning" @click.stop="handleDeleteStag(scope.row)">删除</el-button>
 						</template>
 					</el-table-column>
 				</el-table>
@@ -32,7 +32,7 @@
 		</el-row>
 		<div class="banner">
 			当前导航点：&nbsp;<el-button type="info" size="small">{{currentStag.nvPointName?currentStag.nvPointName:"未知"}}</el-button> &emsp;操作指令：
-			<el-button icon="plus" type="success" size="small" @click="newWorker">新增巡检操作</el-button>
+			<el-button icon="plus" type="success" size="small" @click="newWorker">新增巡检指令</el-button>
 		</div>
 		<!-- action list -->
 		<el-table :data="workerData" height="400" v-loading="workerLoading"  highlight-current-row>
@@ -73,24 +73,23 @@
       <el-table-column label="操作" width="160">
 				<template scope="scope">
 					<el-button size="small" @click.stop="handleEditWorker(scope.row)" >编辑</el-button>
-					<el-button size="small" type="danger" @click.stop="handleDeleteWorker(scope.row)">删除</el-button>
+					<el-button size="small" type="warning" @click.stop="handleDeleteWorker(scope.row)">删除</el-button>
 				</template>
 			</el-table-column>
 		</el-table>
 		<!-- Lane form-->
 		<el-dialog :visible.sync="dialogFormVisible" size="tiny" :show-close="false">
 			<el-form :inline="true" :model="editStagnation" :rules="areaRules" ref="areaForm">
-				<el-col :span="17">
+			 
 					<el-form-item label="巷道名称" prop="name">
-						<el-input v-model="editStagnation.name" placeholder="请输入巷道名称" style="width:150%"></el-input>
+						<el-input v-model="editStagnation.name" placeholder="请输入巷道名称" ></el-input>
 					</el-form-item>
-				</el-col>
-				<el-col :span="7">
+			 
 					<el-form-item>
-						<el-button type="primary" @click="areaSubmit">提交</el-button>
+						<el-button type="primary" @click="areaSubmit" v-loading="areaSubmitLoading">提交</el-button>
 						<el-button type="primary" @click="dialogFormVisible=false">取消</el-button>
 					</el-form-item>
-				</el-col>
+				 
 			</el-form>
 		</el-dialog>
 		<!-- Stagnation form -->
@@ -102,10 +101,10 @@
 				<el-form-item label="导航点名称" prop="nvPointName">
 					<el-input v-model="stagnationForm.nvPointName"></el-input>
 				</el-form-item>
-				<el-form-item label="排序" prop="orderId">
+				<el-form-item label="导航点排序" prop="orderId" required>
 					<el-input-number v-model="stagnationForm.orderId" :min="1" style="width:46%"></el-input-number>
 				</el-form-item>
-				<el-form-item label="坐标" required>
+				<el-form-item label="导航点坐标">
 					<el-col :span="11">
 						<el-form-item prop="x">
 							<el-input v-model="stagnationForm.x" placeholder="请输入X轴坐标"></el-input>
@@ -122,22 +121,22 @@
 				</el-form-item>
 				
 				<el-form-item>
-					<el-button type="primary" @click="saveStag">提交</el-button>
+					<el-button type="primary" @click="saveStag" v-loading="stagSubmitLoading">提交</el-button>
 					<el-button type="info" @click="stagVisible=false">取消</el-button>
 				</el-form-item>
 			</el-form>
 		</el-dialog>
 		<!-- action form -->
-		<el-dialog title="指令编辑" :visible.sync="workerVisible" size="tiny">
-			<el-form :model="workerForm" :rules="stagRules" ref="workerForm" label-width="100px">
+		<el-dialog title="指令编辑" :visible.sync="workerVisible" size="small">
+			<el-form :model="workerForm" ref="workerForm" label-width="90px" :rules="rules">
 				<el-form-item label="所属导航点">
 					<span style="color:orange">{{currentStag.nvPointName}}</span>
 				</el-form-item>
 				<el-form-item label="指令名称" prop="commandName" class="form_col">
 					<el-input v-model="workerForm.commandName"></el-input>
 				</el-form-item>
-				<el-form-item label="指令类型" prop="commandType" class="form_col">
-           <el-select v-model="workerForm.commandType" placeholder="请选择">
+				<el-form-item label="指令类型" prop="commandType" class="form_col" >
+           <el-select v-model="workerForm.commandType" placeholder="指令类型选择" style="width:100%">
             <el-option
               v-for="item in options"
               :key="item.value"
@@ -147,17 +146,19 @@
 				  </el-select>
 				</el-form-item>
         <template v-if="workerForm.commandType==='1'||workerForm.commandType==='2'">
-          <el-form-item label="升降高度" prop="neckHeight" class="form_col">
+          <el-form-item label="升降高度" prop="neckHeight" class="form_col" >
               <el-input v-model="workerForm.neckHeight" placeholder="请输入升降高度（单位mm）"></el-input>
           </el-form-item>
-          <el-form-item label="水平转角" required prop="levelAngle" class="form_col">
-              <el-input v-model="workerForm.levelAngle" placeholder="请输入Y轴坐标"></el-input>
+          <el-form-item label="" >    
           </el-form-item>
-          <el-form-item label="头部仰角" required prop="elevation" class="form_col">
-              <el-input v-model="workerForm.elevation" placeholder="请输入Y轴坐标"></el-input>
+          <el-form-item label="水平转角" prop="levelAngle" class="form_col">
+              <el-input v-model="workerForm.levelAngle" placeholder="请输入水平转角"></el-input>
           </el-form-item>
-          <el-form-item label="检测仪器" prop="cameraId" class="form_col">
-              <el-select v-model="workerForm.cameraId" placeholder="请选择">
+          <el-form-item label="头部仰角" prop="elevation" class="form_col">
+              <el-input v-model="workerForm.elevation" placeholder="请输入头部仰角"></el-input>
+          </el-form-item>
+          <el-form-item label="检测仪器" prop="cameraId" class="form_col" required>
+              <el-select v-model="workerForm.cameraId" placeholder="检测仪器选择" style="width:100%">
               <el-option
                 v-for="item in cameras"
                 :key="item.label"
@@ -166,17 +167,17 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="焦距" required prop="cameraZoom" class="form_col">
-            <el-input v-model="workerForm.cameraZoom" placeholder="请输入Y轴坐标"></el-input>
+          <el-form-item label="焦距" prop="cameraZoom" class="form_col">
+            <el-input v-model="workerForm.cameraZoom" placeholder="请输入焦距"></el-input>
           </el-form-item>
-          <el-form-item label="闪光灯" required prop="cameraLight" class="form_col">
+          <el-form-item label="闪光灯" prop="cameraLight" class="form_col"  required>
               <el-radio-group v-model="workerForm.cameraLight" size="small">
                 <el-radio-button label="2">自动</el-radio-button>
                 <el-radio-button label="1">开启</el-radio-button>
                 <el-radio-button label="0">关闭</el-radio-button>
               </el-radio-group>
           </el-form-item>
-            <el-form-item label="图像识别" required prop="needDetect" class="form_col">
+          <el-form-item label="图像识别" prop="needDetect" class="form_col"  required >
                <el-radio-group v-model="workerForm.needDetect" size="small">
                 <el-radio-button label="1">开启</el-radio-button>
                 <el-radio-button label="0">关闭</el-radio-button>
@@ -184,12 +185,12 @@
            </el-form-item>
         </template>
         <template v-else>
-				<el-form-item label="持续时长" prop="waitTime" required>
-					<el-input v-model="workerForm.waitTime" placeholder="请输入等待时长"></el-input> 
+				<el-form-item label="持续时长" prop="waitTime">
+					<el-input v-model="workerForm.waitTime" placeholder="请输入等待时长">mm</el-input> 
 				</el-form-item>
         </template> 
 				<el-form-item>
-					<el-button type="primary" @click="saveWorker">提交</el-button>
+					<el-button type="primary" @click="saveWorker" v-loading="cmdLoading">提交</el-button>
 					<el-button type="info" @click="workerVisible=false">取消</el-button>
 				</el-form-item>
 			</el-form>
@@ -209,12 +210,25 @@ import {
   workerListByStag,
   addWorker,
   updateWorker,
-  deleteWorker
+  deleteWorker,
+  deleteArea,
 } from "api/room";
 import { mapState } from "vuex";
 
 export default {
   data() {
+    var checkNum=(rule, value, callback)=>{
+      var value =value&&value.replace(/(^\s*)|(\s*$)/g, "");
+      setTimeout(() => {
+        if (!value) {
+          callback(new Error("输入为空"));
+        } else if (value && isNaN(value)) {
+          callback(new Error("输入类型不正确"));
+        } else {
+          callback();
+        }
+      }, 500);
+    };
     return {
       options: CMDTYPES,
       cameras: [
@@ -259,21 +273,62 @@ export default {
         y: ""
       },
       stagVisible: false,
-      stagRules: {},
       stagData: [],
+      stagRules: {
+        nvPointName: [
+          {
+            required: true,
+            message: "导航点名称不可为空",
+            trigger: "blur"
+          }
+        ],
+        x: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ],
+        y: [
+          {
+            validator: checkNum,
+            trigger: "blur"
+          }
+        ]
+      },
       currentStag: {},
       workerLoading: false,
       workerVisible: false,
       workerData: [],
-      workerForm: {}
+      workerForm: {},
+      rules:{
+          commandName: [{
+						required: true,
+						message: '指令名称不可为空',
+						trigger: 'blur'
+					}],
+          commandType: [{
+						required: true,
+						message: '指令类型不可为空',
+						trigger: 'change'
+          }],
+          neckHeight:[{validator: checkNum,	trigger: 'blur'}],
+          levelAngle:[{validator: checkNum,	trigger: 'blur'}],
+          elevation:[{validator: checkNum,	trigger: 'blur'}],
+          cameraZoom:[{validator: checkNum,	trigger: 'blur'}],
+          waitTime:[{validator: checkNum,	trigger: 'blur'}],
+      },
+      areaSubmitLoading:false,
+      stagSubmitLoading:false,
+      cmdLoading:false,
     };
   },
   computed: mapState(["user"]),
   methods: {
-    formatCommandType(r){
-      let type= CMDTYPES.find(i=>(i.value==r.commandType));
-      return type?type.label:r.commandType;
-    }, 
+    
+    formatCommandType(r) {
+      let type = CMDTYPES.find(i => i.value == r.commandType);
+      return type ? type.label : r.commandType;
+    },
     getRoadway() {
       let self = this;
       roadwayList(self, {
@@ -307,7 +362,11 @@ export default {
             areaName: this.editStagnation.name
           };
           let _this = this;
+           NProgress.start();
+          _this.areaSubmitLoading = true;
           createArea(_this, params).then(res => {
+            NProgress.start();
+          _this.areaSubmitLoading = false;
             if (res.body.result == 200) {
               _this.getRoadway();
               _this.$notify({
@@ -328,7 +387,23 @@ export default {
       });
     },
     removeRoadway(store, data) {
-      console.log(store);
+        var _this = this;
+         this.$confirm("确认删除：" + data.areaName + "？", "提示", {}).then(()=>{
+            NProgress.start();
+            deleteArea(_this, {
+              areaId:data.areaId
+            }).then(res => {
+              if (res.data.result === 200) {
+                _this.$message({
+                  message: "删除成功",
+                  type: "success"
+                });
+              } else {
+                _this.$message.error("删除失败");
+              }
+              _this.getRoadway();
+            });
+         })
     },
     changeArea(data, node, store) {
       if (!data.parentId) return;
@@ -357,6 +432,7 @@ export default {
         return;
       }
       this.stagnationForm = {
+        roomId: this.currentAreaNode.roomId,
         areaId: this.currentAreaNode.areaId,
         areaName: this.currentAreaNode.areaName
       };
@@ -365,6 +441,7 @@ export default {
     handleEditStag(r) {
       let curr = this.currentAreaNode;
       this.stagnationForm = {
+        roomId: r.roomId,
         areaId: r.areaId,
         areaName: curr.areaName,
         x: r.x,
@@ -383,6 +460,7 @@ export default {
         deleteStag(_this, {
           nvPointId: r.nvPointId
         }).then(res => {
+           NProgress.done();
           if (res.data.result === 200) {
             _this.$message({
               message: "删除成功",
@@ -397,10 +475,15 @@ export default {
     },
     saveStag() {
       let _this = this;
+     
       this.$refs.stagForm.validate(valid => {
         if (valid) {
+           NProgress.start()
+           _this.stagSubmitLoading = true;
           if (!_this.stagnationForm.nvPointId) {
             editStag(_this, _this.stagnationForm).then(res => {
+               NProgress.done()
+               _this.stagSubmitLoading = false;
               if (res.data.result == 200) {
                 _this.getStag();
                 _this.$notify({
@@ -419,6 +502,8 @@ export default {
             });
           } else {
             updateStag(_this, _this.stagnationForm).then(res => {
+               NProgress.done()
+               _this.stagSubmitLoading = false;
               if (res.data.result == 200) {
                 _this.getStag();
                 _this.$notify({
@@ -459,17 +544,26 @@ export default {
       });
     },
     newWorker() {
-      this.workerForm = { nvPointId: this.currentStag.nvPointId };
+      if (!this.currentStag.nvPointId) {
+        this.$message("请点击导航点图表，选择导航点");
+        return;
+      }
+      this.workerForm = { nvPointId: this.currentStag.nvPointId,cameraLight:"2",needDetect:"1" };
       this.workerVisible = true;
     },
     saveWorker() {
       let _this = this;
+
       this.$refs.workerForm.validate(valid => {
         if (valid) {
+          NProgress.start();
+          _this.cmdLoading= true;
           if (this.workerForm.commandId) {
             updateWorker(_this, _this.workerForm).then(res => {
+               NProgress.done();
+               _this.cmdLoading= false;
+               _this.getWorkerListByStag();
               if (res.body.result == 200) {
-                _this.getWorkerListByStag();
                 _this.$notify({
                   title: "成功",
                   message: "指令更新成功",
@@ -486,9 +580,10 @@ export default {
             });
           } else {
             addWorker(_this, _this.workerForm).then(res => {
+               NProgress.start();
+              _this.cmdLoading= false;
               _this.getWorkerListByStag();
               if (res.body.result == 200) {
-                _this.getWorkerListByStag();
                 _this.$notify({
                   title: "成功",
                   message: "指令创建成功",
@@ -510,8 +605,10 @@ export default {
     handleEditWorker(i) {
       i.commandType = i.commandType + "";
       i.cameraId = i.cameraId ? i.cameraId + "" : null;
-      i.cameraLight = i.cameraLight||i.cameraLight==0 ? i.cameraLight + "" : null;
-      i.needDetect = i.needDetect||i.needDetect==0 ? i.needDetect + "" : null;
+      i.cameraLight =
+        i.cameraLight || i.cameraLight === 0 ? i.cameraLight + "" : null;
+      i.needDetect =
+        i.needDetect || i.needDetect === 0 ? i.needDetect + "" : null;
       this.workerForm = i;
       this.workerVisible = true;
     },
@@ -524,6 +621,7 @@ export default {
         deleteWorker(_this, {
           commandId: row.commandId
         }).then(res => {
+          NProgress.done();
           if (res.data.result === 200) {
             _this.$message({
               message: "删除成功",
@@ -536,8 +634,10 @@ export default {
         });
       });
     },
-    formatCamera(r){
-      return  r.cameraId?(this.cameras.find(i=>(i.id==r.cameraId)).label):'无';
+    formatCamera(r) {
+      return r.cameraId
+        ? this.cameras.find(i => i.id == r.cameraId).label
+        : "无";
     },
     renderContent(h, { node, data, store }) {
       if (data.rbAreaInfoList) {
@@ -548,6 +648,7 @@ export default {
             </span>
             <span style="float: right; margin-right: 20px">
               <el-button
+                type="success"
                 size="mini"
                 on-click={() => this.appendRoadway(store, data)}
               >
@@ -564,6 +665,7 @@ export default {
             </span>
             <span style="float: right; margin-right: 20px">
               <el-button
+                type="warning"
                 size="mini"
                 on-click={() => this.removeRoadway(store, data)}
               >

@@ -12,10 +12,25 @@ export const updateTask = (self, param) => { return self.$http.post(baseUrl + '/
 
 export const deleteTask = (self, param) => { return self.$http.post(baseUrl + '/v1/deleteTaskSchedule.action', param, { emulateJSON: true }) };
 
+export const pauseTask = (self, param) => { return self.$http.post(baseUrl + '/v1/activeTaskSchedule.action', param, { emulateJSON: true }) };
+
+
 //任务查看
 export const currentTask = (self, params) => { return self.$http.post(baseUrl + "/v1/listCurrentTasks.action", params, { emulateJSON: true }) };
 
 export const currentTaskDetail = (self, params) => { return self.$http.post(baseUrl + "/v1/listTaskDetailsByTask.action", params, { emulateJSON: true }) };
+
+
+//任务模版
+export const createTaskTemplate = (self, params) => {
+    const url = params.templateId ? "/v1/updateTemplateInfo.action" : "/v1/createTemplateInfo.action";
+    return self.$http.post(baseUrl + url, params, { emulateJSON: true })
+};
+
+export const templateList = (self, params) => { return self.$http.post(baseUrl + "/v1/listTemplateInfos.action", params, { emulateJSON: true }) };
+
+export const deleteTemplate = (self, params) => { return self.$http.post(baseUrl + "/v1/deleteTemplateInfo.action", params, { emulateJSON: true }) };
+
 
 
 export const getThermalResults = (self, params) => { return self.$http.get("/web/getTaskResultList.action", { params: params }) };
