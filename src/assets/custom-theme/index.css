@@ -5354,7 +5354,7 @@
 
 .custom-theme .el-tag--success {
 	background-color:  rgba(250,250,250,.17);
-	border-color: rgba(9, 126, 58, 0.2);
+	border-color: rgb(25, 204, 64);
 	color: rgb(25, 204, 64)
 }
 

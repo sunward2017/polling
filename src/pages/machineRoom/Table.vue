@@ -25,7 +25,6 @@
 			<el-table :data="rooms" highlight-current-row v-loading="listLoading" style="width: 100%;" @row-click="showDetail">
 				<el-table-column type="index" width="80" label="序号" align="center">
 				</el-table-column>
-
 				<el-table-column prop="roomName" label="机房名" width="200" sortable>
 					<template scope="scope">
 						<el-popover trigger="hover" placement="right">
@@ -72,27 +71,10 @@
 			</el-pagination>
 		</el-col>
 		<el-col :span="24">
-			<div class="detail-title">{{rName}}&nbsp;&&nbsp;详情</div>
+			<div class="detail-title">{{rName}}&nbsp;&amp;&nbsp;详情</div>
 		</el-col>
 		<div class="toolbar">
-			<div style="width:39%;float:left">
-				<h4>机器人详情</h4>
-				<el-table :data="robotList" highlight-current-row v-loading="robotListLoading" style="width: 100%;">
-					<el-table-column prop="robotName" label="名称" sortabl width="120">
-					</el-table-column>
-					<el-table-column prop="robotSerial" label="序列号" align="center" width="180">
-					</el-table-column>
-					<el-table-column prop="realtimeStatus" label="运行情况" align="center" :formatter="formatStatus">
-					</el-table-column>
-					<el-table-column prop="status" width="100" label="状态">
-						<template scope="scope">
-							<!--<el-tag :type="scope.row.status==1?'success':'danger'">{{scope.row.status==1?"启用":"禁用"}}</el-tag>-->
-							<el-tag :type="type(scope.row.status)">{{formatRealTimeStatus(scope.row)}}</el-tag>
-						</template>
-					</el-table-column>
-				</el-table>
-			</div>
-			<div style="width:60%;float:right">
+			<div style="width:60%;float:left">
 				<h4>设备详情</h4>
 				<el-table :data="deviceList" highlight-current-row v-loading="deviceListLoading" style="width: 100%;">
 					<el-table-column prop="deviceName" label="设备名称" width="200" sortable align="center">
@@ -109,6 +91,23 @@
 					<el-table-column prop="deviceType" label="设备类型" align="center" width="100">
 					</el-table-column>
 					<el-table-column prop="deviceModel" label="设备型号" align="center" width="100">
+					</el-table-column>
+				</el-table>
+			</div>
+			<div style="width:39%;float:right">
+				<h4>机器人详情</h4>
+				<el-table :data="robotList" highlight-current-row v-loading="robotListLoading" style="width: 100%;">
+					<el-table-column prop="robotName" label="名称" sortabl width="120">
+					</el-table-column>
+					<el-table-column prop="robotSerial" label="序列号" align="center" width="180">
+					</el-table-column>
+					<el-table-column prop="realtimeStatus" label="运行情况" align="center" :formatter="formatStatus">
+					</el-table-column>
+					<el-table-column prop="status" width="100" label="状态">
+						<template scope="scope">
+							<!--<el-tag :type="scope.row.status==1?'success':'danger'">{{scope.row.status==1?"启用":"禁用"}}</el-tag>-->
+							<el-tag :type="type(scope.row.status)">{{formatRealTimeStatus(scope.row)}}</el-tag>
+						</template>
 					</el-table-column>
 				</el-table>
 			</div>

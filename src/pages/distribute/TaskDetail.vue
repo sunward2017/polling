@@ -22,23 +22,22 @@
 				</el-table-column>
 				<el-table-column prop="roomId" label="巡检机房" width="160" :formatter="formatterRoom">
 				</el-table-column>
-				<el-table-column prop="taskName" label="任务名称" align="center">
+				<el-table-column prop="taskName" label="任务名称" align="center" width="200">
 				</el-table-column>
 				<el-table-column prop="status" label="执行状态" align="center" width="120">
 					<template scope="scope">
-						<el-tag type="success">{{formatStatus(scope.row)}}</el-tag>
+						<el-tag :type="cmdStatus[+scope.row.taskStatus+1+'']">{{formatStatus(scope.row)}}</el-tag>
 					</template>
 				</el-table-column>
-				<el-table-column prop="robotId" label="巡检机器人" align="center" :formatter="formatterRobot">
+				<el-table-column prop="robotId" label="巡检机器人" align="center" :formatter="formatterRobot" width="200">
 				</el-table-column>
 				<el-table-column prop="startTime" label="开始时间"  width="200"  align="center" sortable :formatter="formatTimeSction">
 				</el-table-column>
-				<el-table-column prop="creatTime" label="创建时间" width="200" align="center" sortable :formatter="formatArea">
+				<el-table-column prop="creatTime"  label="创建时间" min-width="200" align="center" :formatter="formatCTime">
 				</el-table-column>
-			 
 				<el-table-column prop="status" label="操作" align="center" width="300">
-                    <template scope="scope">
-					  <router-link :to="{path:'workerDetail',query:{taskId:scope.row.taskId}}" >
+          <template scope="scope">
+					  <router-link :to="{path:'workerDetail',query:{taskId:scope.row.taskId,taskName:scope.row.taskName}}" >
 					     <el-button type="info" size="small">执行详情</el-button>
 				      </router-link>
 					  <el-button type="warning" icon="delete" size="small" @click="handleStop(scope.row)">终止任务</el-button>
@@ -46,6 +45,11 @@
 				</el-table-column>
 			</el-table>
 		</template>
+    <!--分页-->
+		<el-col :span="24" class="toolbar" style="padding-bottom:10px;">
+			<el-pagination layout="prev, pager, next,total,sizes,jumper" @current-change="handleCurrentChange" :page-sizes="[10, 20, 30, 40]" :page-size="size" :current-page="page" :total="total" style="float:right;" @size-change="handleSizeChange">
+			</el-pagination>
+		</el-col>
 		 
 		<!--编辑界面-->
 		<el-dialog :title="editFormTtile" v-model="editFormVisible" :close-on-click-modal="false" size="tiny">
@@ -148,7 +152,7 @@ import {
   cmdListByRoom
 } from "api/results";
 import { getRoomList, getRoomDetail, roadwayList } from "api/room";
-import { TASKEXECTYPES, CMDTYPES } from "@/const";
+import { TASKEXECTYPES, CMDTYPES,CMDSTATUS } from "@/const";
 
 export default {
   data() {
@@ -167,6 +171,10 @@ export default {
       listLoading: false,
       editFormTtile: "新增",
       editFormVisible: false,
+      cmdStatus:CMDSTATUS,
+      total: 0,
+			page: 1,
+			size: 20,
       editForm: {
         roomId: "",
         robotId: "",
@@ -226,25 +234,29 @@ export default {
   methods: {
     handleCurrentChange(val) {
       this.page = val;
-      this.getList();
+      this.getTaskByRoom();
     },
     handleSizeChange(size) {
       this.page = 1;
       this.size = size;
-      this.getList();
+      this.getTaskByRoom();
     },
     getTaskByRoom() {
       let para = {
+        page:this.page,
         roomId: this.filters.roomId,
+        pageSize:this.size,
       };
       this.listLoading = true;
       NProgress.start();
       let self = this;
       currentTask(self, para).then(res => {
         if (res.data.result === 200) {
-          this.rows = res.data.data?res.data.data:[];
+          this.rows = res.data.data?res.data.data.list:[];
+          this.total = res.data.data.total
         } else {
           this.rows = [];
+          this.total =0;
         }
         this.listLoading = false;
         NProgress.done();
@@ -442,7 +454,7 @@ export default {
     formatStatus(r) {
       return TASKEXECTYPES[r.taskStatus];
     },
-    formatArea(r, c) {
+    formatCTime(r, c) {
       return parseTime(r.createTime)
     },
     formatArea1(r, c) {

@@ -2,7 +2,7 @@
 	<section>
 		<div class="toolbar">
 			<el-col :span="12">
-				当前任务名称:&emsp; {{taskName}} &emsp;&emsp;
+				当前任务:&emsp; {{taskName}} &emsp;&emsp;
 				<router-link :to="{path:'taskDetail'}" >
 					     <el-button type="info" icon="d-arrow-left" size="small">任务切换</el-button>
 			    </router-link>
@@ -33,7 +33,7 @@
             <td :rowspan="point.details.length" v-if="index<1">{{point.nvPointName}}</td>
             <td>{{cmd.commandInfo.commandName}}</td>
             <td><el-tag :type="types[cmd.commandInfo.commandType+'']">{{formatType(cmd.commandInfo.commandType)}}</el-tag></td>
-            <td><el-tag type="danger">{{formatStatus(cmd.commandStatus)}}</el-tag></td>
+            <td><el-tag :type="types[+cmd.commandStatus+1+'']">{{formatStatus(cmd.commandStatus)}}</el-tag></td>
             <td>{{"无"}}</td>
 			  </tr>
 			</template>
@@ -47,7 +47,7 @@ export default {
   name: "",
   data() {
     return {
-      taskName: "one",
+      taskName: '',
       tableData: [],
       types:CMDSTATUS,
     };
@@ -56,6 +56,7 @@ export default {
     getCurrentTaskDetail(taskId) {
       let _this = this;
       currentTaskDetail(_this, { taskId }).then(res => {
+          _this.taskName = this.$route.query.taskName;   
         if (res.data.result === 200) {
           _this.tableData = res.data.data;
         } else {

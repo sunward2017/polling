@@ -41,11 +41,13 @@
 				</el-table-column>
 				<el-table-column prop="prohibitedAreaId" label="避开巷道" width="240" align="center" sortable :formatter="formatArea">
 				</el-table-column>
-				<el-table-column prop="active" label="状态">
+				<el-table-column prop="active" label="任务状态">
 					<template scope="scope">
-						<el-tag :type="scope.row.active?'success':'danger'">{{scope.row.active?"执行":"挂起"}}</el-tag>
+						<el-tag :type="scope.row.active?'success':'danger'">{{scope.row.active?"可执行":"可挂起"}}</el-tag>
 					</template>
 				</el-table-column>
+        <!-- <el-table-column prop="createTime" label="创建时间" :formatter="formatTime">
+        </el-table-column> -->
 				<el-table-column prop="status" label="操作" align="center" width="300">
 					<template scope="scope">
 						<el-button type="darnge" icon="edit" size="small" @click="handleDetail(scope.row)">修改</el-button>
@@ -65,7 +67,7 @@
 						</el-option>
 					</el-select>
 				</el-form-item>
-				<el-form-item label="任务名称" prop="taskName">
+				<el-form-item label="任务名称" prop="taskName" >
 					<el-input v-model="editForm.taskName" auto-complete="off"></el-input>
 				</el-form-item>
 				<el-form-item label='巡检机器人' prop="robotId">
@@ -91,7 +93,7 @@
 					</el-col>
 					<el-col :span="12" v-if="editForm.useTemplate">
 						<el-form-item prop="templateId">
-							<el-select v-model="editForm.templateId" placeholder="请选择模版" style="width:100%">
+							<el-select v-model="editForm.templateId" placeholder="请选择模版" >
 								<el-option v-for="item in templates" :key="item.templateId" :label="item.templateName" :value="item.templateId">
 								</el-option>
 							</el-select>
@@ -170,6 +172,15 @@ import { TASKEXECTYPES, CMDTYPES } from "@/const";
 
 export default {
   data() {
+    var checkNull = (rule, value, callback) => {
+       	setTimeout(() => {
+				   if(!value||!value.replace(/(^\s*)|(\s*$)/g,"")){
+           	callback(new Error('请输入任务名称'));
+           }else{
+               callback()
+            }
+				}, 500);
+    };
     return {
       filters: {
         roomId: "",
@@ -209,8 +220,7 @@ export default {
         ],
         taskName: [
           {
-            required: true,
-            message: "请输入任务名称",
+            validator: checkNull,
             trigger: "blur"
           }
         ],
@@ -291,6 +301,7 @@ export default {
         .rbAreaInfoList.forEach(r => {
           _this.prohibitedAreas[r.areaId] = r.areaName;
         });
+       this.getCmdByRoom();  
     },
     getRoadway() {
       let self = this;
@@ -391,7 +402,7 @@ export default {
         .rbAreaInfoList.forEach(r => {
           _this.prohibitedAreas[r.areaId] = r.areaName;
         });
-      this.editForm = {
+      this.editForm ={}={
         ...r,
         timeSection:r.prohibitedStartTime&&r.prohibitedEndTime? [
           new Date(r.prohibitedStartTime),
@@ -402,6 +413,7 @@ export default {
           .split(",")
           .map(item => ({ value: new Date("2020-12-12 " + item) }))
       };
+      this.getCmdByRoom();  
       this.editFormVisible = true;
     },
     handleDel(row) {
@@ -457,10 +469,10 @@ export default {
     changeFormRoom(v) {
       let id = this.editForm.roomId;
       this.roomRobots = this.rooms.find(item => item.roomId === id).robotList;
+      this.getCmdByRoom();
     },
     addcmd() {
       this.cmdVisible = true;
-      this.getCmdByRoom();
     },
     cmdName(type) {
       return CMDTYPES.find(i => i.value == type).label;
@@ -475,6 +487,8 @@ export default {
               r.cmdType = [];
               return r;
             });
+      
+          // map cmd
           if (this.editForm.scheduleId) {
             const data =this.editForm.taskDetails?JSON.parse(this.editForm.taskDetails):[];
             let cmdData = _this.cmdData;
@@ -520,6 +534,9 @@ export default {
     },
     formatStatus(r) {
       return r.status===1?"已下发":"未下发";
+    },
+    formatTime(r){
+       return parseTime(r.createTime)
     },
     formatArea(r, c) {
       const area = this.roadwayData

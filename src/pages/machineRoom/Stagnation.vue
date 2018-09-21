@@ -10,7 +10,7 @@
 					<el-button type="success" icon="plus" size="small" @click="addStag">新增导航点</el-button>
 				</div>
 				<!-- stagnation list -->
-				<el-table :data="stagData" height="260" @row-click.self="changeStag" v-loading="stagLoading"  highlight-current-row>
+				<el-table :data="stagData" height="260" @row-click.self="changeStag" v-loading="stagLoading"  highlight-current-row border>
 					<el-table-column type="index" width="50">
 					</el-table-column>
 					<el-table-column prop="nvPointName" label="导航点名称" align="center">
@@ -35,7 +35,7 @@
 			<el-button icon="plus" type="success" size="small" @click="newWorker">新增巡检指令</el-button>
 		</div>
 		<!-- action list -->
-		<el-table :data="workerData" height="400" v-loading="workerLoading"  highlight-current-row>
+		<el-table :data="workerData" height="400" v-loading="workerLoading"  highlight-current-row border>
       <el-table-column type="index" width="50">
 			</el-table-column>
 			<el-table-column prop="commandName" label="指令名称" width="180">
@@ -80,20 +80,17 @@
 		<!-- Lane form-->
 		<el-dialog :visible.sync="dialogFormVisible" size="tiny" :show-close="false">
 			<el-form :inline="true" :model="editStagnation" :rules="areaRules" ref="areaForm">
-			 
 					<el-form-item label="巷道名称" prop="name">
 						<el-input v-model="editStagnation.name" placeholder="请输入巷道名称" ></el-input>
 					</el-form-item>
-			 
 					<el-form-item>
+            <el-button type="primary" @click="dialogFormVisible=false">取消</el-button>
 						<el-button type="primary" @click="areaSubmit" v-loading="areaSubmitLoading">提交</el-button>
-						<el-button type="primary" @click="dialogFormVisible=false">取消</el-button>
 					</el-form-item>
-				 
 			</el-form>
 		</el-dialog>
 		<!-- Stagnation form -->
-		<el-dialog title="导航点编辑" :visible.sync="stagVisible"  size="tiny">
+		<el-dialog title="导航点编辑" :visible.sync="stagVisible"  size="tiny" center>
 			<el-form :model="stagnationForm" :rules="stagRules" ref="stagForm" label-width="100px">
 				<el-form-item label="所属巷道">
 					<span style="color:orange">{{stagnationForm.areaName}}</span>
@@ -119,15 +116,14 @@
 						</el-form-item>
 					</el-col>
 				</el-form-item>
-				
-				<el-form-item>
-					<el-button type="primary" @click="saveStag" v-loading="stagSubmitLoading">提交</el-button>
-					<el-button type="info" @click="stagVisible=false">取消</el-button>
-				</el-form-item>
 			</el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="info" @click="stagVisible=false">取消</el-button>
+        <el-button type="primary" @click="saveStag" v-loading="stagSubmitLoading">提交</el-button>
+      </span>
 		</el-dialog>
 		<!-- action form -->
-		<el-dialog title="指令编辑" :visible.sync="workerVisible" size="small">
+		<el-dialog title="指令编辑" :visible.sync="workerVisible" size="small" >
 			<el-form :model="workerForm" ref="workerForm" label-width="90px" :rules="rules">
 				<el-form-item label="所属导航点">
 					<span style="color:orange">{{currentStag.nvPointName}}</span>
@@ -185,15 +181,15 @@
            </el-form-item>
         </template>
         <template v-else>
-				<el-form-item label="持续时长" prop="waitTime">
-					<el-input v-model="workerForm.waitTime" placeholder="请输入等待时长">mm</el-input> 
-				</el-form-item>
+          <el-form-item label="持续时长" prop="waitTime">
+            <el-input v-model="workerForm.waitTime" placeholder="请输入等待时长">mm</el-input> 
+          </el-form-item>
         </template> 
-				<el-form-item>
-					<el-button type="primary" @click="saveWorker" v-loading="cmdLoading">提交</el-button>
-					<el-button type="info" @click="workerVisible=false">取消</el-button>
-				</el-form-item>
 			</el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="info" @click="workerVisible=false">取消</el-button>
+        <el-button type="primary" @click="saveWorker" v-loading="cmdLoading">提交</el-button>
+      </span> 
 		</el-dialog>
 	</section>
 </template>
@@ -428,7 +424,7 @@ export default {
     },
     addStag() {
       if (!this.currentAreaNode.areaId) {
-        this.$message("请点击右侧，选择导航点巷道");
+        this.$message("请点击左边巷道");
         return;
       }
       this.stagnationForm = {

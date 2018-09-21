@@ -19,14 +19,15 @@ const Workers = r => require.ensure([], () => r(require('./pages/workers/Table.v
 
 const Room = r => require.ensure([], () => r(require('./pages/machineRoom/Table.vue')), 'Room');
 const Device = r => require.ensure([], () => r(require('./pages/machineRoom/device.vue')), 'Device');
-const Stagnation = r => require.ensure([], () => r(require('./pages/machineRoom/Stagnation.vue')), 'Stagnation');
+// const Stagnation = r => require.ensure([], () => r(require('./pages/machineRoom/Stagnation.vue')), 'Stagnation');
+const Stagnation = r => require.ensure([], () => r(require('./pages/machineRoom/InspectionConfig.vue')), 'Stagnation');
 
 const Template = r => require.ensure([], () => r(require('./pages/template/Table.vue')), 'Template');
 const Admin = r => require.ensure([], () => r(require('./pages/admin/Table.vue')), 'Admin');
 const warningSend = r => require.ensure([], () => r(require('./pages/template/warning.vue')), 'warningSend');
 
 const CollectionResult = r => require.ensure([], () => r(require('./pages/results/collectionResult.vue')), 'CollectionResult');
-const SmokeWarning = r => require.ensure([], () => r(require('./pages/results/smockeWarning.vue')), 'SmokeWarning');
+const SmokeWarning = r => require.ensure([], () => r(require('./pages/results/smokeWarning.vue')), 'SmokeWarning');
 const NoiseWarning = r => require.ensure([], () => r(require('./pages/results/noiseWarning.vue')), 'NoiseWarning');
 const Thermal = r => require.ensure([], () => r(require('./pages/results/Thermal.vue')), 'Thermal');
 const PhotoReport = r => require.ensure([], () => r(require('./pages/results/photoReport.vue')), 'PhotoReport');
@@ -49,7 +50,6 @@ const report = r => require.ensure([], () => r(require('./pages/results/report.v
 
 import vueResource from 'vue-Resource'
 import VueLazyLoad from 'vue-lazyload'
-import { mapState } from 'vuex'
 import { sendLogs } from './api/admin';
 
 Vue.use(VueLazyLoad, {
@@ -296,7 +296,7 @@ Vue.http.interceptors.push((request, next) => {
 			let detail = store.state.user ? `${store.state.user.account}${request.msg}` : `${request.msg}`;
 			sendLogs(app, detail)
 		}
-		return res;
+		return res
 	});
 });
 

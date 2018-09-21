@@ -13,7 +13,7 @@
 					    </el-option>
 					  </el-select>
 			    </el-form-item>
-				<el-form-item v-if="isAll">
+				<el-form-item>
 					<el-input v-model="filters.value" placeholder="请输入查询字段" ></el-input>
 				</el-form-item>
 				<el-form-item>

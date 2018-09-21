@@ -36,3 +36,5 @@ export const CMDTYPES = [{value:"1",label:"拍照"},{value:"2",label:"红外"},{
 export const TASKEXECTYPES = {"0":"未执行","1":"执行中","2":"执行完毕","3":"超时","4":"中断"};
 
 export const CMDSTATUS={'1':'gray','2':'primary','3':'success','4':'warning','5':'danger'}; 
+
+export const FLAOVR_TYPE =['success','danger','warning']; 

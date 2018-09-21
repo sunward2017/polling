@@ -48,7 +48,7 @@
         </el-form-item>
       </el-form>
       <el-table :data="stagData" style="margin-bottom:20px;" height="400" v-loading="stagLoading"  highlight-current-row>
-        <el-table-column type="index" label="#" width="50">
+        <el-table-column type="index" label="#" width="60">
         </el-table-column>
         <el-table-column prop="nvPointName" label="导航点名称" width="130" >
         </el-table-column>
