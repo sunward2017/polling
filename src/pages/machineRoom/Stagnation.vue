@@ -214,7 +214,7 @@ import { mapState } from "vuex";
 export default {
   data() {
     var checkNum=(rule, value, callback)=>{
-      var value =value&&value.replace(/(^\s*)|(\s*$)/g, "");
+      var value =value&&value.toString().replace(/(^\s*)|(\s*$)/g, "");
       setTimeout(() => {
         if (!value) {
           callback(new Error("输入为空"));
@@ -320,7 +320,6 @@ export default {
   },
   computed: mapState(["user"]),
   methods: {
-    
     formatCommandType(r) {
       let type = CMDTYPES.find(i => i.value == r.commandType);
       return type ? type.label : r.commandType;
@@ -409,7 +408,7 @@ export default {
     },
     getStag() {
       let _this = this;
-      (this.stagLoading = true),
+      this.stagLoading = true
         stagList(_this, {
           areaId: _this.currentAreaNode.areaId
         }).then(res => {

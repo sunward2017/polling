@@ -19,8 +19,9 @@ const Workers = r => require.ensure([], () => r(require('./pages/workers/Table.v
 
 const Room = r => require.ensure([], () => r(require('./pages/machineRoom/Table.vue')), 'Room');
 const Device = r => require.ensure([], () => r(require('./pages/machineRoom/device.vue')), 'Device');
-// const Stagnation = r => require.ensure([], () => r(require('./pages/machineRoom/Stagnation.vue')), 'Stagnation');
-const Stagnation = r => require.ensure([], () => r(require('./pages/machineRoom/InspectionConfig.vue')), 'Stagnation');
+const Stagnation = r => require.ensure([], () => r(require('./pages/machineRoom/Stagnation.vue')), 'Stagnation');
+// const Stagnation = r => require.ensure([], () => r(require('./pages/machineRoom/InspectionConfig.vue')), 'Stagnation');
+const rfidTemplate = r => require.ensure([], () => r(require('./pages/machineRoom/rfidTemplate.vue')), 'rfidTemplate');
 
 const Template = r => require.ensure([], () => r(require('./pages/template/Table.vue')), 'Template');
 const Admin = r => require.ensure([], () => r(require('./pages/admin/Table.vue')), 'Admin');
@@ -169,6 +170,10 @@ const routes = [{
 		path: 'stagnation',
 		component: Stagnation,
 		name: '巡检点配置'
+	},{
+		path:'rTemplate',
+		component:rfidTemplate,
+		name:'标签模板'
 	}]
 }, {
 	path: '/',
