@@ -276,7 +276,7 @@
 	import NProgress from 'nprogress'
 	import { realtimeStatus, realTimeTypes, robotStatusForObj, robotStatusTypes } from '@/const';
 	import { getRoomList, getRoomDetail, getRobots, saveRoom, removeRoom } from 'api/room';
-	import { parseTime } from '../../utils';
+	import { parseTime } from 'utils';
 	 
 	import UpMapload from 'components/upload/upMap';
 	 

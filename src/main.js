@@ -10,6 +10,9 @@ import Vuex from 'vuex'
 import NProgress from 'nprogress' //页面顶部进度条
 import 'nprogress/nprogress.css'
 
+import GaugePlugin from './components/rComponent'
+ 
+
 const Login = r => require.ensure([], () => r(require('./pages/login/Login.vue')), 'Login');
 
 const Reset = r => require.ensure([], () => r(require('./pages/login/Reset.vue')), 'Reset');
@@ -62,6 +65,8 @@ Vue.use(ElementUI)
 Vue.use(VueRouter)
 Vue.use(Vuex)
 Vue.use(vueResource);
+Vue.use(GaugePlugin);
+ 
 
 const routes = [{
 	path: '/login',
