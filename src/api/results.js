@@ -51,9 +51,12 @@ export const getThermometryResults = (self, params) => { return self.$http.get("
 
 export const getTaskByTime = (self, params) => { return self.$http.get("/web/listEndTaskByTime.action", { params: params }) };
 
-export const getServersInfos = (self, params) => { return self.$http.get(baseUrl + '/listTaskWithCabinetInfos.action', { params: params }) }
+//export const getServersInfos = (self, params) => { return self.$http.get(baseUrl + '/listTaskWithCabinetInfos.action', { params: params }) }
+export const getServersInfos = (self, params) => { return self.$http.get(baseUrl + '/v1/listTasksWithServers.action', { params: params }) }
 
+//资源
 export const getListCabinetsByTaskId = (self, params) => { return self.$http.get(baseUrl + '/listCabinetsByTaskId.action', { params: params }) }
+ 
 
 export const getListServers = (self, params) => { return self.$http.get(baseUrl + '/listServers.action', { params: params }) };
 

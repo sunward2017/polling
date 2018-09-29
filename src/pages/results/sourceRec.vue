@@ -95,7 +95,7 @@
 			</div>
 			<el-tabs v-model="activeName" type="border-card" @tab-click="changeTab()">
 				<el-tab-pane label="按机柜查看" name="first">
-					<el-row>
+					<el-row style="margin-bottom:15px;">
 						<el-col :span='5' :offset="17">
 							<el-input placeholder="请输入机柜名称" v-model="cabinetName"></el-input>
 						</el-col>
@@ -124,7 +124,7 @@
 				</el-tab-pane>
 				<!--设备详情-->
 				<el-tab-pane label="按设备查看" name="second">
-					<el-row >
+					<el-row style="margin-bottom:15px;">
 						<el-col :span='5' :offset="12">
 							<el-input placeholder="设备ip" v-model="ip" style="width:90%"></el-input>
 						</el-col>
@@ -192,7 +192,7 @@
 				</div>
 			</div>
 
-			<el-row>
+			<el-row style="margin-bottom:15px;">
 				<el-col :span='5' :offset="12">
 					<el-input placeholder="请输入设备IP" v-model="ip" style="width:90%"></el-input>
 				</el-col>

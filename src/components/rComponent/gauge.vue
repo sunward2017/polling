@@ -1,33 +1,35 @@
 <template>
-   <div :class="className"  ref="wap" :id="id" @click="setting">
-        <div>{{gaugeType}}</div>
-        <div :class="className!=='gauge_t'?'gauge_n':'gauge_c'">xxx</div>
-        <div v-if="className!=='gauge_o'" :class="className!=='gauge_t'?'gauge_n':'gauge_c'">xxx</div>
+    <div :class="type"  ref="wap" @click="setting" :id="id">
+        <div>{{type ==='gauge_d'?"双行纵向仪表":type==="gauge_t"?"双向横向仪表":'单行仪表'}}</div>
+        <div :class="type!=='gauge_t'?'gauge_n':'gauge_c'">xxx</div>
+        <div v-if="type!=='gauge_o'" :class="type!=='gauge_t'?'gauge_n':'gauge_c'">xxx</div>
     </div>           
 </template>
 <script>
 export default {
     name:"Gauge",
     props:{
-       type:String,
        id:String,
+       numbers:Array,
+    },
+    data(){
+      return {
+        dialogVisible:false,
+      }
     },
     computed:{
-       className:function(){
-            return this.type ==='3'?"gauge_d":this.type==="4"?"gauge_t":'gauge_o' 
-       },
-       gaugeType:function(){
-           return this.type ==='3'?"双行纵向仪表":this.type==="4"?"双向横向仪表":'单行仪表'
+       type:function(){
+          return this.numbers.length>1?"gauge_d":this.numbers[0].length>1?"gauge_t":'gauge_o' 
        }
     },
     methods:{
       setting(){
-        this.$emit('set',this.id)
-      }
+        this.$emit('configGauge',this.id);
+      },
     },
     mounted(){
-      if(this.id){
-        this.$refs.wap.style.background="green";
+      if(this.numbers[0][0].type){
+        this.$refs.wap.style.background="rgba(0,200,200,.3)";
       }
     }
 }
@@ -37,7 +39,7 @@ export default {
 .gauge_t,
 .gauge_o {
   color: #fff;
-  border: 1px solid #fff;
+  border: 1px solid rgba(250,250,250,0.35);
   padding: 10px;
   float: left;
   background: gray;
@@ -50,20 +52,20 @@ export default {
 .gauge_n {
   width: 100px;
   height: 20px;
-  border: 1px solid #fff;
+  border: 1px solid rgba(250,250,250,0.35);
   line-height: 20px;
   color: #b7c9cf;
   margin-top: 5px;
   margin-left: 10px;
-  background: rgb(0, 0, 0);
-}
+   background:rgba(0,0,0,.7);
+}   
 .gauge_c {
   float: left;
   width: 50px;
-  border: 1px solid #fff;
+  border: 1px solid rgba(250,250,250,0.35);
   color: #b7c9cf;
   margin-left: 5px;
-  background: #000;
+  background:rgba(0,0,0,.7);
 }
 .gauge_o .gauge_n,
 .gauge_t .gauge_c {

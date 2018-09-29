@@ -157,7 +157,7 @@ export default {
     this.$nextTick(function() {
       document.onkeydown = function(e) {
         var ev = e || window.event;
-        if (ev.keyCode === 13&&_this.$route.path) {
+        if (ev.keyCode === 13&&_this.$route.path==='/login') {
           _this.handleSubmit2();
         }
       };

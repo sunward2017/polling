@@ -279,7 +279,6 @@
 	import { parseTime } from 'utils';
 	 
 	import UpMapload from 'components/upload/upMap';
-	 
 	import NavConfigList from 'components/navConfig';
 	import NavConfigForm from 'components/navConfig/NavConfigForm';
 	import { getCustoms } from 'api/admin';
