@@ -1,8 +1,8 @@
 <template>
     <div :class="type"  ref="wap" @click="setting" :id="id">
         <div>{{type ==='gauge_d'?"双行纵向仪表":type==="gauge_t"?"双向横向仪表":'单行仪表'}}</div>
-        <div :class="type!=='gauge_t'?'gauge_n':'gauge_c'">xxx</div>
-        <div v-if="type!=='gauge_o'" :class="type!=='gauge_t'?'gauge_n':'gauge_c'">xxx</div>
+        <div :class="type!=='gauge_t'?'gauge_n':'gauge_c'">{{value1}}</div>
+        <div v-if="type!=='gauge_o'" :class="type!=='gauge_t'?'gauge_n':'gauge_c'">{{value2}}</div>
     </div>           
 </template>
 <script>
@@ -20,6 +20,16 @@ export default {
     computed:{
        type:function(){
           return this.numbers.length>1?"gauge_d":this.numbers[0].length>1?"gauge_t":'gauge_o' 
+       },
+       value1:function(){
+          return this.numbers[0][0].lower?(this.numbers[0][0].lower+'~'+this.numbers[0][0].high)+this.numbers[0][0].unit:"xxx~xxx"
+       },
+       value2:function(){
+          if(this.type==='gauge_d'){
+             return this.numbers[1][0].lower?(this.numbers[1][0].lower+'~'+this.numbers[1][0].high)+this.numbers[1][0].unit:"xxx~xxx" 
+          }else if(this.type==="gauge_t"){
+            return this.numbers[0][1].lower?(this.numbers[0][1].lower+'~'+this.numbers[0][1].high)+this.numbers[0][1].unit:"xxx~xxx"
+          }
        }
     },
     methods:{
@@ -50,21 +60,21 @@ export default {
 }
 
 .gauge_n {
-  width: 100px;
+  width: 200px;
   height: 20px;
   border: 1px solid rgba(250,250,250,0.35);
   line-height: 20px;
   color: #b7c9cf;
   margin-top: 5px;
-  margin-left: 10px;
-   background:rgba(0,0,0,.7);
+  background:rgba(0,0,0,.7);
+  font-size:10px;
 }   
 .gauge_c {
   float: left;
-  width: 50px;
+  font-size:10px;
+  width: 100px;
   border: 1px solid rgba(250,250,250,0.35);
   color: #b7c9cf;
-  margin-left: 5px;
   background:rgba(0,0,0,.7);
 }
 .gauge_o .gauge_n,

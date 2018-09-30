@@ -32,30 +32,30 @@
               </div>
              </el-col>
           </el-row>
-           <el-dialog title="仪表配置"  :visible.sync="dialogVisible" size="small">
+           <el-dialog title="仪表配置"  :visible.sync="dialogVisible" size="small" :before-close="handleNum">
               <template v-for="(item,r) in data">
                   <template v-for="(gauge,index) in item">
-                    <el-form :inline="true" :model="gauge" :key="r+'_'+index"> 
-                        <el-form-item label="仪表参数" :prop="gauge.type" :rules="{ required: true, message: '请选择仪表类型', trigger: 'change' }">
+                    <el-form :inline="true" :model="gauge" :key="r+'_'+index" :ref="'form_'+r+'_'+index"> 
+                        <el-form-item label="仪表参数" prop="type" :rules="{ required: true, message: '请选择仪表类型', trigger: 'change' }">
                             <el-select v-model="gauge.type" placeholder="仪表类型" @change="changeType(gauge)" style="width:160px;">
-                                <el-option label="温度" value="5"></el-option>
-                                <el-option label="湿度" value="6"></el-option>
-                                <el-option label="电流" value="7"></el-option>
-                                <el-option label="电压" value="8"></el-option>
+                                <el-option label="温度" value="7"></el-option>
+                                <el-option label="湿度" value="8"></el-option>
+                                <el-option label="电流" value="5"></el-option>
+                                <el-option label="电压" value="6"></el-option>
                             </el-select>
                         </el-form-item>
                         <el-form-item label="正常值区间" >
-                            <el-form-item :prop="gauge.lower" :rules="{ validator: checkNum, trigger: 'blur' }">
-                                <el-input v-model="gauge.lower" placeholder="低位值" style="width:80px;"></el-input>
+                            <el-form-item prop="lower" :rules="{ validator: checkNum, trigger: 'blur' }">
+                                <el-input v-model="gauge.lower" placeholder="低位值" style="width:100px;"></el-input>
                             </el-form-item>
                             <span>~</span>
-                            <el-form-item :prop="gauge.high" :rules="{ validator: checkNum, trigger: 'blur' }">
-                                <el-input v-model="gauge.high" placeholder="高位值"  style="width:80px;"></el-input>
+                            <el-form-item prop="high" :rules="{ validator: checkNum, trigger: 'blur' }">
+                                <el-input v-model="gauge.high" placeholder="高位值"  style="width:100px;"></el-input>
                             </el-form-item>
                             <span style="font-weight:bold;"> &nbsp;{{gauge.unit}}&emsp;</span>
                         </el-form-item>
-                        <el-form-item label="识别位数" :prop="gauge.digits" :rules="checkNum">
-                            <el-input v-model="gauge.digits"  style="width:80px;"></el-input>
+                        <el-form-item label="识别位数" prop='digits' :rules="{ validator: checkNum, trigger: 'blur' }" >
+                          <el-input v-model="gauge.digits"  style="width:100px;"></el-input>
                         </el-form-item>
                     </el-form>
                  </template>
@@ -66,8 +66,8 @@
           </el-dialog>
           <el-popover
             ref="popover"
-            placement="right"
-            width="470"
+            placement="top"
+            width="256"
             trigger="click">
               <div class="label_t">标签集</div>
               <div id="left">
@@ -101,20 +101,6 @@ export default {
     Light
   },
   data() {
-    var checkVal=(value,callback)=>{
-        console.log(value)
-      
-        // if (!value) {
-        //   return callback(new Error('不可为空'));
-        // }
-        // setTimeout(() => {
-        //   if (!/(^-?\d\d*\.\d*$)|(^-?\d\d*$)|(^-?\.\d\d*$)/.test(value)){
-        //     callback(new Error('请输入数字值'));
-        //   } else {
-        //     callback();
-        //   }
-        // }, 1000);
-    };
     return {
       row: [[]],
       drake: null,
@@ -133,17 +119,25 @@ export default {
       data: [],
       isEdit: false,
       gauges: {},
-      currentTpl: null,
-      checkNum:{
-        validator:checkVal, trigger: 'blur'
-      }
+      currentTpl: null
     };
   },
   methods: {
     uuid() {
       return guid();
     },
-    
+    checkNum(rules, value, callback) {
+      if (!value) {
+        return callback(new Error("数据不能为空"));
+      }
+      setTimeout(() => {
+        if (!/(^-?\d\d*\.\d*$)|(^-?\d\d*$)|(^-?\.\d\d*$)/.test(value)) {
+          return callback(new Error("数据格式不正确"));
+        } else {
+          callback();
+        }
+      }, 1000);
+    },
     editTpl(store, data) {
       this.currentTpl = data;
       this.isEdit = true;
@@ -158,8 +152,27 @@ export default {
         });
       });
     },
-    handleNum(){
+    handleNum() {
+      let _this = this;
+      let keys = Object.keys(_this.$refs).filter(
+        item => (item.indexOf("form") === 0&&_this.$refs[item][0])
+      );
       
+      for (var k = 0, l = keys.length; k < l; k++) {
+        (k => {
+          if (this.$refs[keys[k]][0]) {
+            this.$refs[keys[k]][0].validate(valid => {
+              if (!valid) {
+                return
+              } else {
+                if (++k === l) {
+                   _this.dialogVisible = false
+                }
+              }
+            });
+          }
+        })(k);
+      }
     },
     removeTpl(store, data) {
       var _this = this;
@@ -271,7 +284,7 @@ export default {
         copySortSource: false, // elements in copy-source containers can be reordered
         revertOnSpill: true, // spilling will put the element back where it was dragged from, if this is true
         removeOnSpill: true, // spilling will `.remove` the element, if this is true
-        mirrorContainer: document.body, // set the element that gets mirror elements appended
+        //mirrorContainer: document.getElementById('right'), // set the element that gets mirror elements appended
         ignoreInputTextSelection: true // allows users to select input text, see details below
       }).on("dragend", function(el) {
         _this.configPanel(el);
@@ -343,12 +356,29 @@ export default {
           return;
         }
       }
-      for (var k in _this.gauges) {
-        if (!_this.gauges[k][0][0].type) {
-          _this.$message.error("仪表参数没有配置");
-          return;
+      
+      let row = cloneObj(this.row);
+      let para = [];
+      for(var i=0,l=row.length;i<l;i++){
+        let r =[];
+        for(var j=0,n=row[i].length;j<n;j++){
+          let obj = {};
+          if(row[i][j].id){
+            if (!_this.gauges[row[i][j].id][0][0].type) {
+              _this.$message.error("仪表参数没有配置");
+              return;
+            }else{
+              obj = {type:row[i][j].type,numbers:_this.gauges[row[i][j].id]};
+              r.push(obj) 
+            }
+          }else{
+             obj = {...row[i][j]};
+             r.push(obj)
+          }
         }
+        para.push(r)
       }
+      
 
       this.$prompt("请输入模板名称", "提示", {
         confirmButtonText: "确定",
@@ -359,16 +389,6 @@ export default {
           "模板名称只能是中文、英文、数字组合，且不可以数字开头！"
       })
         .then(({ value }) => {
-          let row = cloneObj(_this.row);
-          let para = row.map(r =>
-            r.map(c => {
-              if (c.type === "3") {
-                return { type: "3", numbers: _this.gauges[c.id] };
-              } else {
-                return c;
-              }
-            })
-          );
           let params = {
             detectSettingName: value,
             detectSetting: JSON.stringify(para)
@@ -409,13 +429,13 @@ export default {
     changeType(gauge) {
       let val = gauge.type;
       switch (val) {
-        case "6":
+        case "8":
           gauge.unit = "%";
           break;
-        case "7":
+        case "5":
           gauge.unit = "A";
           break;
-        case "8":
+        case "6":
           gauge.unit = "V";
           break;
         default:
@@ -440,12 +460,11 @@ export default {
 #right,
 .rfidTree {
   border: 1px solid rgba(250, 250, 250, 0.35);
+  min-height: 80vh;
+  min-width:200px;
 }
 #left {
   background: #191d22;
-}
-.rfidTree {
-  min-height: 80vh;
 }
 #right {
   min-height: 75vh;
@@ -468,6 +487,25 @@ export default {
 .rf_item {
   position: relative;
 }
+.label_t {
+  color: #fff;
+  border: 1px solid rgba(250, 250, 250, 0.35);
+  border-bottom: none;
+  padding: 15px 0;
+  text-indent: 15px;
+  background: #022c6b;
+}
+.label_c {
+  width: 100px;
+  text-align: right;
+  vertical-align: middle;
+  float: left;
+  font-size: 14px;
+  color: orange;
+  line-height: 115px;
+  padding: 0 22px 0 0;
+  box-sizing: border-box;
+}
 .closed {
   position: absolute;
   top: 10px;
@@ -487,7 +525,7 @@ export default {
 .affix {
   position: fixed;
   left: 300px;
-  bottom: 300px;
+  bottom: 10px;
 }
 </style>
 

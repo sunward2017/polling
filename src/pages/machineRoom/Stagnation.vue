@@ -153,7 +153,7 @@
           <el-form-item label="头部仰角" prop="elevation" class="form_col">
               <el-input v-model="workerForm.elevation" placeholder="请输入头部仰角"></el-input>
           </el-form-item>
-          <el-form-item label="检测仪器" prop="cameraId" class="form_col" required>
+          <el-form-item label="检测仪器" prop="cameraId" class="form_col" v-if="workerForm.commandType==='1'" required>
               <el-select v-model="workerForm.cameraId" placeholder="检测仪器选择" style="width:100%">
               <el-option
                 v-for="item in cameras"
@@ -163,17 +163,17 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="焦距" prop="cameraZoom" class="form_col">
+          <el-form-item label="焦距" prop="cameraZoom" class="form_col" v-if="workerForm.commandType==='1'">
             <el-input v-model="workerForm.cameraZoom" placeholder="请输入焦距"></el-input>
           </el-form-item>
-          <el-form-item label="闪光灯" prop="cameraLight" class="form_col"  required>
+          <el-form-item label="闪光灯" prop="cameraLight" class="form_col"  v-if="workerForm.commandType==='1'" required>
               <el-radio-group v-model="workerForm.cameraLight" size="small">
                 <el-radio-button label="2">自动</el-radio-button>
                 <el-radio-button label="1">开启</el-radio-button>
                 <el-radio-button label="0">关闭</el-radio-button>
               </el-radio-group>
           </el-form-item>
-          <el-form-item label="图像识别" prop="needDetect" class="form_col"  required >
+          <el-form-item label="图像识别" prop="needDetect" class="form_col" v-if="workerForm.commandType==='1'" required >
                <el-radio-group v-model="workerForm.needDetect" size="small">
                 <el-radio-button label="1">开启</el-radio-button>
                 <el-radio-button label="0">关闭</el-radio-button>
@@ -181,7 +181,7 @@
            </el-form-item>
         </template>
         <template v-else>
-          <el-form-item label="持续时长" prop="waitTime">
+          <el-form-item label="持续时长" prop="waitTime" class="form_col">
             <el-input v-model="workerForm.waitTime" placeholder="请输入等待时长">mm</el-input> 
           </el-form-item>
         </template> 
@@ -216,8 +216,8 @@ export default {
     var checkNum=(rule, value, callback)=>{
       var value =value&&value.toString().replace(/(^\s*)|(\s*$)/g, "");
       setTimeout(() => {
-        if (!value) {
-          callback(new Error("输入为空"));
+        if (value==="") {
+          callback(new Error("不可为空"));
         } else if (value && isNaN(value)) {
           callback(new Error("输入类型不正确"));
         } else {
