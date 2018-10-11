@@ -33,21 +33,21 @@
 		</el-row>
 		<el-dialog title="任务列表" :visible.sync="taskVisible" :close-on-click-modal="false">
 			<el-table :data="taskGather" v-loading="listLoading" style="width: 100%" @row-click="setTask">
-				<el-table-column prop="taskId" align="center" label="选项" width="100">
+				<el-table-column prop="taskId" align="center" label="选项" width="80">
 					<template scope="scope">
 						<el-radio v-model="filters.taskId" :label="scope.row.taskId" @change='setTaskId(scope.row)'>{{&nbsp;}}</el-radio>
 					</template>	
 				</el-table-column>
-				<el-table-column prop="robotName" align="center" label="机器人名称" width="180">
+				<el-table-column prop="robotName" label="机器人名称" width="180">
 				</el-table-column>
-				<el-table-column prop="taskType" align="center" label="任务类型" width="180">
+				<el-table-column prop="taskType" align="center" label="任务类型" width="120">
 					<template scope="scope">
 						<el-tag>{{scope.row.taskType===1?'自动巡检':'临时任务'}}</el-tag>
 					</template>
 				</el-table-column>
-				<el-table-column prop="taskName" align="center" label="任务名称" >
+				<el-table-column prop="taskName" align="center" label="任务名称" width="180">
 				</el-table-column>
-				<el-table-column prop="timeStamp" label="巡检时间" :formatter="formatTime"  width="280" sortable>
+				<el-table-column prop="timeStamp" label="巡检时间" :formatter="formatTime"  min-width="180" sortable>
 				</el-table-column>
 			</el-table>
 			<el-col :span="24" class="toolbar" style="padding-bottom:10px;">
@@ -125,7 +125,6 @@
 						this.rooms = res.body.data.rows;
 						this.filters.roomId = this.rooms[0].roomId
 					}
-
 				})
 			},
 			changeRoom(){

@@ -3,7 +3,7 @@
 		<el-col :span="24" class="toolbar">
 			<el-form :inline="true" :model="filters">
 				<el-form-item label="巡检机房">
-					<el-select style="width:90%" @change="changeRoom" v-model="filters.roomId">
+					<el-select style="width:90%"  v-model="filters.roomId">
 						<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 						</el-option>
 					</el-select>
@@ -22,7 +22,7 @@
 				</el-table-column>
 				<el-table-column prop="roomId" label="巡检机房" width="160" :formatter="formatterRoom">
 				</el-table-column>
-				<el-table-column prop="taskName" label="任务名称" align="center" width="200">
+				<el-table-column prop="taskName" label="任务名称" align="center" min-width="200">
 				</el-table-column>
 				<el-table-column prop="status" label="执行状态" align="center" width="120">
 					<template scope="scope">
@@ -31,9 +31,14 @@
 				</el-table-column>
 				<el-table-column prop="robotId" label="巡检机器人" align="center" :formatter="formatterRobot" width="200">
 				</el-table-column>
-				<el-table-column prop="startTime" label="开始时间"  width="200"  align="center" sortable :formatter="formatTimeSction">
-				</el-table-column>
+				<!-- <el-table-column prop="startTime" label="开始时间"  width="200"  align="center" sortable :formatter="formatTimeSction">
+				</el-table-column> -->
 				<el-table-column prop="creatTime"  label="创建时间" min-width="200" align="center" :formatter="formatCTime">
+				</el-table-column>
+        <el-table-column prop="active" label="任务状态">
+					<template scope="scope">
+						<el-tag :type="scope.row.active?'success':'danger'">{{scope.row.active?" 执行 ":" 挂起 "}}</el-tag>
+					</template>
 				</el-table-column>
 				<el-table-column prop="status" label="操作" align="center" width="300">
           <template scope="scope">
@@ -247,11 +252,13 @@ export default {
         roomId: this.filters.roomId,
         pageSize:this.size,
       };
+      const currentroom = this.rooms.find(item => item.roomId === this.filters.roomId);
+      this.robotList = currentroom.robotList;
       this.listLoading = true;
       NProgress.start();
       let self = this;
       currentTask(self, para).then(res => {
-        if (res.data.result === 200) {
+        if (res.data.data) {
           this.rows = res.data.data?res.data.data.list:[];
           this.total = res.data.data.total
         } else {
@@ -365,7 +372,9 @@ export default {
         }
       });
     },
-
+    handleStop(){
+       
+    },
     getRooms() {
       let para = {
         page: 0,
@@ -383,13 +392,6 @@ export default {
           this.filters.roomId = "";
         }
       });
-    },
-    changeRoom() {
-      let id = this.filters.roomId;
-      const currentroom = this.rooms.find(item => item.roomId === id);
-      this.robotList = currentroom.robotList;
-      
-      this.filters.roomName = currentroom.roomName;
     },
     changeFormRoom(v) {
       let id = this.editForm.roomId;

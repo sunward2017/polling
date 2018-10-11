@@ -1,8 +1,8 @@
 <template>
 	<el-row class="panel">
 		<el-col :span="24" class="panel-top">
-			<el-col :span="18" class="title">
-				<img src="../assets/logo5.png" class="logo"> <span>{{customer+"巡检"}}</span><i style="color:#20a0ff">&nbsp;管理系统&nbsp;</i>
+			<el-col :span="18" class="logo">
+				<img src="../assets/logo5.png" class="logoImg"> <span>{{customer+"巡检"}}</span><i style="color:#20a0ff">&nbsp;管理系统&nbsp;</i>
 			</el-col>
 			<el-col :span="6" class="panel-right">
 				<router-link to="/dashboard" class="banners">
@@ -144,7 +144,7 @@ export default {
   height: 95%;
 }
 
-.title span {
+.logo span {
   background-image: -webkit-gradient(
     linear,
     0 0,
@@ -165,8 +165,8 @@ export default {
 }
 
 .panel-top {
-  height: 60px;
-  line-height: 60px;
+  height: 80px;
+  line-height: 80px;
   background: #090635;
   color: #c0ccda;
 }
@@ -177,14 +177,14 @@ export default {
 
 .banners {
   margin-right: 25px;
-  margin-top: 36px;
-  color: #a6b4c9;
+  margin-top: 50px;
+  color: #2b9ae4;
   cursor: pointer;
 }
 
 .panel-center {
   position: absolute;
-  top: 60px;
+  top: 80px;
   bottom: 0px;
   height: 95%;
   overflow-y: auto;
@@ -214,10 +214,10 @@ export default {
   visibility: hidden;
 }
 
-.logo {
+.logoImg {
   width: 40px;
   float: left;
-  margin: 20px 10px 20px 38px;
+  margin: 20px 20px 20px 38px;
 }
 
 .admin {

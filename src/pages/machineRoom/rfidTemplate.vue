@@ -15,8 +15,9 @@
              <el-col :span="20">
               <div class="label_t">
                   <span>标签面板</span>
-                  <el-button type="success" style="float:right;margin-right:10px;" size="small" @click.native="addRow">新增面板行</el-button>
-                  <el-button  style="float:right;margin-right:10px;" type="success" @click="save" size="small">提交保存</el-button>      
+                  <el-button type="info" @click="save" size="small" style="margin:0 10px;">提交保存</el-button>      
+                  <el-button type="success" size="small" @click.native="addRow">新增面板行</el-button>
+                  <el-button size="small" @click.native="addTpl" type="success"> 新增模板</el-button>
               </div> 
               <div id="right">
                   <div class="rf_item" v-for="(item,index) in row" :key="index+uuid()"><!--row-->
@@ -201,26 +202,16 @@ export default {
       });
     },
     addTpl() {
+      this.currentTpl = null;
       this.isEdit = true;
       this.row = [[]];
     },
     renderContent(h, { node, data, store }) {
       if (data.hasOwnProperty("children")) {
         return (
-          <span>
-            <span>
+          
               <span>{node.label}</span>
-            </span>
-            <span style="float: right; margin-right: 20px">
-              <el-button
-                size="mini"
-                on-click={() => this.addTpl()}
-                type="success"
-              >
-                新增模板
-              </el-button>
-            </span>
-          </span>
+            
         );
       } else {
         return (
@@ -505,6 +496,10 @@ export default {
   line-height: 115px;
   padding: 0 22px 0 0;
   box-sizing: border-box;
+}
+.label_t button{
+  float:right;
+  margin-right:10px;
 }
 .closed {
   position: absolute;

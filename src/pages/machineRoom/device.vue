@@ -186,7 +186,7 @@ export default {
       let _this = this;
       let roomId = id || _this.devEditForm.roomId;
       stagList(_this, { roomId }).then(res => {
-        if (res.data.result === 200) {
+        if (res.data.data) {
           this.points = res.data.data.map(i => ({
             nvPointName: i.nvPointName,
             nvPointId: i.nvPointId

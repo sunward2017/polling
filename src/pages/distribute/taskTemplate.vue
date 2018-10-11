@@ -1,27 +1,28 @@
 <template>
 	<section>
 		<!--工具条-->
-		<div class="toolbar">
-			<el-form :inline="true" :model="filters">
-				 <el-form-item label="巡检机房">
-					<el-select v-model="filters.roomId" style="width:90%">
-						<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
-						</el-option>
-					</el-select>
-				 </el-form-item>
-				<el-form-item>
-					<el-button icon="search" type="primary" v-on:click="getList">查询</el-button>
-				</el-form-item>
-			</el-form>
-		</div>
+        <el-row  class="label_t">
+          <el-col :span="16">
+             <el-select v-model="filters.roomId"  @change="getList">
+                <el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
+                </el-option>
+              </el-select>
+          </el-col>
+          <el-col :span="8">
+                 <el-button type="info"  size="small" @click="editSubmit" style="float:right;margin:5px 5px 0 5px; ">保存模板</el-button>
+                 <el-button type="success"  size="small" @click="handleAdd" style="float:right;margin:5px 5px 0 5px;">添加模版</el-button>
+          </el-col>
+        </el-row>
+					
+	 
 		<el-row :gutter="20">
 			<el-col :span="6">
 				<el-tree style="height:70vh; margin-bottom:20px;overflow-y:auto" @node-click="changeTpl"  default-expand-all highlight-current :data="tplTreeData" :props="defaultProps" node-key="id" accordion :expand-on-click-node="false" :render-content="renderContent">
 				</el-tree>
 			</el-col>
 			<el-col :span="18">
-        <el-table :data="tplData" highlight-current-row v-loading="listLoading" style="width: 100%;">
-            <el-table-column type="index" width="80" label="序号" align="center">
+        <el-table :data="tplData"  row-key="nvPointId" highlight-current-row v-loading="listLoading" style="width: 100%;" id="tplList">
+            <el-table-column type="index" label="#" width="60">
             </el-table-column>
             <el-table-column prop="nvPointName" label="导航点" align="center">
             </el-table-column>
@@ -36,17 +37,23 @@
       </el-col>
 		</el-row>
     <el-dialog title="模版编辑" :visible.sync="dialogVisible" size="small">
-      <el-form :inline="true"  label-width="80px" :model="editForm" ref="tplForm" class="tpl-form" >
-        <el-form-item label="巡检机房" prop="roomId" required>
-            <el-select v-model="editForm.roomId" @change="changeTplRoom" >
-                <el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
-                </el-option>
+       <el-row class='tpl' :gutter="16">
+         <el-col :span="10">
+            <el-select   v-model="types" multiple placeholder="指令筛选" @change="filterType" style="width:100%">  
+              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+              </el-option>
             </el-select>
-        </el-form-item>
-        <el-form-item label="模版名称" prop="templateName" required>
-            <el-input v-model="editForm.templateName" placeholder="模板名称"></el-input>
-        </el-form-item>
-      </el-form>
+         </el-col>
+         <el-col :span="11">
+            <el-select  v-model="values" multiple placeholder="批量选取" @change="handleSelectedAction" :disabled="stagData.length===0" style="width:100%">
+              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+              </el-option>
+            </el-select>
+         </el-col>
+         <el-col :span="1">
+             &emsp;<el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
+         </el-col>
+       </el-row>
       <el-table :data="stagData" style="margin-bottom:20px;" height="400" v-loading="stagLoading"  highlight-current-row>
         <el-table-column type="index" label="#" width="60">
         </el-table-column>
@@ -64,25 +71,8 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-row class="tpl">
-          <el-col :span="6">
-            <el-select   v-model="types" multiple placeholder="指令筛选" @change="filterType">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
-              </el-option>
-            </el-select>
-          </el-col>
-          <el-col :span="6" :offset="10">
-            <el-select  v-model="values" multiple placeholder="批量选取" @change="handleSelectedAction" :disabled="stagData.length===0">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
-              </el-option>
-            </el-select>
-          </el-col>
-          <el-col :span="2">
-            &emsp;<el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
-          </el-col>
-      </el-row>
       <div slot="footer" class="dialog-footer">
-          <el-button type="primary" @click="editSubmit" v-loading="submitLoading">提交</el-button>
+          <el-button type="primary" @click="addArea">确定</el-button>
       </div>
     </el-dialog>
 	</section>
@@ -92,7 +82,7 @@ import NProgress from "nprogress";
 import { getRoomList, roadwayList, stagList } from "api/room";
 import { templateList, createTaskTemplate, deleteTemplate } from "api/results";
 import { CMDTYPES, CMDSTATUS } from "@/const";
-
+import Sortable from "sortablejs";
 export default {
   data() {
     return {
@@ -119,7 +109,8 @@ export default {
         children: "children",
         label: "templateName"
       },
-      submitLoading:false,
+      submitLoading: false,
+      curTpl:'',
     };
   },
   methods: {
@@ -142,16 +133,31 @@ export default {
     },
     getList() {
       let _this = this;
+      let roomName = this.rooms.find(
+        item => item.roomId === _this.filters.roomId
+      ).roomName;
       templateList(_this, { roomId: _this.filters.roomId }).then(res => {
         if (res.data.result === 200) {
           this.tplTreeData = res.data.data
-            ? [{ templateName: "全部", children: res.data.data }]
-            : [{ templateName: "全部", children: [] }];
-          this.tplData =[];
+            ? [{ templateName: roomName, children: res.data.data}]
+            : [{ templateName: roomName, children: [] }];
+          this.tplData = [];
         } else {
           this.$message.error("查询模版失败");
-          this.tplTreeData = [{ templateName: "全部", children: [] }];
-           this.tplData =[];
+          this.tplTreeData = [{ templateName: roomName, children: [] }];
+          this.tplData = [];
+        }
+      });
+    },
+    rowDrop() {
+      const tbody = document.querySelector(
+        "#tplList .el-table__body-wrapper tbody"
+      );
+      const _this = this;
+      Sortable.create(tbody, {
+        onEnd({ newIndex, oldIndex }) {
+          const currRow = _this.tplData.splice(oldIndex, 1)[0];
+          _this.tplData.splice(newIndex, 0, currRow);
         }
       });
     },
@@ -215,18 +221,17 @@ export default {
         }
       });
     },
-    changeTplRoom() {
-      this.getPointByRoom();
-    },
     getPointByRoom() {
       let _this = this;
       this.stagLoading = true;
-      stagList(_this, { roomId: _this.editForm.roomId }).then(res => {
+      stagList(_this, { roomId: _this.filters.roomId }).then(res => {
         if (res.data.result === 200) {
-          this.stagData = this.originalData = res.data.data? res.data.data.filter(r => r.commandTypes.length > 0).map(i => {
+          this.stagData = this.originalData = res.data.data
+            ? res.data.data.filter(r => r.commandTypes.length > 0).map(i => {
                 i.actions = [];
                 return i;
-              }):[];
+              })
+            : [];
         } else {
           this.stagData = this.originalData = [];
           this.$message.error("导航点获取失败");
@@ -237,17 +242,15 @@ export default {
 
     handleAdd() {
       this.dialogVisible = true;
-      this.editForm = { roomId: this.filters.roomId };
-      this.changeTplRoom();
+      this.curTpl =null;
+      this.getList();
+      this.getPointByRoom();
     },
     cmdName(type) {
       return CMDTYPES.find(i => i.value == type).label;
     },
-    editSubmit() {
-      let _this = this;
-      this.$refs.tplForm.validate(valid => {
-        if (valid) {
-          const details = this.stagData
+    addArea(){
+       this.tplData = this.stagData
             .filter(i => i.actions.length > 0)
             .map(i => ({
               nvPointName: i.nvPointName,
@@ -255,21 +258,34 @@ export default {
               areaId: i.areaId,
               commandTypes: i.actions.join(",")
             }));
-          if (details.length === 0) {
-            _this.$message.error("模版指令没有创建");
-            return;
-          }
-          NProgress.start();
-          _this.submitLoading = true;
-
-          let para = {
-            ..._this.editForm,
-            details: JSON.stringify(details)
-          };
-          delete para.createTime;
-          createTaskTemplate(_this, para).then(res => {
-             NProgress.done();
-             _this.submitLoading = false;
+         
+      this.dialogVisible = false;
+    },
+    editSubmit() {
+      let _this = this;
+       if (this.tplData.length === 0) {
+           this.$message.error("模版指令没有创建");
+          return;
+        }
+       const tpl = this.curTpl;
+       this.$prompt("请输入模板名称", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        inputValue: tpl ? tpl.templateName : "",
+        inputPattern: /^(?![0-9])[\u4e00-\u9fa5a-zA-Z0-9]+$/,
+        inputErrorMessage:
+          "模板名称只能是中文、英文、数字组合，且不可以数字开头！"
+      }).then(({ value }) => {
+        NProgress.start();
+        let para = {
+           templateName:value,
+           roomId:_this.filters.roomId,
+           details:JSON.stringify(_this.tplData)
+        }
+        if(tpl)para.templateId = tpl.templateId;
+         createTaskTemplate(_this, para).then(res => {
+            NProgress.done();
+            _this.submitLoading = false;
             if (res.data.result === 200) {
               _this.$message({
                 message: "模版保存成功",
@@ -279,11 +295,9 @@ export default {
               _this.$message.error("模版保存失败");
             }
             _this.dialogVisible = false;
-            _this.filters.roomId = _this.editForm.roomId;
             _this.getList();
           });
-        }
-      });
+      }) 
     },
     formatArea(r, c) {
       const area = this.roadwayData.find(i => i.areaId == r.areaId);
@@ -298,22 +312,7 @@ export default {
     },
     renderContent(h, { node, data, store }) {
       if (data.children) {
-        return (
-          <span>
-            <span>
-              <span>{node.label}</span>
-            </span>
-            <span style="float: right; margin-right: 20px">
-              <el-button
-                type="success"
-                size="mini"
-                on-click={() => this.handleAdd()}
-              >
-                添加模版
-              </el-button>
-            </span>
-          </span>
-        );
+        return (<span>{node.label}</span>);
       } else {
         return (
           <span>
@@ -341,36 +340,40 @@ export default {
       }
     },
     changeTpl(data, node, store) {
+      this.curTpl = data;
       this.tplData = data.details ? JSON.parse(data.details) : [];
     },
     removeTpl(store, data) {
       var _this = this;
       this.$confirm("确认删除：" + data.templateName + "？", "提示", {
         //type: 'warning'
-      }).then(() => {
-        NProgress.start();
-        deleteTemplate(_this, { templateId: data.templateId }).then(res => {
-          NProgress.done();
-          if (res.data.result === 200) {
-            _this.$message({
-              message: "删除成功",
-              type: "success"
-            });
-          } else {
-            _this.$message.error("删除失败");
-          }
-          _this.getList();
-        });
-      },()=>{});
+      }).then(
+        () => {
+          NProgress.start();
+          deleteTemplate(_this, { templateId: data.templateId }).then(res => {
+            NProgress.done();
+            if (res.data.result === 200) {
+              _this.$message({
+                message: "删除成功",
+                type: "success"
+              });
+            } else {
+              _this.$message.error("删除失败");
+            }
+            _this.getList();
+          });
+        },
+        () => {}
+      );
     },
     editTpl(store, data) {
-      this.editForm = { ...data };
       this.dialogVisible = true;
-      this.changeTplRoom();
+      this.getPointByRoom();
     }
   },
   mounted() {
     this.getRoadway();
+    this.rowDrop();
   }
 };
 </script>
@@ -383,11 +386,9 @@ export default {
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
   overflow: hidden;
   margin-bottom: 20px;
-  line-height: 36px;
+  line-height: 9px;
 }
-.tpl-form{
-  margin-bottom:20px;
-}
+ 
 .custom-theme .el-form-item {
   margin: 0;
 }
@@ -395,7 +396,14 @@ export default {
 .rfid-action {
   margin-right: 10px;
 }
-
+.label_t {
+  color: #fff;
+  border: 1px solid rgba(250, 250, 250, 0.35);
+  border-radius: 5px;
+  padding: 15px 0;
+  text-indent: 15px;
+  background: #022c6b;
+}
 .el-tag {
   margin-right: 10px;
 }

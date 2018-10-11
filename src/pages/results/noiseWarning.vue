@@ -20,7 +20,7 @@
 		</el-col>
 		<template>
 			<el-table :data="rows" highlight-current-row v-loading="listLoading" style="width: 100%;">
-				<el-table-column type="index" width="80" label="#" align="center">
+				<el-table-column type="index" width="60" label="#" align="center">
 				</el-table-column>
 				<el-table-column prop="roomName" label="巡检机房" width="260" align="center">
 					 

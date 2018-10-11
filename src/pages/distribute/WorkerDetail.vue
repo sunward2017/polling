@@ -10,13 +10,14 @@
 		</div>
 		<el-row :gutter="20">
 			<el-col :span="6">
-				<div class="working-box"></div>
+				<div class="working-box">video</div>
 			</el-col>
 			<el-col :span="6">
-				<div class="working-box"></div>
+				<div class="working-box">locality</div>
 			</el-col>
 			<el-col :span="12">
 				<div class="log-view">
+           controller
 				</div>
 			</el-col>
 		</el-row>
@@ -34,15 +35,20 @@
             <td>{{cmd.commandInfo.commandName}}</td>
             <td><el-tag :type="types[cmd.commandInfo.commandType+'']">{{formatType(cmd.commandInfo.commandType)}}</el-tag></td>
             <td><el-tag :type="types[+cmd.commandStatus+1+'']">{{formatStatus(cmd.commandStatus)}}</el-tag></td>
-            <td>{{"无"}}</td>
+            <td><el-button v-if="cmd.fileInfo&&cmd.fileInfo.fileUrl" type="info" size="small" @click="showImg(cmd.fileInfo.fileUrl,'原始图')">原始图</el-button>&emsp;<el-button  v-if="cmd.fileInfo&&cmd.fileInfo.detectResultUrl" type="warning" size="small" @click="showImg(cmd.detectResultUrl,'识别图')">识别图</el-button></td>
 			  </tr>
 			</template>
 		</table>
+    <el-dialog :title="bigImgTitle" v-model="bigImgVisible" style="text-align: center;" :size="dialogSize">
+			<img :src="currentUrl" alt="异常图片,无法识别" width="100%" @click="changeSize()" ref='img'/>
+		</el-dialog>
 	</section>
 </template>
 <script>
 import { currentTaskDetail } from "api/results";
 import { TASKEXECTYPES, CMDTYPES, CMDSTATUS} from "@/const";
+import { baseImgUrl } from 'api/api';
+
 export default {
   name: "",
   data() {
@@ -50,6 +56,10 @@ export default {
       taskName: '',
       tableData: [],
       types:CMDSTATUS,
+      bigImgTitle:'原始图',
+      bigImgVisible:false,
+      dialogSize:'small',
+      currentUrl:'',
     };
   },
   methods: {
@@ -70,7 +80,16 @@ export default {
     },
     formatStatus(type) {
       return TASKEXECTYPES[type + ""];
-    }
+    },
+    showImg(url,type){
+        this.dialogSize ='small';
+        this.bigImgTitle = type;
+        this.currentUrl = baseImgUrl+url; 
+        this.bigImgVisible = true;
+    },
+    changeSize(){
+			this.dialogSize=this.dialogSize==="small"?'full':'small'; 
+    },
   },
   mounted() {
     const taskId = this.$route.query.taskId;
@@ -89,6 +108,7 @@ export default {
   width: 100%;
   height: 300px;
   background-color: #000;
+  color:chartreuse
 }
 .table {
   color: #fff;

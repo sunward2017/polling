@@ -132,7 +132,6 @@
     border-radius: 5px;
     -moz-border-radius: 5px;
     background-clip: padding-box;
-    margin-bottom: 20px;
     background-color: #F9FAFC;
     margin: 180px auto;
     width: 400px;

@@ -169,7 +169,7 @@ const routes = [{
 	}, {
 		path: 'stagnation',
 		component: Stagnation,
-		name: '巡检点配置'
+		name: '导航点配置'
 	},{
 		path:'rTemplate',
 		component:rfidTemplate,

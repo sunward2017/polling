@@ -166,7 +166,7 @@ export default {
 };
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 .l-bg {
   position: absolute;
   top: 0;
@@ -180,7 +180,7 @@ export default {
 .tyg-div {
   float: left;
   position: absolute;
-  left: 5%;
+  left: 10%;
   top: 20%;
 }
 .tyg-div > ul > li {

@@ -15,11 +15,9 @@
 					</el-table-column>
 					<el-table-column prop="nvPointName" label="导航点名称" align="center">
 					</el-table-column>
-					<el-table-column prop="orderId" label="排序" width="120">
+					<el-table-column prop="x" label="X坐标" width="150">
 					</el-table-column>
-					<el-table-column prop="x" label="X坐标" width="100">
-					</el-table-column>
-					<el-table-column prop="y" label="Y坐标" width="100">
+					<el-table-column prop="y" label="Y坐标" width="150">
 					</el-table-column>
 					<el-table-column label="操作" width="160">
 						<template scope="scope">
@@ -42,7 +40,7 @@
 			</el-table-column>
 			<el-table-column prop="commandType" label="指令类型">
          <template scope="scope">
-            <el-tag type="success">{{formatCommandType(scope.row)}}</el-tag>
+            <el-tag :type="cmdStatus[scope.row.commandType+'']">{{formatCommandType(scope.row)}}</el-tag>
          </template>
 			</el-table-column>
 			<el-table-column prop="neckHeight" label="升降高度">
@@ -65,7 +63,7 @@
 			</el-table-column>
       <el-table-column prop="needDetect" label="图像识别">
         <template scope="scope">
-             <el-tag :type="scope.row.needDetect==1?'success':'warning'">{{scope.row.needDetect==1?"开启":"关闭"}}</el-tag>
+          <el-tag  v-if="scope.row.commandType==1" :type="scope.row.needDetect==1?'success':'warning'">{{(scope.row.needDetect==1?"开启":"关闭")}}</el-tag>
          </template>
 			</el-table-column>
       <el-table-column prop="waitTime" label="持续时长">
@@ -97,9 +95,6 @@
 				</el-form-item>
 				<el-form-item label="导航点名称" prop="nvPointName">
 					<el-input v-model="stagnationForm.nvPointName"></el-input>
-				</el-form-item>
-				<el-form-item label="导航点排序" prop="orderId" required>
-					<el-input-number v-model="stagnationForm.orderId" :min="1" style="width:46%"></el-input-number>
 				</el-form-item>
 				<el-form-item label="导航点坐标">
 					<el-col :span="11">
@@ -145,8 +140,6 @@
           <el-form-item label="升降高度" prop="neckHeight" class="form_col" >
               <el-input v-model="workerForm.neckHeight" placeholder="请输入升降高度（单位mm）"></el-input>
           </el-form-item>
-          <el-form-item label="" >    
-          </el-form-item>
           <el-form-item label="水平转角" prop="levelAngle" class="form_col">
               <el-input v-model="workerForm.levelAngle" placeholder="请输入水平转角"></el-input>
           </el-form-item>
@@ -179,10 +172,20 @@
                 <el-radio-button label="0">关闭</el-radio-button>
               </el-radio-group>
            </el-form-item>
+           <el-form-item v-if="workerForm.needDetect==1" prop="detectSettingId"  label='标签模板' class="form_col" :rules="{required:true,message:'不可为空',trigger:'change'}">
+               <el-select v-model="workerForm.detectSettingId">
+                   <el-option
+                      v-for="item in tpls"
+                      :key="item.detectSettingId"
+                      :label="item.detectSettingName"
+                      :value="item.detectSettingId">
+                  </el-option>
+               </el-select>
+           </el-form-item>
         </template>
         <template v-else>
           <el-form-item label="持续时长" prop="waitTime" class="form_col">
-            <el-input v-model="workerForm.waitTime" placeholder="请输入等待时长">mm</el-input> 
+            <el-input v-model="workerForm.waitTime" placeholder="请输入时长（秒）">mm</el-input> 
           </el-form-item>
         </template> 
 			</el-form>
@@ -195,7 +198,7 @@
 </template>
 <script>
 import NProgress from "nprogress";
-import { CMDTYPES } from "@/const";
+import { CMDTYPES ,CMDSTATUS} from "@/const";
 import {
   roadwayList,
   createArea,
@@ -210,13 +213,15 @@ import {
   deleteArea,
 } from "api/room";
 import { mapState } from "vuex";
+import { listRfidTpl } from "api/template";
 
 export default {
   data() {
     var checkNum=(rule, value, callback)=>{
+      console.log(value)
       var value =value&&value.toString().replace(/(^\s*)|(\s*$)/g, "");
       setTimeout(() => {
-        if (value==="") {
+        if (!value||value==="") {
           callback(new Error("不可为空"));
         } else if (value && isNaN(value)) {
           callback(new Error("输入类型不正确"));
@@ -227,6 +232,7 @@ export default {
     };
     return {
       options: CMDTYPES,
+      cmdStatus:CMDSTATUS,
       cameras: [
         {
           id: "1",
@@ -264,7 +270,6 @@ export default {
         roomId: "",
         areaName: "",
         areaId: "",
-        orderId: "",
         x: "",
         y: ""
       },
@@ -316,6 +321,7 @@ export default {
       areaSubmitLoading:false,
       stagSubmitLoading:false,
       cmdLoading:false,
+      tpls:[],
     };
   },
   computed: mapState(["user"]),
@@ -323,6 +329,17 @@ export default {
     formatCommandType(r) {
       let type = CMDTYPES.find(i => i.value == r.commandType);
       return type ? type.label : r.commandType;
+    },
+    getTpls() {
+      let self = this;
+      listRfidTpl(self).then(res => {
+         if(res.body.result===200){
+            self.tpls = res.body.data?res.body.data:[];   
+         }else{
+            self.tpls = [];
+            self.$message.error('标签模板获取失败')
+         }
+      });
     },
     getRoadway() {
       let self = this;
@@ -360,7 +377,7 @@ export default {
            NProgress.start();
           _this.areaSubmitLoading = true;
           createArea(_this, params).then(res => {
-            NProgress.start();
+            NProgress.done();
           _this.areaSubmitLoading = false;
             if (res.body.result == 200) {
               _this.getRoadway();
@@ -388,6 +405,7 @@ export default {
             deleteArea(_this, {
               areaId:data.areaId
             }).then(res => {
+               NProgress.done();
               if (res.data.result === 200) {
                 _this.$message({
                   message: "删除成功",
@@ -522,6 +540,7 @@ export default {
     changeStag(r) {
       this.currentStag = r;
       this.getWorkerListByStag();
+      this.getTpls();
     },
     getWorkerListByStag() {
       let _this = this;

@@ -31,10 +31,10 @@ export const LIGHTTYPES =  [{ value: '1',label: '状态指示灯'}, { value: '2'
 
 export const TESTTYPES = [{value:'1',label:'图像识别'},{value:'2',label:'温度湿度'},{value:'3',label:'热成像'}];
 
-export const CMDTYPES = [{value:"1",label:"拍照"},{value:"2",label:"红外"},{value:"3",label:"温湿度"},{value:"4",label:"异味"},{value:"5",label:"异响"}];
+export const CMDTYPES = [{value:"1",label:"拍照"},{value:"2",label:"红外"},{value:"3",label:"温湿度"},{value:"4",label:"异味"},{value:"5",label:"异响"},{value:'6',label:'录制视频'},{value:"7",label:'停留'}];
 
 export const TASKEXECTYPES = {"0":"未执行","1":"执行中","2":"执行完毕","3":"超时","4":"中断"};
 
-export const CMDSTATUS={'1':'gray','2':'primary','3':'success','4':'warning','5':'danger'}; 
+export const CMDSTATUS={'1':'gray','2':'primary','3':'success','4':'warning','5':'danger','6':'info','7':'init'}; 
 
 export const FLAOVR_TYPE =['success','danger','warning']; 

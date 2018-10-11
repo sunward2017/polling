@@ -115,7 +115,8 @@
 				roomUrl: '',
 				siteVisible:false,
 				ctop:'',
-				cleft:''
+				cleft:'',
+				initial:{},
 			}
 
 		},
@@ -150,7 +151,6 @@
 			},
 			getList() {
 				if(!this.filters.timeStamp[0]||!this.filters.timeStamp[1]) return; 
-				this.roomUrl = `/upload/${this.filters.roomId}_base.png`;
 			    let	startTime=parseTime(this.filters.timeStamp[0], '{y}-{m}-{d} {h}:{i}:{s}');
 			    let end =parseTime(this.filters.timeStamp[1], '{y}-{m}-{d} {h}:{i}:{s}' ); 
 			    let  times = end.split(' ')[1].split(':');
@@ -167,6 +167,11 @@
 				this.listLoading = true;
 				NProgress.start();
 				let self = this;
+				var img = new Image();
+					img.src = `/upload/${this.filters.roomId}_base.png`;
+					this.initial.x = img.width;
+					this.initial.y = img.height;
+					
 				getSmokeWarning(self, para).then((res) => {
 						if(res.data.data&& res.data.data.list.length > 0) {
 							this.rows = res.data.data.list.map(item=>{
@@ -187,23 +192,13 @@
 		    showSite(r){
 		    	var W,w,H,h;
 				this.siteVisible= true;
-			    var img = new Image();
-					img.src = this.roomUrl+'?'+Math.random();
-				let _this =this;
-				    img.onload=function(){
-					     W = img.width; 	 
-					     H = img.height; 
-					     w = _this.$refs.roomImg.offsetWidth; 
-				         h = _this.$refs.roomImg.offsetHeight;
-				      _this.cleft = r.x/W*w+"px";
-					  _this.ctop = (H-r.y)/H*h+"px"; 
-				    }
-				window.onresize = function(){
-					     w = _this.$refs.roomImg.offsetWidth; 
-				         h = _this.$refs.roomImg.offsetHeight;
-				      _this.cleft = r.x/W*w+"px";
-					  _this.ctop = (H-r.y)/H*h+"px"; 
-				}
+				this.roomUrl = `/upload/${this.filters.roomId}_base.png`;
+				this.$nextTick(()=>{
+					let w = this.$refs.roomImg.width;
+					let h = this.$refs.roomImg.height;
+					this.cleft = r.x/this.initial.x*w+"px";
+					this.ctop = (1-r.y/this.initial.y)*h+"px";
+				})
 			}
 		},
 		mounted() {
