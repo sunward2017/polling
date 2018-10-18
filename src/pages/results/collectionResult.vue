@@ -3,12 +3,12 @@
 		<!--工具条-->
 		<el-col :span="24" class="toolbar">
 			<el-form :inline="true" :model="filters">
-				<el-col :span="8">
-					<el-select v-model="filters.roomId" style="width:90%">
+				 <el-form-item label="巡检机房">
+					<el-select v-model="filters.roomId">
 						<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 						</el-option>
 					</el-select>
-				</el-col>
+				 </el-form-item>
 				<!--<el-form-item>
 					<el-select v-model="filters.deviceId" placeholder="请选择查询条件" >
 						<el-option v-for="item in robots" :key="item.value" :label="item.label" :value="item.value">
@@ -120,7 +120,7 @@
 				getRoomList(self, para).then((res) => {
 					if(res.data.data) {
 						this.rooms = res.body.data.rows;
-						this.filters.roomId = this.rooms[0].roomId
+						this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
 						this.getList();
 					}
 

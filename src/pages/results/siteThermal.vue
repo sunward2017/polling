@@ -98,7 +98,7 @@
 					NProgress.done();
 					if(res.data.data) {
 						this.rooms = res.body.data.rows;
-						this.filters.roomId = this.rooms[0].roomId
+					    this.filters.roomId = this.$store.state.robotId?this.$store.robotId.state.roomId:this.rooms[0].roomId;
 						this.getList();
 					}
 

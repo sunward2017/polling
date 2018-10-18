@@ -3,14 +3,14 @@
 		<!--工具条-->
 		<el-col :span="24" class="toolbar">
 			<el-form :inline="true" :model="filters">
-				<el-form-item>
-					<el-select v-model="filters.roomId" style="width:90%">
+				<el-form-item label="巡检机房">
+					<el-select v-model="filters.roomId">
 						<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 						</el-option>
 					</el-select>
 				</el-form-item>	
-			    <el-form-item>
-					<el-date-picker style="width:90%" v-model="filters.timeStamp" type="daterange" unlink-panels range-separator=" __至__" start-placeholder="开始日期" value-format="yyyy-MM-dd" end-placeholder="结束日期" :picker-options="pickerOptions2">
+			    <el-form-item label="时间区间" style="width:320px;">
+					<el-date-picker style="width:110%" v-model="filters.timeStamp" type="daterange" unlink-panels range-separator=" __至__" start-placeholder="开始日期" value-format="yyyy-MM-dd" end-placeholder="结束日期" :picker-options="pickerOptions2">
 					</el-date-picker>
 				</el-form-item> 
 				<el-form-item>
@@ -142,7 +142,7 @@
 				getRoomList(self, para).then((res) => {
 					if(res.data.data) {
 						this.rooms = res.body.data.rows;
-						this.filters.roomId = this.rooms[0].roomId
+						this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
 						this.getList();
 					}
 

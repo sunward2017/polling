@@ -218,16 +218,16 @@ import { listRfidTpl } from "api/template";
 export default {
   data() {
     var checkNum=(rule, value, callback)=>{
-      console.log(value)
-      var value =value&&value.toString().replace(/(^\s*)|(\s*$)/g, "");
-      setTimeout(() => {
-        if (!value||value==="") {
-          callback(new Error("不可为空"));
-        } else if (value && isNaN(value)) {
-          callback(new Error("输入类型不正确"));
-        } else {
-          callback();
+       if (!value) {
+          return callback(new Error('不能为空'));
         }
+        setTimeout(() => {
+          if (!Number.isInteger(value)) {
+            callback(new Error('请输入数字值'));
+          } else {
+              callback();
+          }
+          
       }, 500);
     };
     return {
@@ -285,12 +285,14 @@ export default {
         ],
         x: [
           {
+            required: true,
             validator: checkNum,
             trigger: "blur"
           }
         ],
         y: [
           {
+            required: true,
             validator: checkNum,
             trigger: "blur"
           }
@@ -312,11 +314,11 @@ export default {
 						message: '指令类型不可为空',
 						trigger: 'change'
           }],
-          neckHeight:[{validator: checkNum,	trigger: 'blur'}],
-          levelAngle:[{validator: checkNum,	trigger: 'blur'}],
-          elevation:[{validator: checkNum,	trigger: 'blur'}],
-          cameraZoom:[{validator: checkNum,	trigger: 'blur'}],
-          waitTime:[{validator: checkNum,	trigger: 'blur'}],
+          neckHeight:[{  required: true,validator: checkNum,	trigger: 'blur'}],
+          levelAngle:[{  required: true,validator: checkNum,	trigger: 'blur'}],
+          elevation:[{   required: true,validator: checkNum,	trigger: 'blur'}],
+          cameraZoom:[{  required: true,validator: checkNum,	trigger: 'blur'}],
+          waitTime:[{  required: true,validator: checkNum,	trigger: 'blur'}],
       },
       areaSubmitLoading:false,
       stagSubmitLoading:false,
@@ -651,14 +653,14 @@ export default {
     formatCamera(r) {
       return r.cameraId
         ? this.cameras.find(i => i.id == r.cameraId).label
-        : "无";
+        : "其他";
     },
     renderContent(h, { node, data, store }) {
       if (data.rbAreaInfoList) {
         return (
           <span>
             <span>
-              <span>{node.label}</span>
+              <span style="display:inline-block;vertical-align:middle;width:40%;overflow:hidden;text-overflow: ellipsis;">{node.label}</span>
             </span>
             <span style="float: right; margin-right: 20px">
               <el-button
@@ -675,7 +677,7 @@ export default {
         return (
           <span>
             <span>
-              <span>{node.label}</span>
+              <span style="display:inline-block;width:40%;overflow:hidden;text-overflow: ellipsis;">{node.label}</span>
             </span>
             <span style="float: right; margin-right: 20px">
               <el-button

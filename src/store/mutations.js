@@ -6,5 +6,11 @@ export default {
   },
   [types.SET_ROBOTID](state,robotId){
   	state.robotId = robotId;
+  },
+  [types.SET_ROOM](state,room){
+  	state.room = room;
+  },
+  [types.SET_TASK](state,task){
+  	state.task = task;
   }
 };

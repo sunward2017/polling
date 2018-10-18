@@ -3,9 +3,9 @@ export const SET_ACCOUNT = 'SET_ACCOUNT';
 
 export const SET_ROBOTID = 'SET_ROBOTID';
 
-// // 新增和删除一条计划
-// export const SAVE_PLAN = 'SAVE_PLAN';
-// export const DELETE_PLAN = 'DELETE_PLAN';
-// // 新增和删除次数
-// export const ADD_COUNT='ADD_COUNT';
-// export const DEC_COUNT='DEC_COUNT';
+export const SET_ROOM = 'SET_ROOM';
+
+export const SET_FILTERROOM = 'SET_FILTERROOM';
+
+export const SET_TASK = 'SET_TASK'
+

@@ -3,23 +3,22 @@
 		<div v-if="routeType==='index'">
 			<el-col :span="24" class="toolbar">
 				<el-form :inline="true" :model="filters" :rules="rules" ref="ruleForm">
-					<el-form-item label="巡检房间" prop="roomId">
-						<el-select v-model="filters.roomId" style="width:90%">
+					<el-form-item label="巡检机房" prop="roomId">
+						<el-select v-model="filters.roomId">
 							<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 							</el-option>
 						</el-select>
 					</el-form-item>
-
-					<el-form-item label="巡检时间" required>
+					<el-form-item>
 						<el-col :span="11">
 							<el-form-item prop="startTime">
-								<el-date-picker type="date" placeholder="选择日期" v-model="filters.startTime" style="width: 100%;"></el-date-picker>
+								<el-date-picker type="date" placeholder="选择开始日期" v-model="filters.startTime" style="width: 100%;"></el-date-picker>
 							</el-form-item>
 						</el-col>
-						<el-col class="line" :span="1">&nbsp;-</el-col>
+						<el-col class="line" :span="1">~&nbsp;</el-col>
 						<el-col :span="11">
 							<el-form-item prop="endTime">
-								<el-date-picker type="date" placeholder="选择日期" v-model="filters.endTime" tyle="width: 100%;"></el-date-picker>
+								<el-date-picker type="date" placeholder="选择结束日期" v-model="filters.endTime" tyle="width: 100%;"></el-date-picker>
 							</el-form-item>
 						</el-col>
 					</el-form-item>
@@ -30,10 +29,10 @@
 				</el-form>
 			</el-col>
 			<el-row class="toolbar">
-				<el-col :span="4">
+				<el-col :span="4" style="min-width:200px;"> 
 					<span class="d_title">需要识别的机柜总数:</span><span class="d_content">{{cabinetTotal}}</span>
 				</el-col>
-				<el-col :span="4">
+				<el-col :span="4"  style="min-width:200px;">
 					<span class="d_title">单个机柜总U位数:</span><span class="d_content">{{47}}</span>
 				</el-col>
 			</el-row>
@@ -46,13 +45,13 @@
 					</el-table-column>
 					<el-table-column prop="taskName" width="280" label="任务名称" align="center">
 					</el-table-column>
-					<el-table-column prop="cabinetNumbers" label="已识别机柜数" align="center">
+					<el-table-column prop="recognizedDevices" width="180" label="已识别机柜数" align="center">
 					</el-table-column>
-					<el-table-column prop="serverNumbers" label="已识别设备数" align="center">
+					<el-table-column prop="serverNumbers" width="180" label="已识别设备数" align="center">
 					</el-table-column>
-					<el-table-column prop="usedUNumbers" label="设备已用U位" align="center">
+					<el-table-column prop="usedUNumbers" width="180" label="设备已用U位" align="center">
 					</el-table-column>
-					<el-table-column prop="remingUNumbers" label="剩余U位" align="center">
+					<el-table-column prop="remainingUNumbers"  label="剩余U位" align="center">
 					</el-table-column>
 					<el-table-column label="操作" width="200" align="center">
 						<template scope="scope">
@@ -68,11 +67,11 @@
 			</el-col>
 		</div>
 
-		<!--ji机柜详情-->
+		<!--机柜详情-->
 		<div v-if="routeType==='detail'">
-			<el-row >
-				<el-col :span='1'>
-					<span @click="go('index')" class="back">&lt;&lt;返回</span>
+			<el-row style="margin-bottom:20px;font-size:16px;" >
+				<el-col :span='1' style="min-width:100px">
+					<span @click="go('index')" class="back">&nbsp;&lt;&lt;&nbsp;返回</span>
 				</el-col>
 				<el-col :span='4' :offset='9'> 单次巡检结果详情</el-col>
 			</el-row>
@@ -81,16 +80,16 @@
 					<el-col :span="8"><span class="d_title">机房:</span><span class="d_content">{{rooms.find(i=>(i.roomId===filters.roomId)).roomName}}</span></el-col>
 				</el-row>
 				<el-row class="list_item">
-					<el-col :span="6"><span class="d_title">需要识别的机柜数:</span><span class="d_content">{{detail.totalCabinets}}</span></el-col>
+					<el-col :span="6"><span class="d_title">需要识别的机柜数:</span><span class="d_content">{{detail.totalDevices}}</span></el-col>
 					<el-col :span="8"><span class="d_title">巡检时间:</span><span class="d_content">{{detail.timeField}}</span></el-col>
-					<el-col :span="5"><span class="d_title">已识别机柜数:</span><span class="d_content">{{detail.cabinetNumbers}}</span></el-col>
+					<el-col :span="5"><span class="d_title">已识别机柜数:</span><span class="d_content">{{detail.recognizedDevices}}</span></el-col>
 					<el-col :span="5"><span class="d_title">设备已用U位:</span><span class="d_content">{{detail.usedUNumbers}}</span></el-col>
 				</el-row>
 				<el-row class="list_item">
 					<el-col :span="6"><span class="d_title">单个机柜U位数:</span><span class="d_content">{{47}} </span></el-col>
 					<el-col :span="8"><span class="d_title">巡检任务名称:</span><span class="d_content">{{detail.taskName}} </span></el-col>
 					<el-col :span="5"><span class="d_title">已识别设备数量:</span><span class="d_content">{{detail.serverNumbers}}</span></el-col>
-					<el-col :span="5"><span class="d_title">剩余U位:</span><span class="d_content">{{detail.remingUNumbers}}</span></el-col>
+					<el-col :span="5"><span class="d_title">剩余U位:</span><span class="d_content">{{detail.remainingUNumbers}}</span></el-col>
 				</el-row>
 			</div>
 			<el-tabs v-model="activeName" type="border-card" @tab-click="changeTab()">
@@ -99,20 +98,20 @@
 						<el-col :span='5' :offset="17">
 							<el-input placeholder="请输入机柜名称" v-model="cabinetName"></el-input>
 						</el-col>
-						<el-col :span="2">&emsp;&emsp;
+					  <el-col :span="2" style="text-align: center;">
 							<el-button type="primary" v-on:click="getCabinet()">查询</el-button>
 						</el-col>
 					</el-row>
 					<el-table :data="detailCabinetRows" highlight-current-row v-loading="cabinetListLoading" style="width: 100%">
 						<el-table-column type="index" width="80" label="序号" align="center">
 						</el-table-column>
-						<el-table-column prop="cabinetName" width="180" label="机柜名称" align="center">
+						<el-table-column prop="deviceName" width="180" label="机柜名称" align="center">
 						</el-table-column>
 						<el-table-column prop="detectedSeverNumber" label="已识别设备数量" align="center">
 						</el-table-column>
 						<el-table-column prop="usedUNumbers" label="已用U位" align="center">
 						</el-table-column>
-						<el-table-column prop="remingUNumbers" label="剩余U位" align="center">
+						<el-table-column prop="remainingUNumbers" label="剩余U位" align="center">
 						</el-table-column>
 						<el-table-column label="操作" width="200" align="center">
 							<template scope="scope">
@@ -138,10 +137,9 @@
 					</el-row>
 
 					<el-table :data="detailDevRows" highlight-current-row v-loading="devLoading" style="width: 100%;">
-
 						<el-table-column prop="ip" label="已识别设备IP" align="center">
 						</el-table-column>
-						<el-table-column prop="cabinetName" label="所在机柜" align="center">
+						<el-table-column prop="deviceName" label="所在机柜" align="center">
 						</el-table-column>
 						<el-table-column prop="uDetails" label="所在U位" align="center">
 						</el-table-column>
@@ -167,9 +165,9 @@
 		</div>
 		<!--机柜图-->
 		<div v-if="routeType==='jgDetail'">
-			<el-row>
-				<el-col :span='1'>
-					<span @click="go('detail')" class="back">&lt;&lt;返回</span>
+			<el-row style="margin-bottom:20px;font-size:16px;" >
+				<el-col :span='1' style="min-width:100px;">
+					<span @click="go('detail')" class="back">&nbsp;&lt;&lt;&nbsp;返回</span>
 				</el-col>
 				<el-col :span='4' :offset='9'> 单个机柜识别详情</el-col>
 			</el-row>
@@ -177,12 +175,12 @@
 				<div>
 					<el-col :span="20">
 						<div>
-							<el-col :span="8"><span class="d_title">机柜名称:</span><span class="d_content">{{jgField.cabinetName}} </span></el-col>
+							<el-col :span="8"><span class="d_title">机柜名称:</span><span class="d_content">{{jgField.deviceName}} </span></el-col>
 							<el-col :span="16"><span class="d_title">设备已用U位:</span><span class="d_content">{{jgField.usedUNumbers}}</span></el-col>
 						</div>
 						<div>
 							<el-col :span="8"><span class="d_title">已识别设备数量:</span><span class="d_content">{{jgField.detectedSeverNumber}}</span></el-col>
-							<el-col :span="16"><span class="d_title">剩余U位:</span><span class="d_content">{{jgField.remingUNumbers}}</span></el-col>
+							<el-col :span="16"><span class="d_title">剩余U位:</span><span class="d_content">{{jgField.remainingUNumbers}}</span></el-col>
 						</div>
 					</el-col>
 					<el-col :span="4">
@@ -215,12 +213,12 @@
 				</el-table-column>
 				<el-table-column label="原始图" align="center" width="180">
 					<template scope="scope">
-						<el-button v-if="scope.row.fileUrl" type="info" @click="showDetail(1,scope.row)" size="small">原始图</el-button>
+						<el-button v-if="scope.row.fileUrl" type="text" @click="showDetail(1,scope.row)" size="small">原始图</el-button>
 					</template>
 				</el-table-column>
 				<el-table-column label="识别图" align="center" width="180">
 					<template scope="scope">
-						<el-button v-if="scope.row.detectResultUrl" type="primary" @click="showDetail(2,scope.row)" size="small">
+						<el-button v-if="scope.row.detectResultUrl" type="text" @click="showDetail(2,scope.row)" size="small">
 							识别图
 						</el-button>
 					</template>
@@ -228,21 +226,21 @@
 			</el-table>
 		</div>
 		<el-dialog :title="bigImgTitle" v-model="bigImgVisible" style="text-align: center;" :size="dialogSize">
-			<el-row>
-				<el-col :span='5'>{{jgDetail.title}}:</el-col>
-				<el-col :span="5">{{jgDetail.ip}}</el-col>
+			<el-row :gutter="20">
+				<el-col :span='5'>{{jgDetail.title}}：</el-col>
+				<el-col :span="19">{{jgDetail.ip}}</el-col>
 			</el-row>
-			<el-row>
+			<el-row :gutter="20">
 				<el-col :span="5">所在机柜：</el-col>
-				<el-col :span="5">{{jgDetail.cabinetName}}</el-col>
+				<el-col :span="19">{{jgDetail.deviceName}}</el-col>
 			</el-row>
-			<el-row>
+			<el-row :gutter="20">
 				<el-col :span="5">拍摄时间：</el-col>
-				<el-col :span="5">{{jgDetail.time}}</el-col>
+				<el-col :span="19">{{jgDetail.time}}</el-col>
 			</el-row>
 			<img :src="currentUrl" alt="异常图片,无法识别" width="100%" />
 		</el-dialog>
-		<el-dialog v-model="allVisible" style="text-align: center;" :size="dialogSize" :title="`机柜:${jgField.cabinetName}`">
+		<el-dialog v-model="allVisible" style="text-align: center;" :size="dialogSize" :title="`机柜 : ${jgField.deviceName}`">
 			<div v-for='item in allImgs' :key="item">
 				<el-row>
 					<el-col :span='24'>拍摄时间:{{item.psTime}}</el-col>
@@ -259,7 +257,7 @@
 <script>
 import NProgress from "nprogress";
 import { parseTime, compareU } from "utils";
-import { getRoomList } from "api/room";
+import { getRoomList, devList } from "api/room";
 import {
   getServersInfos,
   getListCabinetsByTaskId,
@@ -315,13 +313,7 @@ export default {
       routeType: "index",
       activeName: "first",
       rules: {
-        roomId: [
-          {
-            required: true,
-            message: "请选择房间",
-            trigger: "change"
-          }
-        ]
+         
       },
       dialogSize: "small",
       cabinetTotal: 0,
@@ -379,9 +371,9 @@ export default {
       };
       let self = this;
       getRoomList(self, para).then(res => {
-        if (res.data.data) {
+        if (res.body.data) {
           this.rooms = res.body.data.rows;
-          this.filters.roomId = this.rooms[0].roomId;
+          this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
           this.getList();
         }
       });
@@ -418,11 +410,14 @@ export default {
           this.listLoading = true;
           NProgress.start();
           let self = this;
+          devList(self,{roomId:this.filters.roomId}).then(res=>{
+            this.cabinetTotal = res.body.data?res.body.data.length:0;
+          })
           getServersInfos(self, para).then(res => {
             if (res.data.data && res.data.data.list.length > 0) {
-              this.cabinetTotal = 0;
+              
               this.rows = res.data.data.list.map(i => {
-                this.cabinetTotal += +i.totalCabinets;
+                
                 let timeStr =
                   parseTime(i.startTime, "{y}-{m}-{d} {h}:{i}:{s}") + "至";
                 timeStr += i.endTime
@@ -466,13 +461,15 @@ export default {
       let self = this;
       let param = {
         taskId: this.taskId,
-        cabinetName: this.cabinetName ? this.cabinetName : ""
+        deviceName: this.cabinetName ? this.cabinetName : ""
       };
       this.cabinetListLoading = true;
       NProgress.start();
       getListCabinetsByTaskId(self, param).then(res => {
+       
         if (res.data.data && res.data.data.length > 0) {
           this.detailCabinetRows = res.data.data;
+         
         } else {
           this.total = 0;
           this.detailCabinetRows = [];
@@ -503,8 +500,13 @@ export default {
           this.jgRows = res.data.data.sort(compareU("uDetails"));
           let ip = this.ip;
           let devCabinet = this.devCabinet;
-          this.detailDevRows = res.data.data.filter(devs => {
-            if (devs.cabinetName.indexOf(devCabinet) >= 0) return devs;
+          this.detailDevRows = res.data.data.map(item=>{
+             item.deviceName=item.deviceInfo?item.deviceInfo.deviceName:"";
+             item.fileUrl = item.fileInfo?item.fileInfo.fileUrl:null;
+             item.detectResultUrl = item.fileInfo?item.fileInfo.detectResultUrl:null;
+             return item;
+          }).filter(devs => {
+            if (devs.deviceName.indexOf(devCabinet) >= 0) return devs;
           });
         } else {
           this.detailDevRows = [];
@@ -525,7 +527,7 @@ export default {
         this.jgDetail.time = parseTime(r.timeStamp, "{y}-{m}-{d} {h}:{i}:{s}");
         this.jgDetail.time = parseTime(r.timeStamp, "{y}-{m}-{d} {h}:{i}:{s}");
         this.bigImgTitle = "原始图";
-        this.jgDetail.title = "设备IP";
+        this.jgDetail.title = "原始设备IP";
         this.currentUrl = baseImgUrl + r.fileUrl;
 
         this.$nextTick(() => {
@@ -587,9 +589,9 @@ export default {
 
 <style scoped>
 .back {
-  margin-bottom: 10px;
-  color: #0070d9;
-  font-size: 14px;
+  padding-bottom: 20px;
+  color: #3480f1;
+  cursor: pointer;
 }
 
 .back:hover {
@@ -598,17 +600,26 @@ export default {
 
 .d_title {
   padding: 10px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  color:#ffffff;
+  font-family: open-sans-light;
+  text-shadow: 0 0 3px rgba(255,255,255,0.4);
 }
 
 .d_content {
   padding: 10px;
   font-size: 12px;
-  color: ;
+  color: rgb(234, 238, 25);
 }
 
 .list_item {
   line-height: 26px;
+}
+.el-dialog__body .el-col{
+   line-height:30px;
+   text-align:left;
+}
+.el-dialog__body .el-col-19{
+  text-align:left;
 }
 </style>

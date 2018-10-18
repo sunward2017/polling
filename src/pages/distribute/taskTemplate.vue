@@ -9,8 +9,8 @@
               </el-select>
           </el-col>
           <el-col :span="8">
-                 <el-button type="info"  size="small" @click="editSubmit" style="float:right;margin:5px 5px 0 5px; ">保存模板</el-button>
-                 <el-button type="success"  size="small" @click="handleAdd" style="float:right;margin:5px 5px 0 5px;">添加模版</el-button>
+               <el-button type="info"  size="small" @click="editSubmit" style="float:right;margin:5px 5px 0 5px; ">保存模板</el-button>
+               <el-button type="success"  size="small" @click="handleAdd" style="float:right;margin:5px 5px 0 5px;">添加模版</el-button>
           </el-col>
         </el-row>
 					
@@ -126,7 +126,7 @@ export default {
         NProgress.done();
         if (res.data.data) {
           this.rooms = res.body.data.rows;
-          this.filters.roomId = this.rooms[0].roomId;
+          this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
           this.getList();
         }
       });

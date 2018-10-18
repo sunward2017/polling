@@ -6,7 +6,9 @@ Vue.use(Vuex);
 
 const state = {
    user:'',
-   robotId:''
+   robotId:'',
+   room:'',
+   task:''
 };
 
 export default new Vuex.Store({

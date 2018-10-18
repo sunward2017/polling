@@ -74,32 +74,25 @@
 			<div class="detail-title">{{rName}}&nbsp;&amp;&nbsp;详情</div>
 		</el-col>
 		<div class="toolbar">
-			<div style="width:60%;float:left">
+			<div style="width:39%;float:left">
 				<h4>设备详情</h4>
 				<el-table :data="deviceList" highlight-current-row v-loading="deviceListLoading" style="width: 100%;">
-					<el-table-column prop="deviceName" label="设备名称" width="200" sortable align="center">
+                    <el-table-column type="index" label="#" width="50">
 					</el-table-column>
-					<el-table-column prop="deviceCompany" label="设备厂商" sortable>
+					<el-table-column prop="deviceName" label="设备名称" sortable align="center">
 					</el-table-column>
-					<el-table-column prop="deviceSerial" label="设备编号" width="180" sortable>
-					</el-table-column>
-					<el-table-column prop="deviceStatus" width="80" label="状态">
-						<template scope="scope">
-							<el-tag :type="scope.row.deviceStatus==1?'success':'danger'">{{scope.row.deviceStatus==1?"启用":"禁用"}}</el-tag>
-						</template>
-					</el-table-column>
-					<el-table-column prop="deviceType" label="设备类型" align="center" width="100">
-					</el-table-column>
-					<el-table-column prop="deviceModel" label="设备型号" align="center" width="100">
+					<el-table-column prop="nvPointName" label="导航点">
 					</el-table-column>
 				</el-table>
 			</div>
-			<div style="width:39%;float:right">
+			<div style="width:60%;float:right">
 				<h4>机器人详情</h4>
 				<el-table :data="robotList" highlight-current-row v-loading="robotListLoading" style="width: 100%;">
-					<el-table-column prop="robotName" label="名称" sortabl width="120">
+					<el-table-column type="index" label="#" width="50">
 					</el-table-column>
-					<el-table-column prop="robotSerial" label="序列号" align="center" width="180">
+					<el-table-column prop="robotName" label="机器人名称" sortabl width="200">
+					</el-table-column>
+					<el-table-column prop="robotSerial" label="序列号" align="center" width="200">
 					</el-table-column>
 					<el-table-column prop="realtimeStatus" label="运行情况" align="center" :formatter="formatStatus">
 					</el-table-column>
@@ -128,10 +121,10 @@
 				<el-form-item label="机房描述">
 					<el-input type="textarea" v-model="editForm.description"></el-input>
 				</el-form-item>
-				<el-form-item label="机房位置" prop='position' class="item">
+				<el-form-item label="机房位置" prop='position'  >
 					<el-input v-model="editForm.position" auto-complete="off"></el-input>
 				</el-form-item>
-				<el-form-item label="机器人" class="item">
+				<el-form-item label="机器人">
 					<el-select v-model="editForm.robots" multiple placeholder="请选择机器人" style="width:100%">
 						<el-option v-for="item in robots" :key="item.robotId" :label="item.robotName" :value="item.robotId"></el-option>
 					</el-select>
@@ -540,16 +533,17 @@
 				NProgress.start();
 				let self = this;
 				getRoomDetail(self, para).then((res) => {
-					this.robotList = res.data.data.robotList;
-					this.deviceList = res.data.data.deviceList
-					this.robotListLoading = false;
-					this.deviceListLoading = false;
+					if(res.body.data){
+						this.robotList = res.body.data.robotList;
+						this.deviceList = res.body.data.rbDeviceInfos?res.body.data.rbDeviceInfos.map(item=>({deviceName:item.deviceName,nvPointName:item.point.nvPointName})):[];
+						this.robotListLoading = false;
+						this.deviceListLoading = false;
+					}
 					NProgress.done();
 				})
 			},
 			//删除
 			handleDel: function(row) {
-				//console.log(row);
 				var _this = this;
 				this.$confirm('确认删除：' + row.roomName + '？', '提示', {
 					//type: 'warning'
@@ -585,9 +579,9 @@
 			handleEditNav: function(roomId) {
 				this.navRoomId = roomId;
 				this.navListVisible = true;
-				this.$nextTick(function() {
-					this.$refs.nav_list.getNavs();
-				})
+				// this.$nextTick(function() {
+					// this.$refs.nav_list.getNavs();
+				// })
 			},
 			//显示编辑界面
 			handleEdit: function(row) {
@@ -595,10 +589,10 @@
 				this.editFormVisible = true;
 				this.editFormTtile = '编辑';
 				this.editForm.roomId = row.roomId,
-					this.editForm.roomName = row.roomName,
-					this.editForm.description = row.description,
-					this.editForm.position = row.position
-				// this.editForm.robots = robots; 
+				this.editForm.roomName = row.roomName,
+				this.editForm.description = row.description,
+				this.editForm.position = row.position,
+				this.editForm.robots = row.robotList?row.robotList.map(item=>(item.robotId)):[]; 
 				this.editForm.roomStatus = row.roomStatus.toString();
 				this.editForm.custom = row.customId;
 				this.editForm.scaleUpper = row.scaleUpper;
@@ -677,7 +671,7 @@
 									roomName: _this.editForm.roomName,
 									description: _this.editForm.description,
 									position: _this.editForm.position,
-									robots: robotList,
+									robots: JSON.stringify(robotList),
 									roomStatus: _this.editForm.roomStatus,
 									customId: _this.editForm.custom,
 									scaleUpper: _this.editForm.scaleUpper,
@@ -725,7 +719,7 @@
 				this.editFormTtile = '新增';
 				this.getRobots();
 				this.editForm.custom = "",
-					this.editForm.roomId = '';
+				this.editForm.roomId = '';
 				this.editForm.roomName = '';
 				this.editForm.description = '';
 				this.editForm.position = '';
@@ -736,9 +730,11 @@
 				this.editForm.warnUpper = '';
 				this.editForm.warnLower = '';
 				this.editForm.scaleUpperH = '';
+				this.editForm.startPoint ="";
 				this.editForm.scaleLowerH = '';
 				this.editForm.warnUpperH = '';
 				this.editForm.warnLowerH = '';
+				this.editForm.fileId = '';
 			},
 			changeCustom: function() {
 				this.filters.name = "";

@@ -3,7 +3,7 @@
         <el-col :span="24" class="toolbar">
  			<el-form :inline="true">
  				<el-form-item>
- 					 <el-input  v-model="filters.navName" min="0" placeholder="请输入导航点名称" ></el-input>	
+ 					<el-input  v-model="filters.navName" min="0" placeholder="请输入测温点名称" ></el-input>	
 	 			</el-form-item>
 	 			<el-form-item>
 	 				<el-button type="primary" icon="search" v-on:click="getNavs">查询</el-button>
@@ -78,6 +78,13 @@
 				listLoading: false
 			}
 		},
+		watch:{
+			roomId(old,newValue){
+			    if(old!==newValue){
+					this.getNavs();
+				}
+			}
+		},
 		methods: {
 			handleCurrentChange(val) {
 				this.page = val;
@@ -89,8 +96,7 @@
 				this.getNavs();
 			},
 			 
-			//获取列表
-			 
+			//获取列表 
 			getNavs() {
 				let para = {
 					page: this.page,
@@ -104,7 +110,6 @@
 					NProgress.start();
 					let self= this;
 
-					// console.log("para",para)
 					getNavList(self,para).then((res) => {
 						// console.log(res);
 						if(res.data.data){
@@ -112,7 +117,7 @@
 							this.navListData = res.data.data.rows;
 						}else{
 							this.total=0;
-							this. navListData=[];
+							this.navListData=[];
 						}
 						this.listLoading = false;
 						NProgress.done();
@@ -160,6 +165,8 @@
 				this.$emit("addNav");
 			}
 		},
-		 
+		mounted() {
+            this.getNavs();
+		}
 	}
 	</script>

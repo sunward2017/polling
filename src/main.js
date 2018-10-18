@@ -95,11 +95,12 @@ const routes = [{
 			component: PhotoReport,
 			name: '巡检照片'
 		},
-		{
-			path: '/Collection',
-			component: CollectionResult,
-			name: '图像识别'
-		}, {
+		// {
+		// 	path: '/Collection',
+		// 	component: CollectionResult,
+		// 	name: '图像识别'
+		// },
+		 {
 			path: '/thermalResult',
 			component: Thermal,
 			name: '热能均衡'

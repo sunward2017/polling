@@ -9,9 +9,6 @@
 					</el-select>
 				</el-col>
 				<el-form-item>
-					<el-button icon="search" v-on:click="getDevList">查询</el-button>
-				</el-form-item>
-				<el-form-item>
 					<el-button class="filter-item" icon="plus" type="success" @click="handleAdd">新增</el-button>
 				</el-form-item>
 				<el-form-item>
@@ -21,41 +18,57 @@
 		</el-col>
 		 <el-table :data="devRows" v-loading="devListLoading">
 			<el-table-column type="index" width="60" label="#" align="center"></el-table-column>
-			<el-table-column prop="deviceName" label="设备名称"  width="300" align="center"> </el-table-column>
+			<el-table-column prop="deviceName" label="机柜名称"   align="center"> </el-table-column>
 			<el-table-column  prop="nvPointId" label="导航点" :formatter="formatStag" align="center">
 			</el-table-column>
-			<!-- <el-table-column prop="name" label="姓名" width="300">
+			<el-table-column prop="units" label="总U位数"   align="center">
 			</el-table-column>
-			<el-table-column prop="address" label="地址">
-			</el-table-column> -->
-			<el-table-column prop="action" label="操作" width="240">
+      <el-table-column prop="action" label="语音讲解"  align="left">
 				<template scope="scope">
-					<el-button size="small" icon="edit" @click="handleEdit(scope.row)">编辑</el-button>
+          <el-upload
+              class="upload"
+             :action="uploadUrl"
+             :data="{deviceId:scope.row.deviceId}"
+             :file-list="fileList"
+             :before-upload ="handlePreview"
+             :on-success="handleSuccess"
+             :on-error="handleError"
+           >
+					  <el-button  type="text" size="small">点击上传</el-button>
+          </el-upload>
+				</template>
+			</el-table-column>
+			<el-table-column prop="action" label="操作" width="240" align="center">
+				<template scope="scope">
+					  <el-button size="small" icon="edit" @click="handleEdit(scope.row)">编辑</el-button>
 			    	<el-button type="warning" icon="delete" size="small" @click="handleDel(scope.row)">删除</el-button>
 				</template>
 			</el-table-column>
 		</el-table>
-		 <el-dialog title="设备编辑" v-model="devFormVisible" top="25%" size="tiny">
-            <el-form label-width="80px"  :model="devEditForm" ref="editForm">
-				 <el-form-item label="名称" prop="roomId" required>
-					<el-select v-model="devEditForm.roomId" style="width:100%">
-                       <el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
+		<el-dialog title="设备编辑" v-model="devFormVisible" top="25%" size="tiny">
+       <el-form label-width="80px"  :model="devEditForm" ref="editForm" :rules="rules">
+				 <el-form-item label="机房名称" prop="roomId" >
+					<el-select v-model="devEditForm.roomId" style="width:100%" @change="getStagList"> 
+              <el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 					   </el-option>
 					</el-select>
 				</el-form-item>
-				<el-form-item label="设备名称" prop="deviceName" required>
+				<el-form-item label="设备名称" prop="deviceName" >
 					<el-input v-model="devEditForm.deviceName"></el-input>
 				</el-form-item>
-				<el-form-item label="导航点" prop="nvPointId" required>
-				   <el-select v-model="devEditForm.nvPointId" style="width:100%">
-                      <el-option v-for="item in points" :key="item.nvPointId" :label="item.nvPointName" :value="item.nvPointId">
+				<el-form-item label="导航点" prop="nvPointId" >
+				   <el-select v-model="devEditForm.nvPointId" style="width:100%" clearable>
+            <el-option v-for="item in points" :key="item.nvPointId" :label="item.nvPointName" :value="item.nvPointId">
 					  </el-option>
 				   </el-select>
+				</el-form-item>
+        <el-form-item label="U位数" prop="units">
+				   <el-input v-model.number="devEditForm.units"></el-input>
 				</el-form-item>
 			</el-form>
 			<div slot="footer">
 			   <el-button @click="devFormVisible = false">取 消</el-button>
-               <el-button type="primary" @click.native="editSubmit">提交</el-button>
+         <el-button type="primary" @click.native="editSubmit">提交</el-button>
 			</div>
 		 </el-dialog>
 		<el-dialog title="上传设备EXCEL" v-model="uploadVisible" size="tiny" top="25%">
@@ -75,23 +88,43 @@ import {
   delDevice
 } from "api/room";
 import Upload from "components/upload/upload";
+import { uploadAudioUrl } from "api/api";
 
 export default {
   components: {
     Upload
   },
   data() {
+    var checkNum = (rule, value, callback) => {
+      setTimeout(() => {
+        if (!Number.isInteger(value)) {
+          callback(new Error("请输入数字值"));
+        } else {
+          callback();
+        }
+      }, 1000);
+    };
     return {
       filters: {
         roomId: ""
       },
+      uploadUrl: uploadAudioUrl,
       rooms: [],
       devRows: [],
       uploadVisible: false,
       devListLoading: false,
       points: [],
       devEditForm: {},
-      devFormVisible: false
+      devFormVisible: false,
+      rules: {
+        roomId: [{ required: true, message: "请选择机房", trigger: "change" }],
+        deviceName: [
+          { required: true, message: "请输入设备名称", trigger: "change" }
+        ],
+        units: [{ required:true,validator: checkNum, trigger: "blur" }]
+      },
+      fileList:[],
+     
     };
   },
   methods: {
@@ -105,7 +138,9 @@ export default {
       getRoomList(self, para).then(res => {
         if (res.data.data) {
           this.rooms = res.body.data.rows;
-          let id = (this.filters.roomId = this.rooms[0].roomId);
+          let id = (this.filters.roomId = this.$store.state.robotId
+            ? this.$store.state.robotId.roomId
+            : this.rooms[0].roomId);
           this.getStagList(id);
         }
       });
@@ -113,10 +148,10 @@ export default {
     getDevList() {
       let _this = this;
       NProgress.start();
-      this.devListLoadingb = true;
+      this.devListLoading = true;
       devList(_this, { roomId: _this.filters.roomId }).then(res => {
         NProgress.done();
-        this.devListLoadingb = false;
+        this.devListLoading = false;
         if (res.data.result === 200) {
           this.devRows = res.data.data;
         } else {
@@ -130,16 +165,24 @@ export default {
       this.getStagList();
     },
     handleEdit(r) {
-	  this.devEditForm = { ...r };
-	  delete this.devEditForm.point
+      this.devEditForm = { ...r };
       this.devFormVisible = true;
     },
     editSubmit() {
       let _this = this;
       _this.$refs.editForm.validate(valid => {
         if (valid) {
-		  _this.devEditForm.customerId = _this.$store.state.user.customId;
-          saveDevices(_this, _this.devEditForm).then(res => {
+          _this.devEditForm.customerId = _this.$store.state.user.customId;
+          let para = {
+            roomId: _this.devEditForm.roomId,
+            nvPointId: _this.devEditForm.nvPointId,
+            deviceName: _this.devEditForm.deviceName,
+            units: _this.devEditForm.units
+          };
+          if (_this.devEditForm.deviceId) {
+            para.deviceId = _this.devEditForm.deviceId;
+          }
+          saveDevices(_this, para).then(res => {
             if (res.data.result === 200) {
               _this.$message({
                 message: "保存成功",
@@ -196,10 +239,45 @@ export default {
         }
       });
     },
-
+    handlePreview(file) {
+      var strRegex =
+        "(.CD|.OGG|.MP3)$";
+      var reg = new RegExp(strRegex);
+      if (reg.test(file.name.toUpperCase())) {
+        
+        return true;
+      } else {
+        this.$notify.info({
+          title: "提示",
+          message: "文件格式不正确",
+          duration: 2000,
+          offset: 300
+        });
+        return false;
+      }
+    },
+    handleSuccess(response, file, fileList) {
+      this.$notify.success({
+        title: "成功",
+        message: "文件上传成功",
+        duration: 2000,
+        offset: 300
+      });
+      this.fileList=[];
+      
+    },
+    handleError(e, file, fileList) {
+      this.$notify.error({
+        title: "失败",
+        message: "文件上传失败",
+        duration: 2000,
+        offset: 300
+      });
+      this.fileList=[];
+      
+    },
     formatStag(r, c) {
-      const stag = this.points.find(c => c.nvPointId === r.nvPointId);
-      return stag ? stag.nvPointName : "未知";
+      return r.point ? r.point.nvPointName : "";
     },
     handleUpload() {
       this.uploadVisible = true;
@@ -213,6 +291,10 @@ export default {
   }
 };
 </script>
-
 <style scoped>
+.upload {
+   display: flex;
+   align-items: center;
+}
+ 
 </style>

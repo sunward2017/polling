@@ -131,10 +131,9 @@
 </template>
 
 <script>
-	import NProgress from 'nprogress'
+	import NProgress from 'nprogress';
 	import { parseTime } from 'utils';
-	import dashboard from '../dashboard/dashboard.vue'
-	import { getRoomList } from 'api/room';
+	import dashboard from '../dashboard/dashboard.vue';
 	import { getThermometryResults, getHumitureResults, getTaskByTime } from 'api/results';
 
 	import echarts from 'echarts'
@@ -186,8 +185,6 @@
 					starttime: parseTime(time - 86400000 * 3, '{y}-{m}-{d} {h}:{i}:{s}'),
 					endtime: parseTime(time, '{y}-{m}-{d} {h}:{i}:{s}')
 				};
-				 
-
 				NProgress.start();
 				let self = this;
 				let add = 0;
@@ -372,7 +369,6 @@
 		width: 90%;
 		text-align: center;
 	}
-	
 	#sec:after {
 		display: block;
 		clear: both;

@@ -1,6 +1,6 @@
 <template>
 	<section>
-		<el-col :span="24" class="toolbar">
+		<el-col :span="24" class="toolbar" lable-width='70'>
 			<el-form :inline="true" :model="filters">
 				<el-form-item label="巡检机房">
 					<el-select style="width:90%" @change="changeRoom" v-model="filters.roomId">
@@ -19,7 +19,7 @@
 					<el-button icon="refreash" type="primary" @click="getTaskByRoom">查询</el-button>
 				</el-form-item>
 				<el-form-item>
-					<el-button icon="edit" type="primary" @click="handlerAdd">任务计划</el-button>
+					<el-button  type="primary" @click="handlerAdd">制定计划</el-button>
 				</el-form-item>
 			</el-form>
 		</el-col>
@@ -36,29 +36,43 @@
 						<el-tag type="success">{{formatStatus(scope.row)}}</el-tag>
 					</template>
 				</el-table-column>
-				<el-table-column prop="robotId" label="巡检机器人" width="160" align="center" :formatter="formatterRobot">
+				<el-table-column prop="robotId" label="巡检机器人" width="180" align="center" :formatter="formatterRobot">
 				</el-table-column>
-				<el-table-column  label="避开时间区间" width="360" align="center" :formatter="formatTimeSction">
+				<el-table-column  label="避开时间区间" width="340" align="center" :formatter="formatTimeSction">
 				</el-table-column>
 				<el-table-column prop="prohibitedAreaId" label="避开巷道" width="240" align="center" sortable :formatter="formatArea">
 				</el-table-column>
 				<el-table-column prop="active" label="任务状态">
 					<template scope="scope">
-						<el-tag :type="scope.row.active?'success':'danger'">{{scope.row.active?" 执行 ":" 挂起 "}}</el-tag>
+						<el-tag :type="scope.row.active?'success':'danger'">{{scope.row.active?" 可执行 ":"已挂起 "}}</el-tag>
 					</template>
 				</el-table-column>
         <!-- <el-table-column prop="createTime" label="创建时间" :formatter="formatTime">
         </el-table-column> -->
-				<el-table-column prop="status" label="操作" align="center" width="300">
+				<el-table-column  label="操作" align="center" width="300">
 					<template scope="scope">
-						<el-button type="darnge" icon="edit" size="small" @click="handleDetail(scope.row)">修改</el-button>
+						<el-button type="darnge" icon="edit" size="small" @click="handleDetail(scope.row)">编辑</el-button>
 						<el-button type="warning" icon="delete" size="small" @click="handleDel(scope.row)" v-loading="delLoading">删除</el-button>
 						<el-button :type="scope.row.active?'danger':'success'" size="small" @click="pause(scope.row)">{{scope.row.active?"挂起":"恢复"}}</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
 		</template>
-		 
+    <!--分页-->
+		<el-col :span="24" class="toolbar" style="padding-bottom:10px;">
+			<el-pagination 
+				layout="prev, pager, next,total,sizes,jumper" 
+				@current-change="handleCurrentChange" 
+				:page-sizes="[10, 20, 30, 40]" 
+				:page-size="size" 
+				:current-page="page"
+				:total="total" 
+				style="float:right;"
+				@size-change="handleSizeChange"
+				>
+			</el-pagination>
+		</el-col>
+
 		<!--编辑界面-->
 		<el-dialog :title="editFormTile" v-model="editFormVisible" :close-on-click-modal="false" size="samll">
 			<el-form :model="editForm" label-width="100px" :rules="editFormRules" ref="editForm">
@@ -274,6 +288,7 @@ export default {
         ],
         taskName: [
           {
+            required: true,
             validator: checkNull,
             trigger: "blur"
           }
@@ -305,6 +320,9 @@ export default {
             return time.getTime() < Date.now() - 8.64e7
         }
       },
+      total: 0,
+			page: 1,
+			size:20,
       areaData:[],
       defaultProps: {
         children: 'children',
@@ -325,6 +343,8 @@ export default {
     getTaskByRoom() {
       let para = {
         roomId: this.filters.roomId,
+        page: this.page,
+				pageSize: this.size
       };
       if(this.filters.active!=="2"){
         para.active = this.filters.active;
@@ -333,10 +353,12 @@ export default {
       NProgress.start();
       let self = this;
       getTaskList(self, para).then(res => {
-        if (res.data.result === 200) {
-          this.rows = res.data.data?res.data.data:[];
+        if (res.data.data) {
+          this.rows = res.data.data?res.data.data.list:[];
+          this.total= res.data.data.total
         } else {
           this.rows = [];
+          this.total =0;
         }
         this.listLoading = false;
         NProgress.done();
@@ -417,6 +439,7 @@ export default {
             });
           } else {
             params.scheduleId = _this.editForm.scheduleId;
+            params.status ="0";
             updateTask(_this, params).then(res => {
               if (res.body.result == 200) {
                 _this.$notify({
@@ -460,8 +483,9 @@ export default {
         templateId:r.templateId?r.templateId:'',
         domains: r.taskTimes
           .split(",")
-          .map(item => ({ value: new Date("2020-12-12 " + item) }))
+          .map(item => ({ value: new Date("2020/12/12 " + item) }))
       };
+       
       this.execArea= r.taskDetails?JSON.parse(r.taskDetails).map(item=>({...item,cmdType:item.commandTypes.split(',')})):[];
       this.editFormVisible = true;
     },
@@ -500,7 +524,7 @@ export default {
       getRoomList(self, para).then(res => {
         if (res.body.data && res.body.data.rows) {
           this.rooms = res.body.data.rows;
-          this.filters.roomId = this.rooms[0].roomId;
+          this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
           this.getTaskByRoom();
         } else {
           this.rooms = [];

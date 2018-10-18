@@ -102,6 +102,7 @@
 							robotId: body[0].robotRealtimes[0].robotId,
 							roomId: body[0].roomId
 						});
+                        
 						this.Date = [];
 						this.avgHumidity = [];
 						this.avgTemperature = [];
@@ -152,7 +153,7 @@
 					NProgress.done();
 					if(res.data.data) {
 						this.rooms = res.body.data.rows;
-						this.filters.roomId = this.rooms[0].roomId;
+						this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
 						//this.roomData()
 					}
 				});
@@ -304,8 +305,8 @@
 						}
 					},
 					grid: {
-						left: "3%",
-						right: "4%",
+						left: "5%",
+						right: "3%",
 						bottom: "3%",
 						containLabel: true
 					},
@@ -349,13 +350,13 @@
 						}
 					]
 				});
-				// option
+				// 综合图
 				this.chartLine.setOption({
 					backgroundColor: 'rgba(0,0,0,.35)',
 					title: {},
 					grid: {
 						left: "5%",
-						right: "2%"
+						right: "2%",	
 					},
 					tooltip: {
 						trigger: "axis",
@@ -496,7 +497,10 @@
 						trigger: "axis"
 					},
 					grid: {
-						right: "4%"
+					   left: "5%",
+					   right: "3%",
+					   bottom: "3%",
+					   containLabel: true	 
 					},
 					legend: {
 						top: "1%",

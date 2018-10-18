@@ -2,10 +2,12 @@
 	<section>
 		<div class="toolbar">
 			<el-col :span="12">
-				当前任务:&emsp; {{taskName}} &emsp;&emsp;
-				<router-link :to="{path:'taskDetail'}" >
-					     <el-button type="info" icon="d-arrow-left" size="small">任务切换</el-button>
-			    </router-link>
+        <router-link :to="{path:'taskDetail'}" >
+					<el-button type="text" icon="d-arrow-left" size="small">任务切换</el-button>
+			  </router-link>
+			   	&emsp;&emsp;当前任务:&emsp; {{taskName}} 
+          &emsp;&emsp;
+          <el-button @click.native="getCurrentTaskDetail" size="small" type="primary">刷新</el-button> 
 			</el-col>
 		</div>
 		<el-row :gutter="20">
@@ -35,12 +37,22 @@
             <td>{{cmd.commandInfo.commandName}}</td>
             <td><el-tag :type="types[cmd.commandInfo.commandType+'']">{{formatType(cmd.commandInfo.commandType)}}</el-tag></td>
             <td><el-tag :type="types[+cmd.commandStatus+1+'']">{{formatStatus(cmd.commandStatus)}}</el-tag></td>
-            <td><el-button v-if="cmd.fileInfo&&cmd.fileInfo.fileUrl" type="info" size="small" @click="showImg(cmd.fileInfo.fileUrl,'原始图')">原始图</el-button>&emsp;<el-button  v-if="cmd.fileInfo&&cmd.fileInfo.detectResultUrl" type="warning" size="small" @click="showImg(cmd.detectResultUrl,'识别图')">识别图</el-button></td>
+            <td>
+              <el-button v-if="cmd.fileInfo&&cmd.fileInfo.fileUrl&&cmd.fileInfo.fileType===3" type="info" size="small" @click="showImg(cmd.fileInfo.fileUrl,'原始图')">原始图</el-button>&emsp;
+              <el-button v-if="cmd.fileInfo&&cmd.fileInfo.detectResultUrl" type="warning" size="small" @click="showImg(cmd.fileInfo.detectResultUrl,'识别图')">识别图</el-button>
+              <el-button v-if="cmd.fileInfo&&cmd.fileInfo.fileUrl&&cmd.fileInfo.fileType===1" type="primary" size="small" @click="play(cmd.fileInfo.fileUrl)">播放视频</el-button>&emsp;
+            </td>
 			  </tr>
 			</template>
 		</table>
     <el-dialog :title="bigImgTitle" v-model="bigImgVisible" style="text-align: center;" :size="dialogSize">
 			<img :src="currentUrl" alt="异常图片,无法识别" width="100%" @click="changeSize()" ref='img'/>
+		</el-dialog>
+    <el-dialog :title="videoTitle" v-model="videoVisible" style="text-align: center;">
+			  <video id="video_1" class="video-js vjs-default-skin" controls>
+          <source :src="videoUrl" type="video/mp4">
+           Your browser does not support the video tag.
+       </video>
 		</el-dialog>
 	</section>
 </template>
@@ -48,6 +60,8 @@
 import { currentTaskDetail } from "api/results";
 import { TASKEXECTYPES, CMDTYPES, CMDSTATUS} from "@/const";
 import { baseImgUrl } from 'api/api';
+import videoJs from 'video.js'
+import 'video.js/dist/video-js.min.css'
 
 export default {
   name: "",
@@ -60,11 +74,15 @@ export default {
       bigImgVisible:false,
       dialogSize:'small',
       currentUrl:'',
+      videoTitle:"视频播放",
+      videoVisible:false,
+      videoUrl:'',
+      taskId:'',
     };
   },
   methods: {
-    getCurrentTaskDetail(taskId) {
-      let _this = this;
+    getCurrentTaskDetail() {
+      let _this = this,taskId = this.taskId;
       currentTaskDetail(_this, { taskId }).then(res => {
           _this.taskName = this.$route.query.taskName;   
         if (res.data.result === 200) {
@@ -90,10 +108,22 @@ export default {
     changeSize(){
 			this.dialogSize=this.dialogSize==="small"?'full':'small'; 
     },
+    play(url){
+      this.videoUrl = url;
+      this.videoVisible = true;
+      this.$nextTick(()=>{
+          var player = videoJs('video_1',{
+              autoplay : true,
+              loop : false,
+              muted : false,
+              preload:true,
+          })
+      }) 
+    }
   },
   mounted() {
-    const taskId = this.$route.query.taskId;
-    this.getCurrentTaskDetail(taskId);
+    this.taskId = this.$route.query.taskId;
+    this.getCurrentTaskDetail();
   }
 };
 </script>

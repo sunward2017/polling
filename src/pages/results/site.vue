@@ -1,15 +1,28 @@
  <template>
 	<section >
 		<el-form :inline="true" v-model="filters" class="toolbar">
-			<el-form-item>
+			<el-form-item label="巡检机房">
 				<el-select v-model="filters.roomId" placeholder="请选择机房" @change="changeRoom">
 					<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 					</el-option>
 				</el-select>
 			</el-form-item>
+			<el-form-item >
+				 <el-date-picker
+					v-model="filters.startTime"
+					type="datetime"
+					placeholder="任务开始时间">
+				</el-date-picker>
+			</el-form-item>
+			<el-form-item >
+				<el-select v-model="filters.taskStatus" placeholder="请选择任务状态" style="width:150px;">
+				   <el-option label="执行中"  value="1"></el-option>
+				   <el-option label="执行完毕"  value="2"></el-option>
+				   <el-option label="执行中断"  value="4"></el-option>
+				</el-select> 	
+			</el-form-item>
 			<el-form-item>
-				 
-				<el-button   icon="search" @click="getList">任务检索</el-button>
+				<el-button  type="warning" icon="search" @click="getList">任务检索</el-button>
 			</el-form-item>
 			<el-form-item v-if="hasTask" label="当前任务">
 				<el-tag> {{filters.taskName}}</el-tag>
@@ -42,16 +55,16 @@
 						<el-radio v-model="filters.taskId" :label="scope.row.taskId" @change='setTaskId(scope.row)'>{{&nbsp;}}</el-radio>
 					</template>	
 				</el-table-column>
-				<el-table-column prop="robotName" align="center" label="机器人名称" width="180">
+				<el-table-column prop="taskName" label="任务名称" width="360">
 				</el-table-column>
-				<el-table-column prop="taskType" align="center" label="任务类型" width="180">
+				<el-table-column prop="startTime" label="巡检时间" :formatter="formatTime"  min-width="120" sortable>
+				</el-table-column>
+				<el-table-column  label="执行状态" align="center" width="120">
 					<template scope="scope">
-						<el-tag>{{scope.row.taskType===1?'自动巡检':'临时任务'}}</el-tag>
+						<el-tag :type="cmdStatus[+scope.row.taskStatus+1+'']">{{formatStatus(scope.row)}}</el-tag>
 					</template>
 				</el-table-column>
-				<el-table-column prop="taskName" align="center" label="任务名称" >
-				</el-table-column>
-				<el-table-column prop="timeStamp" label="巡检时间" :formatter="formatTime"  width="280" sortable>
+				<el-table-column prop="totalDevices" label="巡检设备数"  min-width="80" align="center" >
 				</el-table-column>
 			</el-table>
 			<el-col :span="24" class="toolbar" style="padding-bottom:10px;">
@@ -72,10 +85,11 @@
 	import NProgress from 'nprogress';
 	import { parseTime } from 'utils';
 	import { getRoomList } from 'api/room';
-	import { getTaskResults, getTaskDetail } from 'api/results';
+	import { currentTask, getTaskDetail } from 'api/results';
     import { Request, Response } from 'utils/Cipher';
-    import { baseImgUrl } from 'api/api';
-    
+	import { baseImgUrl } from 'api/api';
+	import { TASKEXECTYPES, CMDSTATUS } from "@/const";
+
 	export default {
 		data() {
 			return {
@@ -83,6 +97,8 @@
 					roomId: '',
 					taskId: '',
 					taskName:'',
+					startTime:'',
+					taskStatus:'1',
 				},
 				rooms: [],
 				taskVisible: false,
@@ -98,6 +114,7 @@
 				currentUrl:'',
 				hasTask:false,
 				gather:[],
+				cmdStatus: CMDSTATUS
 			}
 		},
 		methods: {
@@ -105,7 +122,10 @@
 				return parseTime(r.uploadTime, '{y}-{m}-{d} {h}:{i}'); 
 			},
 			formatTime(r,c) {
-				return parseTime(r.taskTime, '{y}-{m}-{d} {h}:{i}');
+				return parseTime(r.startTime, '{y}-{m}-{d} {h}:{i}');
+			},
+			formatStatus(r) {
+				return TASKEXECTYPES[r.taskStatus];
 			},
 			handleCurrentChange(val) {
 				this.page = val;
@@ -128,7 +148,7 @@
 					NProgress.done();
 					if(res.data.data) {
 						this.rooms = res.body.data.rows;
-						this.filters.roomId = this.rooms[0].roomId
+					    this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
 					}
 				})
 			},
@@ -141,28 +161,27 @@
 				let para = {
 					page: this.page,
 					pageSize: this.size,
-					roomId: this.filters.roomId
+					roomId: this.filters.roomId,
+					taskStatus:this.filters.taskStatus
 				};
+				if (this.filters.startTime) {
+					para.starttime = parseTime(this.filters.startTime,"{y}-{m}-{d} {h}:{i}:{s}");
+				}
 				this.listLoading = true;
 				this.taskVisible = true;
 				NProgress.start();
 				let self = this;
-				getTaskResults(self, para).then((res) => {
+				 currentTask(self, para).then(res => {
 					this.listLoading = false;
 					NProgress.done();
-					if(res.data.data && res.data.data.list) {
-						this.taskGather = res.data.data.list.map((item)=>{
-							item.taskName =  item.taskName?item.taskName:"未知";
-							item.robotName = item.robotName?item.robotName:"未知";
-							return item;
-						});
-						this.total = res.data.data.total;
+					if (res.body.data && res.body.data.list) {
+					this.taskGather = res.data.data.list;
+					this.total = res.data.data.total;
 					} else {
-						this.taskGather = [];
-						this.total = 0;
+					this.taskGather = [];
+					this.total = 0;
 					}
-
-				})
+				});
 			},
 			setTaskId(r){
 				this.filters.taskName = r.taskName;

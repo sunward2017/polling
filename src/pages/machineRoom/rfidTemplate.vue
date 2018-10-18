@@ -1,7 +1,7 @@
 <template>
     <section>
         <el-row  :gutter="20">
-            <el-col :span="4">
+            <el-col :span="6">
                 <el-tree
                   class="rfidTree"
                   :data="rfids"
@@ -12,7 +12,7 @@
                   :render-content="renderContent">
                 </el-tree>
              </el-col>
-             <el-col :span="20">
+             <el-col :span="18">
               <div class="label_t">
                   <span>标签面板</span>
                   <el-button type="info" @click="save" size="small" style="margin:0 10px;">提交保存</el-button>      
@@ -209,16 +209,12 @@ export default {
     renderContent(h, { node, data, store }) {
       if (data.hasOwnProperty("children")) {
         return (
-          
-              <span>{node.label}</span>
-            
+          <span>{node.label}</span>  
         );
       } else {
         return (
           <span>
-            <span>
-              <span>{node.label}</span>
-            </span>
+            <span style="display:inline-block;width:40%;overflow:hidden;text-overflow: ellipsis;">{node.label}</span>
             <span style="float: right; margin-right: 20px">
               <el-button
                 size="mini"
@@ -522,6 +518,7 @@ export default {
   left: 300px;
   bottom: 10px;
 }
+ 
 </style>
 
 

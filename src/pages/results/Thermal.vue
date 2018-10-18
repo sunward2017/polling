@@ -3,12 +3,12 @@
 		<!--工具条-->
 		<el-col :span="24" class="toolbar">
 			<el-form :inline="true" :model="filters">
-				<el-col :span="6">
-					<el-select v-model="filters.roomId" style="width:90%">
+				 <el-form-item label="巡检机房">
+					<el-select v-model="filters.roomId">
 						<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 						</el-option>
 					</el-select>
-				</el-col>
+				 </el-form-item>
 				<el-form-item>
 					<el-button icon="search" type="primary" v-on:click="getList">查询</el-button>
 				</el-form-item>
@@ -128,7 +128,7 @@
 					NProgress.done();
 					if(res.data.data) {
 						this.rooms = res.body.data.rows;
-						this.filters.roomId = this.rooms[0].roomId
+						this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
 						this.getList();
 					}
 

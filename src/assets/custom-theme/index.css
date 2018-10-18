@@ -1258,6 +1258,7 @@
 .custom-theme .el-dialog__header {
 	background:rgba(0,0,0,0.5);
 	color:#fff;
+	padding: 10px 20px;
 }
 .custom-theme .el-dialog__body {
 	background:rgba(0,0,0,0.35);
@@ -8249,25 +8250,6 @@
 .custom-theme .el-upload-dragger.is-dragover {
 	background-color: rgba(32, 159, 255, .06);
 	border: 2px dashed #073069
-}
-
-.custom-theme .el-upload-list {
-	margin: 0;
-	padding: 0;
-	list-style: none
-}
-
-.custom-theme .el-upload-list__item {
-	transition: all .5s cubic-bezier(.55, 0, .1, 1);
-	font-size: 14px;
-	color: #48516a;
-	line-height: 1.8;
-	margin-top: 5px;
-	position: relative;
-	box-sizing: border-box;
-	border-radius: 4px;
-	width: 100%;
-	position: relative
 }
 
 .custom-theme .el-upload-list__item .el-progress-bar {

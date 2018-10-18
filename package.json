@@ -21,6 +21,7 @@
     "less-loader": "^4.1.0",
     "nprogress": "^0.2.0",
     "sortablejs": "^1.7.0",
+    "video.js": "^7.2.3",
     "vue": "^2.1.10",
     "vue-router": "2.4.0",
     "vuex": "^2.0.0-rc.6"

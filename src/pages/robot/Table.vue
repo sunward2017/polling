@@ -253,7 +253,6 @@
 			},
 			changKey() {
 				this.filters.value = '';
-				console.log(this.filters.key)
 				if(this.filters.key && this.filters.key != "all") {
 					this.isAll = true;
 				} else {

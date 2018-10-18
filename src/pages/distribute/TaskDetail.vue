@@ -3,11 +3,26 @@
 		<el-col :span="24" class="toolbar">
 			<el-form :inline="true" :model="filters">
 				<el-form-item label="巡检机房">
-					<el-select style="width:90%"  v-model="filters.roomId">
+					<el-select style="width:90%"  v-model="filters.roomId" @change="setRoom">
 						<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 						</el-option>
 					</el-select>
 				</el-form-item>
+        <el-form-item >
+          <el-date-picker
+            v-model="filters.startTime"
+            type="datetime"
+            placeholder="任务开始时间">
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item >
+          <el-select v-model="filters.taskStatus" placeholder="请选择任务状态" style="width:150px;" clearable>
+            <el-option label="未执行"  value="0"></el-option>
+            <el-option label="执行中"  value="1"></el-option>
+            <el-option label="执行完毕"  value="2"></el-option>
+            <el-option label="执行中断"  value="4"></el-option>
+          </el-select> 	
+        </el-form-item>
 				<el-form-item>
 					<el-button icon="refreash" type="primary" @click="getTaskByRoom">查询</el-button>
 				</el-form-item>
@@ -37,7 +52,7 @@
 				</el-table-column>
         <el-table-column prop="active" label="任务状态">
 					<template scope="scope">
-						<el-tag :type="scope.row.active?'success':'danger'">{{scope.row.active?" 执行 ":" 挂起 "}}</el-tag>
+						<el-tag :type="scope.row.active?'success':'danger'">{{scope.row.active?" 可执行 ":" 挂起 "}}</el-tag>
 					</template>
 				</el-table-column>
 				<el-table-column prop="status" label="操作" align="center" width="300">
@@ -165,6 +180,8 @@ export default {
       filters: {
         roomId: "",
         roomName: "",
+        startTime:'',
+        taskStatus:''
       },
       robotList: [],
       roomRobots: [],
@@ -237,6 +254,10 @@ export default {
     };
   },
   methods: {
+    setRoom(v){
+       this.$store.dispatch('setRoom',v);
+       this.getTaskByRoom();
+    },
     handleCurrentChange(val) {
       this.page = val;
       this.getTaskByRoom();
@@ -252,6 +273,12 @@ export default {
         roomId: this.filters.roomId,
         pageSize:this.size,
       };
+      if(this.filters.taskStatus||this.filters.taskStatus==='0'){
+        para.taskStatus = this.filters.taskStatus;
+      }
+      if(this.filters.startTime){
+        para.starttime = parseTime(this.filters.startTime,"{y}-{m}-{d} {h}:{i}:{s}");
+      }
       const currentroom = this.rooms.find(item => item.roomId === this.filters.roomId);
       this.robotList = currentroom.robotList;
       this.listLoading = true;
@@ -385,7 +412,13 @@ export default {
       getRoomList(self, para).then(res => {
         if (res.body.data && res.body.data.rows) {
           this.rooms = res.body.data.rows;
-          this.filters.roomId = this.rooms[0].roomId;
+          if(this.$store.state.room){
+             this.filters.roomId = this.$store.state.room;
+          }else if(this.$store.state.robotId){
+             this.filters.roomId = this.$store.state.robotId.roomId;
+          }else{
+             this.filters.roomId= this.rooms[0].roomId
+          }
           this.getTaskByRoom();
         } else {
           this.rooms = [];

@@ -37,7 +37,7 @@ export const getThermalResults = (self, params) => { return self.$http.get("/web
 
 export const getTaskResults = (self, params) => { return self.$http.get("/web/getTaskIdsWithFileInfos.action", { params: params }) };
 
-export const getTaskDetail = (self, params) => { return self.$http.get("/web/getTaskDetail.action", { params: params }) };
+export const getTaskDetail = (self, params) => { return self.$http.get(baseUrl+"/v1/listFilesByTaskId.action", { params: params }) };
 
 export const getWarningByDetect = (self, params) => { return self.$http.get("/web/getImageDetectedResultList.action", { params: params }) };
 
@@ -55,10 +55,10 @@ export const getTaskByTime = (self, params) => { return self.$http.get("/web/lis
 export const getServersInfos = (self, params) => { return self.$http.get(baseUrl + '/v1/listTasksWithServers.action', { params: params }) }
 
 //资源
-export const getListCabinetsByTaskId = (self, params) => { return self.$http.get(baseUrl + '/listCabinetsByTaskId.action', { params: params }) }
+export const getListCabinetsByTaskId = (self, params) => { return self.$http.get(baseUrl + '/v1/listDevicesByTaskId.action', { params: params }) }
  
 
-export const getListServers = (self, params) => { return self.$http.get(baseUrl + '/listServers.action', { params: params }) };
+export const getListServers = (self, params) => { return self.$http.get(baseUrl + '/v1/listServers.action', { params: params }) };
 
 export const cmdListByRoom = (self, params) => { return self.$http.post(baseUrl + "/v1/listNavigationPoints.action", params, { emulateJSON: true }) }
 
