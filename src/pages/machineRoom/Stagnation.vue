@@ -11,7 +11,7 @@
 				</div>
 				<!-- stagnation list -->
 				<el-table :data="stagData" height="260" @row-click.self="changeStag" v-loading="stagLoading"  highlight-current-row border>
-					<el-table-column type="index" width="50">
+					<el-table-column type="index" width="80">
 					</el-table-column>
 					<el-table-column prop="nvPointName" label="导航点名称" align="center">
 					</el-table-column>
@@ -66,8 +66,8 @@
           <el-tag  v-if="scope.row.commandType==1" :type="scope.row.needDetect==1?'success':'warning'">{{(scope.row.needDetect==1?"开启":"关闭")}}</el-tag>
          </template>
 			</el-table-column>
-      <el-table-column prop="waitTime" label="持续时长">
-			</el-table-column>
+      <!-- <el-table-column prop="waitTime" label="持续时长">
+			</el-table-column> -->
       <el-table-column label="操作" width="160">
 				<template scope="scope">
 					<el-button size="small" @click.stop="handleEditWorker(scope.row)" >编辑</el-button>
@@ -183,7 +183,7 @@
                </el-select>
            </el-form-item>
         </template>
-        <template v-else>
+        <template v-else-if="workerForm.commandType==='3'||workerForm.commandType==='4'||workerForm.commandType==='7'">
           <el-form-item label="持续时长" prop="waitTime" class="form_col">
             <el-input v-model="workerForm.waitTime" placeholder="请输入时长（秒）">mm</el-input> 
           </el-form-item>
@@ -218,17 +218,18 @@ import { listRfidTpl } from "api/template";
 export default {
   data() {
     var checkNum=(rule, value, callback)=>{
-       if (!value) {
-          return callback(new Error('不能为空'));
-        }
-        setTimeout(() => {
-          if (!Number.isInteger(value)) {
-            callback(new Error('请输入数字值'));
-          } else {
-              callback();
-          }
-          
-      }, 500);
+       value += '';
+				setTimeout(() => {
+					if(value !== '') {
+						if(isNaN(value) || value.replace(/^\s+|\s+$/gm, '') === '') {
+							callback(new Error('请输入数字型'));
+						} else {
+							callback();
+						}
+					} else {
+						callback();
+					}
+				}, 500);
     };
     return {
       options: CMDTYPES,
@@ -318,7 +319,7 @@ export default {
           levelAngle:[{  required: true,validator: checkNum,	trigger: 'blur'}],
           elevation:[{   required: true,validator: checkNum,	trigger: 'blur'}],
           cameraZoom:[{  required: true,validator: checkNum,	trigger: 'blur'}],
-          waitTime:[{  required: true,validator: checkNum,	trigger: 'blur'}],
+          // waitTime:[{  required: true,validator: checkNum,	trigger: 'blur'}],
       },
       areaSubmitLoading:false,
       stagSubmitLoading:false,
@@ -332,6 +333,7 @@ export default {
       let type = CMDTYPES.find(i => i.value == r.commandType);
       return type ? type.label : r.commandType;
     },
+
     getTpls() {
       let self = this;
       listRfidTpl(self).then(res => {
@@ -660,7 +662,7 @@ export default {
         return (
           <span>
             <span>
-              <span style="display:inline-block;vertical-align:middle;width:40%;overflow:hidden;text-overflow: ellipsis;">{node.label}</span>
+              <span style="display:inline-block;vertical-align:middle;max-width:30%;overflow:hidden;text-overflow: ellipsis;">{node.label}</span>
             </span>
             <span style="float: right; margin-right: 20px">
               <el-button
@@ -685,7 +687,7 @@ export default {
                 size="mini"
                 on-click={() => this.removeRoadway(store, data)}
               >
-                删除巷道
+                删除
               </el-button>
             </span>
           </span>

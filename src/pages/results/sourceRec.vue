@@ -2,8 +2,8 @@
 	<section>
 		<div v-if="routeType==='index'">
 			<el-col :span="24" class="toolbar">
-				<el-form :inline="true" :model="filters" :rules="rules" ref="ruleForm">
-					<el-form-item label="巡检机房" prop="roomId">
+				<el-form :inline="true" :model="filters" ref="ruleForm">
+					<el-form-item  prop="roomId">
 						<el-select v-model="filters.roomId">
 							<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 							</el-option>
@@ -241,7 +241,7 @@
 			<img :src="currentUrl" alt="异常图片,无法识别" width="100%" />
 		</el-dialog>
 		<el-dialog v-model="allVisible" style="text-align: center;" :size="dialogSize" :title="`机柜 : ${jgField.deviceName}`">
-			<div v-for='item in allImgs' :key="item">
+			<div v-for='(item,index) in allImgs' :key="index">
 				<el-row>
 					<el-col :span='24'>拍摄时间:{{item.psTime}}</el-col>
 				</el-row>
@@ -257,13 +257,14 @@
 <script>
 import NProgress from "nprogress";
 import { parseTime, compareU } from "utils";
-import { getRoomList, devList } from "api/room";
+import {  devList } from "api/room";
 import {
   getServersInfos,
   getListCabinetsByTaskId,
   getListServers
 } from "api/results";
 import { baseImgUrl } from "api/api";
+import { mapState} from 'vuex'
 
 export default {
   data() {
@@ -306,15 +307,10 @@ export default {
       total: 0,
       page: 1,
       size: 15,
-      rooms: [],
       rows: [],
       listLoading: false,
-
       routeType: "index",
       activeName: "first",
-      rules: {
-         
-      },
       dialogSize: "small",
       cabinetTotal: 0,
       detail: {},
@@ -331,7 +327,7 @@ export default {
       devLoading: false,
       cabinetName: "",
       taskId: "",
-      cabinetId: "",
+      deviceId: "",
       ip: "",
       uDetails: "",
 
@@ -343,6 +339,9 @@ export default {
       devCabinet: "",
       devIp: ""
     };
+  },
+  computed:{
+    ...mapState(['rooms','robotId'])
   },
   methods: {
     type(warnType) {
@@ -363,21 +362,7 @@ export default {
       this.size = size;
       this.getList();
     },
-    getRooms() {
-      let para = {
-        page: 0,
-        roomstatus: 1,
-        pageSize: 0
-      };
-      let self = this;
-      getRoomList(self, para).then(res => {
-        if (res.body.data) {
-          this.rooms = res.body.data.rows;
-          this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
-          this.getList();
-        }
-      });
-    },
+    
     getList() {
       this.$refs.ruleForm.validate(valid => {
         if (valid) {
@@ -452,7 +437,7 @@ export default {
 
         case "jgDetail":
           this.jgField = Object.assign({}, r);
-          this.cabinetId = r.cabinetId;
+          this.deviceId = r.deviceId;
           this.getDevCabinet();
           break;
       }
@@ -482,8 +467,8 @@ export default {
       let param = {
         taskId: this.taskId
       };
-      if (this.cabinetId) {
-        param.cabinetId = this.cabinetId;
+      if (this.deviceId) {
+        param.deviceId = this.deviceId;
       }
       if (this.ip) {
         param.ip = this.ip;
@@ -570,7 +555,7 @@ export default {
       if (this.activeName === "second") {
         this.cabinetName = "";
         this.ip = "";
-        this.cabinetId = "";
+        this.deviceId = "";
         this.uDetails = "";
         this.detailDevRows = [];
         this.getDevCabinet();
@@ -582,7 +567,8 @@ export default {
     }
   },
   mounted() {
-    this.getRooms();
+      this.filters.roomId =this.robotId.roomId;
+      this.getList(); 
   }
 };
 </script>

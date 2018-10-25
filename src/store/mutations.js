@@ -12,5 +12,8 @@ export default {
   },
   [types.SET_TASK](state,task){
   	state.task = task;
+  },
+  [types.SET_ROOMS](state,data){
+    state.rooms = data;
   }
 };

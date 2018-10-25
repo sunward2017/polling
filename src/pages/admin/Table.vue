@@ -67,8 +67,7 @@
 					</el-col>
 					<el-col :span="3">	
 						  <el-button  style="width:100%" icon="edit" @click.native="handleIconClick"></el-button>
-					</el-col>	  
-					</el-input>
+					</el-col>
 				</el-form-item> 
 				<el-form-item label="账号" prop="account">
 					<el-input v-model="editForm.account" auto-complete="off"></el-input>

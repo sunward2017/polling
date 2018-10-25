@@ -9,145 +9,104 @@
               </el-select>
           </el-col>
           <el-col :span="8">
-               <el-button type="info"  size="small" @click="editSubmit" style="float:right;margin:5px 5px 0 5px; ">保存模板</el-button>
-               <el-button type="success"  size="small" @click="handleAdd" style="float:right;margin:5px 5px 0 5px;">添加模版</el-button>
+               <el-button type="info"  size="small" @click="editSubmit" style="float:right;margin:5px 5px 0 5px; " :disabled="!tplData.length>0">保存模板</el-button>
+               <el-button type="success"  size="small" @click="showArea" style="float:right;margin:5px 5px 0 5px;" :disabled="!curTpl.templateName">导航点指令</el-button>
           </el-col>
         </el-row>
-					
-	 
 		<el-row :gutter="20">
-			<el-col :span="6">
-				<el-tree style="height:70vh; margin-bottom:20px;overflow-y:auto" @node-click="changeTpl"  default-expand-all highlight-current :data="tplTreeData" :props="defaultProps" node-key="id" accordion :expand-on-click-node="false" :render-content="renderContent">
+			<el-col :span="8">
+				<el-tree style="height:70vh; margin-bottom:20px;overflow-y:auto" @node-click="changeTpl"  default-expand-all highlight-current :data="tplTreeData" :props="defaultProps" node-key="templateId" accordion :expand-on-click-node="false" :render-content="renderContent">
 				</el-tree>
 			</el-col>
-			<el-col :span="18">
+			<el-col :span="16">
         <el-table :data="tplData"  row-key="nvPointId" highlight-current-row v-loading="listLoading" style="width: 100%;" id="tplList">
             <el-table-column type="index" label="#" width="60">
             </el-table-column>
-            <el-table-column prop="nvPointName" label="导航点" align="center">
-            </el-table-column>
-            <el-table-column prop="areaId" label="所属巷道" :formatter="formatArea">
+            <el-table-column prop="nvPointName" label="导航点"  width="200" align="center">
             </el-table-column>
             <el-table-column prop="commandTypes" label="操作指令"  :formatter="formatCmd">
                 <template scope="scope">
-                      <el-tag v-for="item in formatCmd(scope.row)" :type="item.statu" :key="item.name" style="margin-right:5px">&nbsp;{{item.name}}&nbsp;</el-tag>
+                  <el-tag v-for="item in formatCmd(scope.row)" :type="item.statu" :key="item.name" style="margin-right:5px">&nbsp;{{item.name}}&nbsp;</el-tag>
+                </template>
+            </el-table-column>
+            <el-table-column
+                label="操作"
+                width="120"
+                align="center">
+                <template scope="scope">
+                    <el-button
+                    @click.native.prevent="deleteRow(scope.$index,tplData)"
+                    type="text"
+                    size="small">
+                        移除
+                    </el-button>
                 </template>
             </el-table-column>
         </el-table>
       </el-col>
 		</el-row>
     <el-dialog title="模版编辑" :visible.sync="dialogVisible" size="small">
-       <el-row class='tpl' :gutter="16">
-         <el-col :span="10">
-            <el-select   v-model="types" multiple placeholder="指令筛选" @change="filterType" style="width:100%">  
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
-              </el-option>
-            </el-select>
-         </el-col>
-         <el-col :span="11">
-            <el-select  v-model="values" multiple placeholder="批量选取" @change="handleSelectedAction" :disabled="stagData.length===0" style="width:100%">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
-              </el-option>
-            </el-select>
-         </el-col>
-         <el-col :span="1">
-             &emsp;<el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
-         </el-col>
-       </el-row>
-      <el-table :data="stagData" style="margin-bottom:20px;" height="400" v-loading="stagLoading"  highlight-current-row>
-        <el-table-column type="index" label="#" width="60">
-        </el-table-column>
-        <el-table-column prop="nvPointName" label="导航点名称" width="130" >
-        </el-table-column>
-                  <el-table-column prop="areaId" label="所属巷道" :formatter="formatArea" width="130">
-        </el-table-column>
-        <el-table-column prop="orderId" label="排序" width="100">
-        </el-table-column>
-        <el-table-column property="commandTypes" label="导航点指令">
-          <template scope="scope">
-            <el-checkbox-group v-model="scope.row.actions">
-              <el-checkbox v-for="type in scope.row.commandTypes" :label="`${type}`" :key="type" @change="handleCheckedActionChange">{{cmdName(type)}}</el-checkbox>
-            </el-checkbox-group>
-          </template>
-        </el-table-column>
-      </el-table>
-      <div slot="footer" class="dialog-footer">
-          <el-button type="primary" @click="addArea">确定</el-button>
-      </div>
+        <CmdByArea :roomId ='filters.roomId' @addArea="addArea" @brachAdd="brachAdd" ref="cmd"/>
     </el-dialog>
 	</section>
 </template>
 <script>
+import  { mapState } from 'vuex'
 import NProgress from "nprogress";
-import { getRoomList, roadwayList, stagList } from "api/room";
+import { roadwayList, stagList } from "api/room";
 import { templateList, createTaskTemplate, deleteTemplate } from "api/results";
 import { CMDTYPES, CMDSTATUS } from "@/const";
 import Sortable from "sortablejs";
+import CmdByArea from 'components/cmdByArea';
+import  { guid } from 'utils'
 export default {
+  components:{
+     CmdByArea,
+  },
   data() {
     return {
       filters: {
         roomId: ""
       },
-      roadwayData: [],
-      rooms: [],
+      areaData: [],
       tplData: [],
       tplTreeData: [],
       listLoading: false,
       dialogVisible: false,
       cmdData: [],
-      editForm: {},
       options: CMDTYPES,
-      types: [],
-      values: [],
-      isIndeterminate: true,
-      checkAll: true,
-      originalData: [],
-      stagData: [],
-      stagLoading: false,
+      submitLoading: false,
       defaultProps: {
         children: "children",
         label: "templateName"
       },
-      submitLoading: false,
       curTpl:'',
     };
   },
+  computed:{
+     ...mapState(['rooms','robotId'])
+  },
   methods: {
-    getRooms() {
-      let para = {
-        page: 0,
-        roomstatus: 1,
-        pageSize: 0
-      };
-      let self = this;
-      NProgress.start();
-      getRoomList(self, para).then(res => {
-        NProgress.done();
-        if (res.data.data) {
-          this.rooms = res.body.data.rows;
-          this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
-          this.getList();
-        }
-      });
-    },
+    //获取模板
     getList() {
       let _this = this;
       let roomName = this.rooms.find(
         item => item.roomId === _this.filters.roomId
       ).roomName;
       templateList(_this, { roomId: _this.filters.roomId }).then(res => {
-        if (res.data.result === 200) {
+        if (res.data.data) {
           this.tplTreeData = res.data.data
             ? [{ templateName: roomName, children: res.data.data}]
             : [{ templateName: roomName, children: [] }];
           this.tplData = [];
         } else {
-          this.$message.error("查询模版失败");
           this.tplTreeData = [{ templateName: roomName, children: [] }];
           this.tplData = [];
         }
       });
+    },
+    deleteRow(index, rows) {
+        rows.splice(index, 1);
     },
     rowDrop() {
       const tbody = document.querySelector(
@@ -161,129 +120,50 @@ export default {
         }
       });
     },
-    filterType() {
-      const types = this.types;
-      if (types.length === 0) {
-        this.stagData = this.originalData;
-      } else {
-        this.stagData = this.originalData.filter(item => {
-          return item.commandTypes.some(i => types.includes(i + ""));
-        });
+    addArea(r){
+       const index = this.tplData.findIndex(i=>i.nvPointId===r.nvPointId)
+       if(index!==-1){
+          this.tplData.splice(index,1);
+       }else{
+          this.tplData.push(r);
+       }
+    },
+    brachAdd(arr){
+      for(var i=0,l=arr.length;i<l;i++){
+         let index =this.tplData.findIndex(item=>(item.nvPointId===arr[i].nvPointId));
+         if(index>-1){
+           this.tplData.splice(index,1);
+         } 
+         this.tplData.push(arr[i]);
       }
-    },
-    handleSelectedAction() {
-      const values = this.values;
-      this.stagData.map(item => {
-        item.actions = [];
-        item.commandTypes.forEach(m => {
-          if (values.includes(m + "")) {
-            item.actions.push(m + "");
-          }
-        });
-        return item;
-      });
-      this.handleCheckedActionChange();
-    },
-    handleCheckAllChange(e) {
-      const state = e.target.checked;
-      this.stagData.map(item => {
-        item.actions = state ? item.commandTypes.map(m => m + "") : [];
-        return item;
-      });
-      this.isIndeterminate = false;
-    },
-    handleCheckedActionChange() {
-      this.checkAll = this.stagData.every(
-        item => item.actions.length === item.commandTypes.length
-      );
-      this.isIndeterminate =
-        this.stagData.some(item => item.actions.length > 0) &&
-        this.stagData.some(
-          item => item.actions.length < item.commandTypes.length
-        );
-    },
-
-    getRoadway() {
-      let self = this;
-      roadwayList(self, {
-        customerId: self.$store.state.user.customId
-      }).then(res => {
-        self.getRooms();
-        if (res.data.result === 200) {
-          if (res.data.data) {
-            let arr = [];
-            res.data.data.forEach(item => {
-              self.roadwayData = arr.concat(item.rbAreaInfoList);
-            });
-          }
-        } else {
-          self.roadwayData = [];
-        }
-      });
-    },
-    getPointByRoom() {
-      let _this = this;
-      this.stagLoading = true;
-      stagList(_this, { roomId: _this.filters.roomId }).then(res => {
-        if (res.data.result === 200) {
-          this.stagData = this.originalData = res.data.data
-            ? res.data.data.filter(r => r.commandTypes.length > 0).map(i => {
-                i.actions = [];
-                return i;
-              })
-            : [];
-        } else {
-          this.stagData = this.originalData = [];
-          this.$message.error("导航点获取失败");
-        }
-        this.stagLoading = false;
-      });
-    },
-
-    handleAdd() {
-      this.dialogVisible = true;
-      this.curTpl =null;
-      this.getList();
-      this.getPointByRoom();
-    },
-    cmdName(type) {
-      return CMDTYPES.find(i => i.value == type).label;
-    },
-    addArea(){
-       this.tplData = this.stagData
-            .filter(i => i.actions.length > 0)
-            .map(i => ({
-              nvPointName: i.nvPointName,
-              nvPointId: i.nvPointId,
-              areaId: i.areaId,
-              commandTypes: i.actions.join(",")
-            }));
-         
       this.dialogVisible = false;
     },
-    editSubmit() {
-      let _this = this;
-       if (this.tplData.length === 0) {
-           this.$message.error("模版指令没有创建");
-          return;
-        }
-       const tpl = this.curTpl;
-       this.$prompt("请输入模板名称", "提示", {
+    handleAdd() {
+      this.$prompt("请输入模板名称", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
-        inputValue: tpl ? tpl.templateName : "",
+        showClose:false,
         inputPattern: /^(?![0-9])[\u4e00-\u9fa5a-zA-Z0-9]+$/,
         inputErrorMessage:
           "模板名称只能是中文、英文、数字组合，且不可以数字开头！"
       }).then(({ value }) => {
+          this.tplTreeData[0].children.push({templateName:value,tempId:guid()})
+      }).then()
+    },
+    cmdName(type) {
+      return CMDTYPES.find(i => i.value == type).label;
+    },
+    editSubmit() {
+        let _this = this;
         NProgress.start();
         let para = {
-           templateName:value,
+           templateName:_this.curTpl.templateName,
            roomId:_this.filters.roomId,
-           details:JSON.stringify(_this.tplData)
+           details:JSON.stringify(_this.tplData),
+           templateId:_this.curTpl.templateId?_this.curTpl.templateId:null,
         }
-        if(tpl)para.templateId = tpl.templateId;
-         createTaskTemplate(_this, para).then(res => {
+        
+        createTaskTemplate(_this, para).then(res => {
             NProgress.done();
             _this.submitLoading = false;
             if (res.data.result === 200) {
@@ -296,12 +176,7 @@ export default {
             }
             _this.dialogVisible = false;
             _this.getList();
-          });
-      }) 
-    },
-    formatArea(r, c) {
-      const area = this.roadwayData.find(i => i.areaId == r.areaId);
-      return area ? area.areaName : "未知";
+        });
     },
     formatCmd(r, c) {
       const cmds = r.commandTypes ? r.commandTypes.split(",") : [];
@@ -312,17 +187,22 @@ export default {
     },
     renderContent(h, { node, data, store }) {
       if (data.children) {
-        return (<span>{node.label}</span>);
+        return (<span>
+                   <span>{node.label}</span>
+                   <span style="float: right;margin-right:5px">
+                       <el-button type="success"  size="mini" on-click={()=>this.handleAdd()}>添加模板</el-button>
+                    </span>
+                </span>);
       } else {
         return (
           <span>
             <span>
-              <span>{node.label}</span>
+              <span style="display:inline-block;vertical-align:middle;max-width:40%;overflow:hidden;text-overflow: ellipsis;">{node.label}</span>
             </span>
-            <span style="float: right; margin-right: 20px">
-              <el-button
-                size="mini"
+            <span style="float: right;margin-right:5px">
+             <el-button
                 type="primary"
+                size="mini"
                 on-click={() => this.editTpl(store, data)}
               >
                 编辑
@@ -339,9 +219,26 @@ export default {
         );
       }
     },
+    editTpl(store,data){
+      this.$prompt("请输入模板名称", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        inputValue:data.templateName,
+        showClose:false,
+        inputPattern: /^(?![0-9])[\u4e00-\u9fa5a-zA-Z0-9]+$/,
+        inputErrorMessage:"模板名称只能是中文、英文、数字组合，且不可以数字开头！"
+      }).then(({ value }) => {
+          this.tplTreeData[0].children.find(i=>(i.templateId===data.templateId||i.tempId===data.tempId)).templateName=value;
+      })
+    },
     changeTpl(data, node, store) {
-      this.curTpl = data;
-      this.tplData = data.details ? JSON.parse(data.details) : [];
+      if(data.templateId||data.tempId){
+        this.curTpl = data;
+        this.tplData = data.details ? JSON.parse(data.details) : [];
+      }else{
+        this.curTpl = '';
+        this.tplData =[];
+      }
     },
     removeTpl(store, data) {
       var _this = this;
@@ -349,6 +246,7 @@ export default {
         //type: 'warning'
       }).then(
         () => {
+          if(data.templateId){
           NProgress.start();
           deleteTemplate(_this, { templateId: data.templateId }).then(res => {
             NProgress.done();
@@ -362,17 +260,24 @@ export default {
             }
             _this.getList();
           });
+          }else{
+            let children=this.tplTreeData[0].children;
+            let index = children.findIndex(i=>(i.tempId===data.tempId));
+            children.splice(index,1);
+          }
         },
         () => {}
       );
     },
-    editTpl(store, data) {
+    showArea(store, data) {
       this.dialogVisible = true;
-      this.getPointByRoom();
-    }
+      this.$nextTick(()=>{
+           this.$refs.cmd.initial();
+      })
+    },
   },
   mounted() {
-    this.getRoadway();
+    this.filters.roomId = this.robotId.roomId;
     this.rowDrop();
   }
 };

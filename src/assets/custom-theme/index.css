@@ -8031,59 +8031,18 @@
 	line-height: 1
 }
 
-.custom-theme .el-progress.is-exception .el-progress-bar__inner {
-	background-color: #ffbf00
-}
-
-.custom-theme .el-progress.is-exception .el-progress__text {
-	color: #ffbf00
-}
-
-.custom-theme .el-progress.is-success .el-progress-bar__inner {
-	background-color: #00643b
-}
-
-.custom-theme .el-progress.is-success .el-progress__text {
-	color: #00643b
-}
-
-.custom-theme .el-progress__text {
-	font-size: 14px;
-	color: #48516a;
-	display: inline-block;
-	vertical-align: middle;
-	margin-left: 10px;
-	line-height: 1
-}
-
-.custom-theme .el-progress__text i {
-	vertical-align: middle;
-	display: block
-}
-
+ 
+ 
+ 
+ 
+ 
+ 
 .custom-theme .el-progress--circle {
 	display: inline-block
 }
 
-.custom-theme .el-progress--circle .el-progress__text {
-	position: absolute;
-	top: 50%;
-	left: 0;
-	width: 100%;
-	text-align: center;
-	margin: 0;
-	transform: translate(0, -50%)
-}
-
-.custom-theme .el-progress--circle .el-progress__text i {
-	vertical-align: middle;
-	display: inline-block
-}
-
-.custom-theme .el-progress--without-text .el-progress__text {
-	display: none
-}
-
+ 
+ 
 .custom-theme .el-progress--without-text .el-progress-bar {
 	padding-right: 0;
 	margin-right: 0;
@@ -8113,40 +8072,12 @@
 	vertical-align: middle
 }
 
-.custom-theme .el-progress-bar__inner {
-	position: absolute;
-	left: 0;
-	top: 0;
-	height: 100%;
-	border-radius: 2px 0 0 2px;
-	background-color: #073069;
-	text-align: right;
-	border-radius: 100px;
-	line-height: 1
-}
+ 
+ 
 
-.custom-theme .el-progress-bar__inner:after {
-	display: inline-block;
-	content: "";
-	height: 100%;
-	vertical-align: middle
-}
+ 
 
-.custom-theme .el-progress-bar__inner:after {
-	display: inline-block;
-	content: "";
-	height: 100%;
-	vertical-align: middle
-}
-
-.custom-theme .el-progress-bar__innerText {
-	display: inline-block;
-	vertical-align: middle;
-	color: #fff;
-	font-size: 12px;
-	margin: 0 5px
-}
-
+ 
 @keyframes progress {
 	0% {
 		background-position: 0 0
@@ -8263,12 +8194,7 @@
 	width: 100%
 }
 
-.custom-theme .el-upload-list__item .el-progress__text {
-	position: absolute;
-	right: 0;
-	top: -10px;
-	right: 0
-}
+. 
 
 .custom-theme .el-upload-list__item:first-child {
 	margin-top: 10px
@@ -8305,7 +8231,7 @@
 }
 
 .custom-theme .el-upload-list__item-name {
-	color: #48516a;
+	color: #fff;
 	display: block;
 	margin-right: 40px;
 	overflow: hidden;
@@ -8667,25 +8593,17 @@
 	line-height: 1
 }
 
-.custom-theme .el-progress.is-exception .el-progress-bar__inner {
-	background-color: #ffbf00
-}
+ 
+ 
 
-.custom-theme .el-progress.is-exception .el-progress__text {
-	color: #ffbf00
-}
-
-.custom-theme .el-progress.is-success .el-progress-bar__inner {
-	background-color: #00643b
-}
-
+ 
 .custom-theme .el-progress.is-success .el-progress__text {
 	color: #00643b
 }
 
 .custom-theme .el-progress__text {
 	font-size: 14px;
-	color: #48516a;
+	color: #d2aa13;
 	display: inline-block;
 	vertical-align: middle;
 	margin-left: 10px;
@@ -8749,26 +8667,9 @@
 	vertical-align: middle
 }
 
-.custom-theme .el-progress-bar__inner {
-	position: absolute;
-	left: 0;
-	top: 0;
-	height: 100%;
-	border-radius: 2px 0 0 2px;
-	background-color: #073069;
-	text-align: right;
-	border-radius: 100px;
-	line-height: 1
-}
+ 
 
-.custom-theme .el-progress-bar__innerText {
-	display: inline-block;
-	vertical-align: middle;
-	color: #fff;
-	font-size: 12px;
-	margin: 0 5px
-}
-
+ 
 @keyframes progress {
 	0% {
 		background-position: 0 0

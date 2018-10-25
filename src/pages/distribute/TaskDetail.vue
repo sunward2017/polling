@@ -2,7 +2,7 @@
 	<section>
 		<el-col :span="24" class="toolbar">
 			<el-form :inline="true" :model="filters">
-				<el-form-item label="巡检机房">
+				<el-form-item>
 					<el-select style="width:90%"  v-model="filters.roomId" @change="setRoom">
 						<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 						</el-option>
@@ -48,7 +48,7 @@
 				</el-table-column>
 				<!-- <el-table-column prop="startTime" label="开始时间"  width="200"  align="center" sortable :formatter="formatTimeSction">
 				</el-table-column> -->
-				<el-table-column prop="creatTime"  label="创建时间" min-width="200" align="center" :formatter="formatCTime">
+				<el-table-column prop="creatTime"  label="开始时间" min-width="200" align="center" :formatter="formatCTime">
 				</el-table-column>
         <el-table-column prop="active" label="任务状态">
 					<template scope="scope">
@@ -162,7 +162,7 @@
 
 <script>
 import NProgress from "nprogress";
-import { parseTime, compare } from "utils";
+import { parseTime} from "utils";
 import { getRobotList } from "api/robot";
 import {
   currentTask,
@@ -196,7 +196,7 @@ export default {
       cmdStatus:CMDSTATUS,
       total: 0,
 			page: 1,
-			size: 20,
+			size: 10,
       editForm: {
         roomId: "",
         robotId: "",
@@ -419,7 +419,6 @@ export default {
           }else{
              this.filters.roomId= this.rooms[0].roomId
           }
-          this.getTaskByRoom();
         } else {
           this.rooms = [];
           this.filters.roomId = "";
@@ -490,7 +489,7 @@ export default {
       return TASKEXECTYPES[r.taskStatus];
     },
     formatCTime(r, c) {
-      return parseTime(r.createTime)
+      return parseTime(r.startTime)
     },
     formatArea1(r, c) {
       return r.areaName || this.prohibitedAreas[r.areaId] || "未知";

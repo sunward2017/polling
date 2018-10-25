@@ -18,6 +18,7 @@
 				<el-form-item>
 					<el-button class="filter-item" icon="plus" type="success" @click="handleAdd">新增</el-button>
 				</el-form-item>
+				
 			</el-form>
 		</el-col>
 		<!--列表-->
@@ -27,7 +28,7 @@
 				</el-table-column>
 				<el-table-column prop="roomName" label="机房名" width="200" sortable>
 					<template scope="scope">
-						<el-popover trigger="hover" placement="right">
+						<!-- <el-popover trigger="hover" placement="right">
 							<div>
 								<p>机房名称：{{ scope.row.roomName }}</p>
 								<p>机房备注：{{ scope.row.description }}</p>
@@ -36,19 +37,24 @@
 								<p>湿度范围：<b>{{ scope.row.scaleLowerH}}&nbsp;至&nbsp;{{scope.row.scaleUpperH}}&nbsp;%</b></p>
 								<p>湿度告警：<b>下限：{{ scope.row.warnLowerH}}&nbsp;上限：{{scope.row.warnUpperH}}&nbsp;%</b></p>
 							</div>
-							<div slot="reference">
+							<div slot="reference"> -->
 								<el-tag>{{scope.row.roomName}}</el-tag>
-							</div>
-						</el-popover>
+							<!-- </div> -->
+						<!-- </el-popover> -->
 					</template>
 				</el-table-column>
 				<el-table-column prop="customName" label="所属机构" width="150" v-if="isShow">
 				</el-table-column>
-				<el-table-column prop="position" label="位置" >
+				<el-table-column prop="position" label="地址" >
 				</el-table-column>
 				<el-table-column prop="startPoint" label="初始化点" align="center" width="150">
 				</el-table-column>
 				<el-table-column prop="fileId" label="地图名称" align="center" width="180">
+				</el-table-column>
+				<el-table-column label="机房音频" width="120" align="center">
+				    <template scope="scope">
+					  <el-button  size="small"  type="info" @click="uploadAudio(scope.row)">音频文件</el-button>
+					</template>  
 				</el-table-column>
 				<el-table-column prop="roomStatus" width="80" label="状态">
 					<template scope="scope">
@@ -70,24 +76,14 @@
 			<el-pagination layout="prev, pager, next,total,sizes,jumper" @current-change="handleCurrentChange" :page-sizes="[10, 20, 30, 40]" :page-size="size" :current-page="page" :total="total" style="float:right;" @size-change="handleSizeChange">
 			</el-pagination>
 		</el-col>
-		<el-col :span="24">
-			<div class="detail-title">{{rName}}&nbsp;&amp;&nbsp;详情</div>
+		<el-col :span="24" class="detail-title">
+			{{currentRoom.roomName}}&nbsp;&amp;&nbsp;详情
 		</el-col>
-		<div class="toolbar">
-			<div style="width:39%;float:left">
-				<h4>设备详情</h4>
-				<el-table :data="deviceList" highlight-current-row v-loading="deviceListLoading" style="width: 100%;">
-                    <el-table-column type="index" label="#" width="50">
-					</el-table-column>
-					<el-table-column prop="deviceName" label="设备名称" sortable align="center">
-					</el-table-column>
-					<el-table-column prop="nvPointName" label="导航点">
-					</el-table-column>
-				</el-table>
-			</div>
-			<div style="width:60%;float:right">
+		<el-row :gutter="20">
+			<el-col :span="18">
+				<div class="toolbar">
 				<h4>机器人详情</h4>
-				<el-table :data="robotList" highlight-current-row v-loading="robotListLoading" style="width: 100%;">
+				<el-table :data="robotList" highlight-current-row v-loading="robotListLoading" style="width:99%">
 					<el-table-column type="index" label="#" width="50">
 					</el-table-column>
 					<el-table-column prop="robotName" label="机器人名称" sortabl width="200">
@@ -103,9 +99,20 @@
 						</template>
 					</el-table-column>
 				</el-table>
-			</div>
-		</div>
-
+				</div>
+			</el-col>
+			<el-col :span="6">
+				<div class="toolbar">
+				<h4>机房概况</h4>
+				<p>机柜总数：<span class="card_c">{{deviceList.length}}</span></p>
+				<p>温度范围：<span class="card_c">{{currentRoom.scaleLower?(currentRoom.scaleLower+'~'+currentRoom.scaleUpper+'°C'):''}}</span></p>
+				<p>湿度范围：<span class="card_c">{{currentRoom.scaleLowerH?(currentRoom.scaleLowerH+'~'+currentRoom.scaleUpperH+'%'):''}}</span></p>
+				<p>温度告警：<span class="card_c">{{currentRoom.warnLower?(currentRoom.warnLower+'~'+currentRoom.warnUpper+'°C'):''}}</span></p>
+				<p>湿度告警：<span class="card_c">{{currentRoom.warnLowerH?(currentRoom.warnLowerH+'~'+currentRoom.warnUpperH+'°C'):''}}</span></p>
+				<p>机房备注：{{ currentRoom.description?currentRoom.description:''}}</p>
+				</div>
+			</el-col>
+		</el-row>	
 		<!--编辑界面-->
 		<el-dialog :title="editFormTtile" v-model="editFormVisible" :close-on-click-modal="false" size="tiny" @close="closeEditFrom()">
 			<el-form :model="editForm" label-width="100px" :rules="editFormRules" ref="editForm">
@@ -118,10 +125,7 @@
 						</el-option>
 					</el-select>
 				</el-form-item>
-				<el-form-item label="机房描述">
-					<el-input type="textarea" v-model="editForm.description"></el-input>
-				</el-form-item>
-				<el-form-item label="机房位置" prop='position'  >
+				<el-form-item label="地址" prop='position'  >
 					<el-input v-model="editForm.position" auto-complete="off"></el-input>
 				</el-form-item>
 				<el-form-item label="机器人">
@@ -190,15 +194,32 @@
 					<el-radio class="radio" v-model="editForm.roomStatus" label="1">启用</el-radio>
 					<el-radio class="radio" v-model="editForm.roomStatus" label="0">禁用</el-radio>
 				</el-form-item>
+				<el-form-item label="备注">
+					<el-input type="textarea" v-model="editForm.description"></el-input>
+				</el-form-item>
 			</el-form>
 			<div slot="footer" class="dialog-footer">
 				<el-button icon="circle-cross" @click.native="closeEditFrom">取 消</el-button>
 				<el-button icon="upload2" type="primary" @click.native="editSubmit" :loading="editLoading">{{btnEditText}}</el-button>
 			</div>
 		</el-dialog>
-		<!--<el-dialog title="文件上传" v-model="dialogVisible" size="tiny" top="25%">
-			<Upload :deviceId="deviceId"></Upload>
-		</el-dialog>-->
+		<el-dialog title="文件上传" v-model="dialogVisible" size="tiny" top="25%">
+			<el-upload
+			    class="upload_demo"
+				:data="para"
+				drag
+				:file-list="fileList"
+				action="/apis/v1/uploadFile.action"
+				:before-upload ="handlePreview"
+				:on-success="handleSuccess"
+				:on-error="handleError"
+				:on-remove="handleRemove"
+				multiple>
+				<i class="el-icon-upload"></i>
+				<div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+				<div class="el-upload__tip" slot="tip">只能上传mp3文件</div>
+			</el-upload>
+		</el-dialog>
 
 		<!--<el-dialog title="标签列表" v-model="tagListVisible">
 			<ElectronicTag :roomId="roomId" :rfid="rfid" @editTag="editTag" @addTag="addTag" ref="tag_list"></ElectronicTag>
@@ -268,9 +289,9 @@
 	// import util from '../../common/util'
 	import NProgress from 'nprogress'
 	import { realtimeStatus, realTimeTypes, robotStatusForObj, robotStatusTypes } from '@/const';
-	import { getRoomList, getRoomDetail, getRobots, saveRoom, removeRoom } from 'api/room';
+	import { getRoomList, getRoomDetail, saveRoom, removeRoom,removeAudio,getAudiosByRoom} from 'api/room';
 	import { parseTime } from 'utils';
-	 
+	import { getRobotList } from 'api/robot' 
 	import UpMapload from 'components/upload/upMap';
 	import NavConfigList from 'components/navConfig';
 	import NavConfigForm from 'components/navConfig/NavConfigForm';
@@ -303,7 +324,6 @@
 				size: 20,
 				listLoading: false,
 				isShow: false,
-				rName: '',
 				customs: [],
 				allCustom: [],
 				robotListLoading: false,
@@ -385,27 +405,7 @@
 						trigger: 'blur'
 					}]
 				},
-//				dialogVisible: false,
-//				deviceId: '',
-				//tagList
-//				tagListVisible: false,
-//				roomId: '',
-//				rfid: '',
-				//tagForm
-//				tagFormTtile: "新增",
-//				tagFormVisible: false,
-//				tagData: {
-//					id: 0,
-//					roomId: "",
-//					rfidId: "",
-//					rfidType: 1,
-//					lightDistribution: 0,
-//					numDistribution: 0,
-//					lightNum: 0,
-//					numNum: 0,
-//					ledType: 0,
-//					ledNum: 0
-//				},
+                currentRoom:'',
 				navListVisible: false,
 				navConfigFormVisible: false,
 				navRoomId: '',
@@ -432,10 +432,106 @@
 					y2: '',
 					y3: ''
 				},
-				upMapText: '上传'
+				upMapText: '上传',
+				dialogVisible:false,
+				fileList:[],
+				para:{},
 			}
 		},
 		methods: {
+			handlePreview(file,fileList){
+				if(this.fileList.length>4){
+					this.$notify.info({
+							title: '提示',
+							message: '最多只能保存5条，请先删除后再上传',
+							duration:2000,
+							offset: 300
+					}); 
+					return false;
+				}else{
+					var strRegex = "(.MP3)$"; 
+					var reg=new RegExp(strRegex);
+					if(reg.test(file.name.toUpperCase())){
+					    return true;
+					}else{
+						this.$notify.info({
+							title: '提示',
+							message: '文件格式不正确',
+							duration:2000,
+							offset: 300
+						});
+						return false;
+					}
+				}
+			},
+		    handleSuccess(res, file, fileList){
+				if(res.result===200){
+					this.$notify.success({
+						title: '成功',
+						message: '文件上传成功',
+						duration:2000,
+						offset: 300
+					});
+				}else{
+				   this.$notify.error({
+						title: '失败',
+						message: '文件上传失败',
+						duration:2000,
+						offset: 300
+					});	
+				}
+                this.getFileByRoom()
+			},
+			handleError(e,file,fileList){
+				this.$notify.error({
+					title: '失败',
+					message: '文件上传失败',
+					duration:2000,
+					offset: 300
+				});
+				this.getFileByRoom()
+			},
+			handleRemove(file,fileList){
+			   let _this = this;
+               removeAudio(_this,{fileId:file.fileId}).then(res=>{
+                  if(res.body.result===200){
+					 this.$notify.success({
+						title: '成功',
+						message: '文件上传成功',
+						duration:2000,
+						offset: 300
+					}); 
+				  }else{
+					this.$notify.error({
+						title: '失败',
+						message: '文件上传失败',
+						duration:2000,
+						offset: 300
+					});	  
+				  }
+			   })
+			   this.getFileByRoom()
+			},
+			uploadAudio(r){
+				let _this= this;
+				getAudiosByRoom(_this,{roomId:r.roomId,taskType:'4'}).then(res=>{
+					let body = res.body
+				  if(body.result==200){
+					this.dialogVisible = true;
+				    this.para = {roomId:r.roomId,taskType:'4'}
+					this.fileList=body.data?body.data.map(item=>({name:item.fileName,fileId:item.fileId})):[];
+				  }
+				})	 
+			},
+			getFileByRoom(){
+				let _this =this;
+                getAudiosByRoom(_this,{roomId:this.currentRoom.roomId,taskType:'4'}).then(res=>{
+					let body = res.body
+				  if(body.result==200){
+					this.fileList=body.data?body.data.map(item=>({name:item.fileName,fileId:item.fileId})):[];
+				  }
+				})
+			},
 			formatStatus: function(row, c) {
 				return realtimeStatus[row.realtimeStatus];
 			},
@@ -460,8 +556,12 @@
 			},
 			getRobots() {
 				let self = this;
-				getRobots(self, {}).then((res) => {
-					this.robots = res.body.data;
+				getRobotList(self, {page:1,pageSize:50}).then((res) => {
+					 if(res.body.result==200){
+						 this.robots=res.body.data?res.body.data.list:[]
+					 }else{
+						 console.log('get robots error')
+					 }
 				})
 			},
 			closeEditFrom: function() {
@@ -479,7 +579,6 @@
 							'customName': "所有机构"
 						});
 						this.customs = data;
-
 					}
 				})
 			},
@@ -502,6 +601,7 @@
 				let self = this;
 				getRoomList(self, para).then((res) => {
 					if(res.data.data) {
+						this.$store.dispatch('setRooms',res.data.data.rows)
 						this.total = res.data.data.total;
 						this.rooms = res.data.data.rows;
 						if(this.rooms.length > 0) {
@@ -519,7 +619,7 @@
 				});
 			},
 			showDetail: function(r, e, c) {
-				this.rName = r.roomName;
+				this.currentRoom =r;
 				this.robotListLoading = true;
 				this.deviceListLoading = true;
 				if(!r.roomId || r.roomId == '') {
@@ -740,48 +840,7 @@
 				this.filters.name = "";
 				this.getList();
 			},
-//			handleEditTag: function(r) {
-//				this.rfid = this.tagData.rfidId = r.rfidId;
-//				this.roomId = this.tagData.roomId = r.roomId;
-//				this.tagListVisible = true;
-//				this.$nextTick(function() {
-//					this.$refs.tag_list.getRfids();
-//				})
-//
-//			},
-//			handleEditVedio: function(r) {
-//				this.deviceId = r.deviceId;
-//				this.dialogVisible = true;
-//			},
-//			editTag: function(r) {
-//				this.tagData = JSON.parse(JSON.stringify(r));
-//				this.tagFormVisible = true;
-//				this.tagFormTtile = "编辑";
-//			},
-//			addTag: function() {
-//				this.tagData.id = 0;
-//				this.tagData.rfidType = 1;
-//				this.tagData.lightDistribution = 0;
-//				this.tagData.numDistribution = 0;
-//				this.tagData.lightNum = 0;
-//				this.tagData.numNum = 0;
-//				this.tagData.ledType = 0;
-//				this.tagData.ledNum = 0;
-//				this.tagFormVisible = true;
-//				this.tagFormTtile = "新增";
-//
-//			},
-//			closeTagForm: function() {
-//				this.tagFormVisible = false;
-//			},
-//			refreshList: function() {
-//				this.tagFormVisible = false;
-//				this.$refs.tag_list.getRfids();
-//			},
-//			resetForm: function() {
-//				this.$refs.tag_form.resetForm()
-//			},
-			//nav
+ 
 			resetNavForm: function() {
 				this.$refs.nav_form.resetForm()
 			},
@@ -860,6 +919,7 @@
 		border-top-left-radius: 4px;
 		border-top-right-radius: 4px;
 		padding-left: 20px;
+		margin-bottom:20px;
 	}
 	
 	h4 {
@@ -871,5 +931,12 @@
 		text-align: center;
 		font-size: 16px;
 	}
-	
+	.card_c{
+	 padding: 10px;
+     font-size: 12px;
+     color: rgb(234, 238, 25);
+	}
+	.upload_demo{
+		text-align: center;
+	}
 </style>

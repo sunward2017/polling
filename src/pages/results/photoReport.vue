@@ -1,7 +1,7 @@
 <template>
 	<section >
 		<el-form :inline="true" v-model="filters" class="toolbar">
-			<el-form-item label="巡检机房">
+			<el-form-item>
 				<el-select v-model="filters.roomId" placeholder="请选择机房" @change="changeRoom">
 					<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 					</el-option>
@@ -22,7 +22,7 @@
 				</el-select> 	
 			</el-form-item>
 			<el-form-item>
-				<el-button  type='warning'  icon="search" @click="getList">任务检索</el-button>
+				<el-button  type='primary'  icon="date" @click="getList">任务检索</el-button>
 			</el-form-item>
 			<el-form-item v-if="hasTask" label="当前任务">
 				<el-tag type="info">{{filters.taskName}}</el-tag>
@@ -33,22 +33,25 @@
 		</el-form>
 
 		<el-row class="section">
-			<div :class="item.detectFlag!==0?'floor-item-content-wrap warn':'floor-item-content-wrap'" v-for="(item,index) in imgGather" :key="index" >
+			<div :class="item.detectResultUrl?'floor-item-content-wrap warn':'floor-item-content-wrap'" v-for="(item,index) in imgGather" :key="index" >
 				<img class="floor-item-img" v-lazy="baseImgUrl+item.thumbnailUrl">
-				<div class="floor-item-title">导航点:{{ item.nvPointInfo.nvPointName }}&emsp;<span @click="showBigImg(item.nvPointInfo.nvPointName,item.fileUrl)">大图&emsp;</span><span v-if="item.detectFlag!==0" @click="showBigImg(item.nvPointInfo.nvPointName,'/'+item.detectResultUrl)">识别图</span></div>
-				<div class="floor-time">{{ formatTTime(item.timeStamp) }}</div>
+				<div>导航点:{{ item.nvPointInfo.nvPointName }}</div>
+        <div class="floor-item-title">
+         <span v-if="item.fileUrl"  @click="showBigImg(item.nvPointInfo.nvPointName,item.fileUrl)">大图&emsp;</span>
+         <span v-if="item.detectResultUrl" @click="showBigImg(item.nvPointInfo.nvPointName,item.detectResultUrl)">识别图</span></div>
+				<div>{{ formatTTime(item.timeStamp) }}</div>
 			</div>
 		</el-row>
 		<el-dialog title="任务列表" :visible.sync="taskVisible" :close-on-click-modal="false">
 			<el-table :data="taskGather" v-loading="listLoading" style="width: 100%" @row-click="setTask">
 				<el-table-column prop="taskId" align="center" label="选项" width="70">
 					<template scope="scope">
-						<el-radio v-model="filters.taskId" :label="scope.row.taskId" @change='setTaskId(scope.row)'>{{&nbsp;}}</el-radio>
+						<el-radio v-model="filters.taskId" :label="scope.row.taskId" @change='setTaskId(scope.row)'>{{''}}</el-radio>
 					</template>	
 				</el-table-column>
-				<el-table-column prop="taskName" label="任务名称" width="360">
+				<el-table-column prop="taskName" label="任务名称" width="300">
 				</el-table-column>
-				<el-table-column prop="startTime" label="巡检时间" :formatter="formatTime"  min-width="120" sortable>
+				<el-table-column prop="startTime" label="巡检时间" :formatter="formatTime"  min-width="200" sortable>
 				</el-table-column>
 				<el-table-column  label="执行状态" align="center" width="120">
 					<template scope="scope">
@@ -75,10 +78,10 @@
 <script>
 import NProgress from "nprogress";
 import { parseTime } from "utils";
-import { getRoomList } from "api/room";
 import { currentTask, getTaskDetail } from "api/results";
 import { baseImgUrl } from "api/api";
 import { TASKEXECTYPES, CMDSTATUS } from "@/const";
+import {mapState} from 'vuex';
 
 export default {
   data() {
@@ -91,7 +94,6 @@ export default {
         taskStatus: "1"
       },
       baseImgUrl: baseImgUrl,
-      rooms: [],
       taskVisible: false,
       taskGather: [],
       listLoading: false,
@@ -106,6 +108,9 @@ export default {
       hasTask: false,
       cmdStatus: CMDSTATUS
     };
+  },
+  computed:{
+     ...mapState(['rooms','robotId'])
   },
   methods: {
     formatTime(r, c) {
@@ -125,24 +130,6 @@ export default {
       this.page = 1;
       this.size = size;
       this.getList();
-    },
-    getRooms() {
-      let para = {
-        page: 0,
-        roomstatus: 1,
-        pageSize: 0
-      };
-      let self = this;
-      NProgress.start();
-      getRoomList(self, para).then(res => {
-        NProgress.done();
-        if (res.data.data) {
-          this.rooms = res.body.data.rows;
-          this.filters.roomId = this.$store.state.robotId
-            ? this.$store.state.robotId.roomId
-            : this.rooms[0].roomId;
-        }
-      });
     },
     changeRoom() {
       this.filters.taskId = "";
@@ -225,7 +212,7 @@ export default {
     }
   },
   mounted() {
-    this.getRooms();
+     this.filters.roomId = this.robotId.roomId;
   }
 };
 </script>

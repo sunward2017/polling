@@ -2,13 +2,17 @@
   <section>
        <el-col :span="24" class="toolbar">
 			<el-form :inline="true" :model="filters">
-				<el-col :span="4">
+				<el-form-item>
 					<el-select v-model="filters.roomId" style="width:90%" @change="getDevList">
 						<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 						</el-option>
 					</el-select>
-				</el-col>
+				</el-form-item>
+        <el-form-item>
+           <el-input v-model="filters.deviceName"></el-input>
+        </el-form-item>
 				<el-form-item>
+          <el-button class="filter-item" icon="search" type="primary" @click="getDevList">查询</el-button>
 					<el-button class="filter-item" icon="plus" type="success" @click="handleAdd">新增</el-button>
 				</el-form-item>
 				<el-form-item>
@@ -16,7 +20,8 @@
 				</el-form-item>
 			</el-form>
 		</el-col>
-		 <el-table :data="devRows" v-loading="devListLoading">
+		  
+      <el-table :data="devRows" v-loading="devListLoading">
 			<el-table-column type="index" width="60" label="#" align="center"></el-table-column>
 			<el-table-column prop="deviceName" label="机柜名称"   align="center"> </el-table-column>
 			<el-table-column  prop="nvPointId" label="导航点" :formatter="formatStag" align="center">
@@ -38,6 +43,13 @@
           </el-upload>
 				</template>
 			</el-table-column>
+      <el-table-column prop="audioUrl" label="语音标记"   align="center">
+          <template scope="scope">
+              <el-tag  :type="scope.row.audioUrl?'success':'danger'"  style="cursor:pointer" @click.native="showAudio(scope.row)">
+                  {{scope.row.audioUrl?'播放':'未上传'}}
+              </el-tag>
+          </template>
+			</el-table-column>
 			<el-table-column prop="action" label="操作" width="240" align="center">
 				<template scope="scope">
 					  <el-button size="small" icon="edit" @click="handleEdit(scope.row)">编辑</el-button>
@@ -45,6 +57,11 @@
 				</template>
 			</el-table-column>
 		</el-table>
+    <!--分页-->
+		<el-col :span="24" class="toolbar" style="padding-bottom:10px;">
+			<el-pagination layout="prev, pager, next,total,sizes,jumper" @current-change="handleCurrentChange" :page-sizes="[10, 20, 30, 40]" :page-size="size" :current-page="page" :total="total" style="float:right;" @size-change="handleSizeChange">
+			</el-pagination>
+		</el-col>
 		<el-dialog title="设备编辑" v-model="devFormVisible" top="25%" size="tiny">
        <el-form label-width="80px"  :model="devEditForm" ref="editForm" :rules="rules">
 				 <el-form-item label="机房名称" prop="roomId" >
@@ -74,6 +91,11 @@
 		<el-dialog title="上传设备EXCEL" v-model="uploadVisible" size="tiny" top="25%">
 			<Upload @closeUp="closeUp"></Upload>
 		</el-dialog>
+    <el-dialog title="语音播放" v-model="audioVisible" size="small" top="25%">
+      <audio class="audio" id="audio" controls="" preload="">
+				<source :src="audioUrl">
+			</audio>
+    </el-dialog>
  </section>		 
 </template>
 
@@ -106,8 +128,12 @@ export default {
     };
     return {
       filters: {
-        roomId: ""
+        roomId: "",
+        deviceName:'',
       },
+      total: 0,
+			page: 1,
+			size: 10,
       uploadUrl: uploadAudioUrl,
       rooms: [],
       devRows: [],
@@ -124,38 +150,44 @@ export default {
         units: [{ required:true,validator: checkNum, trigger: "blur" }]
       },
       fileList:[],
-     
+      audioVisible:false,
+      audioUrl:null,
     };
   },
   methods: {
     getRooms() {
-      let para = {
-        page: 0,
-        roomstatus: 1,
-        pageSize: 0
-      };
-      let self = this;
-      getRoomList(self, para).then(res => {
-        if (res.data.data) {
-          this.rooms = res.body.data.rows;
-          let id = (this.filters.roomId = this.$store.state.robotId
-            ? this.$store.state.robotId.roomId
-            : this.rooms[0].roomId);
+          this.rooms = this.$store.state.rooms;
+          let id=this.filters.roomId = this.$store.state.robotId.roomId
           this.getStagList(id);
-        }
-      });
     },
+    handleCurrentChange(val) {
+				this.page = val;
+				this.getDevList();
+			},
+		handleSizeChange(size) {
+				this.page = 1;
+				this.size = size;
+				this.getDevList();
+			},
     getDevList() {
       let _this = this;
       NProgress.start();
       this.devListLoading = true;
-      devList(_this, { roomId: _this.filters.roomId }).then(res => {
+      let para = {
+        roomId: _this.filters.roomId,
+        deviceName:_this.filters.deviceName,
+        page:_this.page,
+        pageSize:_this.size
+      }
+      devList(_this,para).then(res => {
         NProgress.done();
         this.devListLoading = false;
-        if (res.data.result === 200) {
-          this.devRows = res.data.data;
+        if (res.data.data) {
+          this.total = res.body.data.total;
+          this.devRows =  res.data.data.list;
         } else {
           this.devRows = [];
+          this.total= 0;
         }
       });
     },
@@ -263,6 +295,7 @@ export default {
         duration: 2000,
         offset: 300
       });
+      this.getDevList();
       this.fileList=[];
       
     },
@@ -284,10 +317,19 @@ export default {
     },
     closeUp() {
       this.uploadVisible = false;
+    },
+    showAudio(r){
+      if(r.audioUrl){
+        this.audioUrl = r.audioUrl;
+        this.audioVisible = true;
+        this.$nextTick(()=>{
+          document.getElementById('audio').load()
+        })
+      }
     }
   },
   mounted() {
-    this.getRooms();
+    this.getRooms()
   }
 };
 </script>
@@ -296,5 +338,11 @@ export default {
    display: flex;
    align-items: center;
 }
- 
+.audio{
+	  width: 100%;
+	  display: block;
+    background: rgb(1, 41, 41);
+    height: 32px;
+    color: #fff;
+}
 </style>

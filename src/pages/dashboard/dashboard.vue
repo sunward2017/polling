@@ -26,24 +26,21 @@
 						</el-option>
 					</el-select>
 				</div>
+					<div class="msg">
+						机器人:&emsp;{{robotName}}&emsp;
+					</div>
+					<div class="msg">
+						状态:&emsp;
+						<el-tag :type="robotStatusType">{{robotStatus}}</el-tag>
+					</div>
 
-				<div class="msg">
-					机器人:&emsp;{{robotName}}&emsp;
-				</div>
-
-				<div class="msg">
-					状态:&emsp;
-					<el-tag :type="robotStatusType">{{robotStatus}}</el-tag>
-				</div>
-
-				<div class="msg">
-					当前位置:&emsp;X:&nbsp;{{ robotCoorX}}&emsp;Y:&nbsp;{{ robotCoorY}}
-				</div>
-                <div class="msg">
-                	剩余电量：
-                </div>
-				<div id="energy" class="panel_energy"></div>
-
+					<div class="msg">
+						当前位置:&emsp;X:&nbsp;{{ robotCoorX}}&emsp;Y:&nbsp;{{ robotCoorY}}
+					</div>
+					<div class="msg">
+						剩余电量：
+					</div>
+					<div id="energy" class="panel_energy"></div>
 			</el-col>
 		</el-row>
 	</section>
@@ -56,7 +53,8 @@
 	import { getRoomList } from "api/room";
 	import { realtimeStatus, realTimeTypes } from "@/const";
 	import { parseTime } from "utils";
-
+	import { mapState,mapActions } from 'vuex'
+	
 	export default {
 		data() {
 			return {
@@ -68,7 +66,6 @@
 				chartPie: null,
 				energy: null,
 				Date: [],
-				rooms: [],
 				avgHumidity: [],
 				avgTemperature: [],
 				maxHumidity: [],
@@ -83,7 +80,11 @@
 				robotStatusType: ""
 			};
 		},
+		computed:{
+			...mapState(['rooms','robotId'])
+		},
 		methods: {
+			...mapActions(['setRooms','setRobotId']),
 			roomData() {
 				let _this = this;
 				let para = {
@@ -98,7 +99,7 @@
 								return item;
 							}
 						});
-						this.$store.dispatch("setRobotId", {
+						this.setRobotId({
 							robotId: body[0].robotRealtimes[0].robotId,
 							roomId: body[0].roomId
 						});
@@ -142,21 +143,24 @@
 				});
 			},
 			getRooms() {
-				let para = {
-					page: 0,
-					roomstatus: 1,
-					pageSize: 0
-				};
-				let self = this;
-				NProgress.start();
-				getRoomList(self, para).then(res => {
-					NProgress.done();
-					if(res.data.data) {
-						this.rooms = res.body.data.rows;
-						this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
-						//this.roomData()
-					}
-				});
+				if(this.rooms.length===0){
+					let para = {
+						page: 0,
+						roomstatus: 1,
+						pageSize: 0
+					};
+					let self = this;
+					NProgress.start();
+					getRoomList(self, para).then(res => {
+						NProgress.done();
+						if(res.data.data) {
+						   this.setRooms(res.body.data.rows);
+						   this.filters.roomId = this.robotId?this.robotId.roomId:this.rooms[0].roomId;
+						}
+					});
+				}else{
+					 this.filters.roomId = this.robotId.roomId; 
+				}
 			},
 			init() {
 				Array.prototype.min = function() {

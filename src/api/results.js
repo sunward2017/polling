@@ -14,11 +14,14 @@ export const deleteTask = (self, param) => { return self.$http.post(baseUrl + '/
 
 export const pauseTask = (self, param) => { return self.$http.post(baseUrl + '/v1/activeTaskSchedule.action', param, { emulateJSON: true }) };
 
+export const sendTempTask = (self, param) => { return self.$http.post(baseUrl + '/v1/sendTempTask.action', param, { emulateJSON: true }) };
+
 
 //任务查看
 export const currentTask = (self, params) => { return self.$http.post(baseUrl + "/v1/listCurrentTasks.action", params, { emulateJSON: true }) };
 
 export const currentTaskDetail = (self, params) => { return self.$http.post(baseUrl + "/v1/listTaskDetailsByTask.action", params, { emulateJSON: true }) };
+
 
 
 //任务模版
@@ -33,7 +36,7 @@ export const deleteTemplate = (self, params) => { return self.$http.post(baseUrl
 
 
 
-export const getThermalResults = (self, params) => { return self.$http.get("/web/getTaskResultList.action", { params: params }) };
+export const getThermalResults = (self, params) => { return self.$http.get(baseUrl+"/v1/getTaskResultList.action", { params: params }) };
 
 export const getTaskResults = (self, params) => { return self.$http.get("/web/getTaskIdsWithFileInfos.action", { params: params }) };
 

@@ -18,6 +18,10 @@ export const saveNavConfig = (self, params, msg) => { return self.$http.jsonp(ba
 
 export const getRobotWarnList = (self, params) => { return self.$http.jsonp(baseUrl + '/getRobotMsgWarnList.action', { params: params, jsonp: 'callback' }) };
 
+export const getAudiosByRoom = (self, params) => { return self.$http.get(baseUrl + '/v1/listFilesByRoomId.action', { params: params }) };
+
+export const removeAudio = (self, params) => { return self.$http.get(baseUrl + '/v1/deleteFile.action', { params: params }) };
+
 export const uploadThe = (self, params) => { return self.$http.get(baseUrl + '/testUploadTh.action', { params: params }) };
 
 //巷道

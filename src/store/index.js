@@ -8,7 +8,8 @@ const state = {
    user:'',
    robotId:'',
    room:'',
-   task:''
+   task:'',
+   rooms:[],
 };
 
 export default new Vuex.Store({

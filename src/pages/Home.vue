@@ -1,10 +1,11 @@
 <template>
 	<el-row class="panel">
 		<el-col :span="24" class="panel-top">
-			<el-col :span="18" class="logo">
+			<div class="logo">
 				<img src="../assets/logo5.png" class="logoImg"> <span>{{customer+"巡检"}}</span><i style="color:#20a0ff">&nbsp;管理系统&nbsp;</i>
-			</el-col>
-			<el-col :span="6" class="panel-right">
+			</div>
+			<div class="panel-right">
+        <i class="fa fa-user banners" ><span>&nbsp;欢迎您:&nbsp;{{user}}&emsp;</span></i>
 				<router-link to="/dashboard" class="banners">
 					<i class="fa fa-home">&nbsp;首页</i>
 				</router-link>
@@ -12,28 +13,31 @@
 					<i class="fa fa-pencil">&nbsp;密码修改</i>
 				</router-link>
 				<i class="fa fa-sign-out banners" aria-hidden="true" v-on:click="logout">&nbsp;退出登录</i>
-			</el-col>
+        <a href="#" @click.stop.prevent="handleSwitchScreen">
+          <i class="fa" :class="isFullScreen ? 'fa-compress' : 'fa-expand'"></i>
+        </a>
+			</div>
 		</el-col>
 		<el-col :span="24" class="panel-center">
-			<aside class="panel-c-t">
-				<h5 class="admin"><i class="fa fa-user" aria-hidden="true" style="margin-right:5px;"></i>欢迎您: {{user}}</h5>
-				<el-menu style="border-top: 1px solid #475669;" text-color="#c0ccda" active-text-color="rgb(32, 160, 255)" :default-active="currentPath" class="el-menu-vertical-demo" @open="handleopen" @close="handleclose" @select="handleselect" theme="dark" unique-opened router>
+			<aside class="panel-c-t" :style="{width:isCollapse?'64px':'200px'}">
+				<!-- <h5 class="admin"></h5> -->
+				<el-menu style="border-top: 1px solid #475669;" text-color="#c0ccda" active-text-color="rgb(32, 160, 255)" :default-active="currentPath" class="el-menu-vertical-demo" :collapse="isCollapse" theme="dark" unique-opened router>
 					<template v-for="(item,index) in $router.options.routes" v-if="!item.hidden">
 						<!--查找路由配置$router.options.routes-->
 						<el-submenu :index="index+''" v-if="!item.leaf" :key="index">
-							<template slot="title"><i :class="item.iconCls"></i>{{item.name}}</template>
+							<template slot="title"><i :class="item.iconCls"></i><span>{{item.name}}</span></template>
 							<el-menu-item v-for="child in item.children" :index="child.path" v-if="!child.hidden" :key="child.name">{{child.name}}</el-menu-item>
 						</el-submenu>
 						<!--只有一个节点的菜单-->
-						<el-menu-item v-if="item.leaf&&item.children.length>0" :index="item.children[0].path" :key="index"><i :class="item.iconCls"></i>{{item.children[0].name}}</el-menu-item>
+						<el-menu-item v-if="item.leaf" :index="item.children[0].path" :key="index"><i :class="item.iconCls"></i><span>{{item.children[0].name}}</span></el-menu-item>
 					</template>
 				</el-menu>
 			</aside>
-
-			<section class="panel-c-c">
+			<section class="panel-c-c" :style="{marginLeft:isCollapse?'64px':'200px'}">
 				<div :class="isDashboard?'bg-purple-light':''">
 					<el-col :span="24" class="breadcrumb" v-if="isDashboard">
-						<strong style="width:200px;float:left;color: #fff;">{{currentPathName}}</strong>
+            <i :class="isCollapse?'el-icon-d-arrow-right':'el-icon-d-arrow-left'" @click="isCollapse=!isCollapse"></i>
+						<strong style="width:200px;color: #fff;">&emsp;{{currentPathName}}</strong>
 						<el-breadcrumb separator="/" style="float:right;">
 							<el-breadcrumb-item :to="{ path:'/dashboard' }">首页</el-breadcrumb-item>
 							<el-breadcrumb-item v-if="currentPathNameParent!=''">{{currentPathNameParent}}</el-breadcrumb-item>
@@ -56,6 +60,10 @@
 </template>
 
 <script>
+import { 
+  requestFullScreen,
+  exitFullscreen
+} from 'utils'
 export default {
   data() {
     return {
@@ -64,7 +72,8 @@ export default {
       currentPathName: "",
       currentPathNameParent: "",
       customer: "",
-      isCollapse: true,
+      isCollapse: false,
+      isFullScreen:false,
       form: {
         name: "",
         region: "",
@@ -88,20 +97,18 @@ export default {
   },
   created: function() {
     // var username = localStorage.getItem("user");
-
     this.user = this.$store.state.user.account;
   },
   methods: {
-    onSubmit() {
-      //console.log('submit!');
+    handleSwitchScreen () {
+      if (this.isFullScreen) {
+        exitFullscreen()
+        this.isFullScreen = false
+      } else {
+        requestFullScreen()
+        this.isFullScreen = true
+      }
     },
-    handleopen() {
-      //console.log('handleopen');
-    },
-    handleclose() {
-      //console.log('handleclose');
-    },
-    handleselect: function(a, b) {},
     //退出登录
     logout: function() {
       var _this = this;
@@ -162,6 +169,7 @@ export default {
   margin-bottom: 15px;
   border: 1px solid rgba(250,250,250,0.15);
   background: #2178f1 linear-gradient(90deg, #2178f1 0%, #2178f1 0%, #20b6f9 100%, #20b6f9 100%);
+  color:#099;
 }
 
 .panel-top {
@@ -172,11 +180,14 @@ export default {
 }
 
 .panel-right {
+  float:right;
   text-align: right;
+  padding-right:20px;
+  min-width: 550px;
 }
 
 .banners {
-  margin-right: 25px;
+  margin-right: 20px;
   margin-top: 50px;
   color: #2b9ae4;
   cursor: pointer;
@@ -192,13 +203,13 @@ export default {
 
 .panel-c-t {
   float: left;
-  width: 230px;
+  transition: width 0.5s;
 }
 
 .panel-c-c {
   background:url(../assets/blue.jpg);
   background-size: cover;
-  margin-left: 230px;
+  transition: margin 0.5s;
 }
 
 .bg-purple-light {
@@ -213,7 +224,9 @@ export default {
   clear: both;
   visibility: hidden;
 }
-
+.logo{
+  float:left;
+}
 .logoImg {
   width: 40px;
   float: left;
@@ -222,7 +235,7 @@ export default {
 
 .admin {
   color: #c0ccda;
-  text-align: center;
+  padding-left:20px;
 }
 
 .link-type .link-type:focus {

@@ -3,7 +3,7 @@
 		<el-col :span="24" class="toolbar" lable-width='70'>
 			<el-form :inline="true" :model="filters">
 				<el-form-item label="巡检机房">
-					<el-select style="width:90%" @change="changeRoom" v-model="filters.roomId">
+					<el-select style="width:90%" v-model="filters.roomId">
 						<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 						</el-option>
 					</el-select>
@@ -21,6 +21,9 @@
 				<el-form-item>
 					<el-button  type="primary" @click="handlerAdd">制定计划</el-button>
 				</el-form-item>
+        <el-form-item>
+					<el-button  type="primary" @click="tempTask">语音播报</el-button>
+				</el-form-item>
 			</el-form>
 		</el-col>
 		<template>
@@ -29,26 +32,26 @@
 				</el-table-column>
 				<el-table-column prop="roomId" label="巡检机房" width="160" :formatter="formatterRoom">
 				</el-table-column>
-				<el-table-column prop="taskName" label="任务名称" align="center" width="120">
+				<el-table-column prop="taskName" label="任务名称" align="center" min-width="180">
 				</el-table-column>
-				<el-table-column prop="status" label="计划状态" align="center" width="120">
+				<el-table-column prop="status" label="计划状态" align="center" width="100">
 					<template scope="scope">
 						<el-tag type="success">{{formatStatus(scope.row)}}</el-tag>
 					</template>
 				</el-table-column>
-				<el-table-column prop="robotId" label="巡检机器人" width="180" align="center" :formatter="formatterRobot">
+				<el-table-column prop="robotId" label="巡检机器人"  align="center" :formatter="formatterRobot">
 				</el-table-column>
-				<el-table-column  label="避开时间区间" width="340" align="center" :formatter="formatTimeSction">
+				<!-- <el-table-column  label="避开时间区间" width="340" align="center" :formatter="formatTimeSction">
 				</el-table-column>
 				<el-table-column prop="prohibitedAreaId" label="避开巷道" width="240" align="center" sortable :formatter="formatArea">
-				</el-table-column>
-				<el-table-column prop="active" label="任务状态">
+				</el-table-column> -->
+				<el-table-column prop="active" label="任务状态" width="180">
 					<template scope="scope">
 						<el-tag :type="scope.row.active?'success':'danger'">{{scope.row.active?" 可执行 ":"已挂起 "}}</el-tag>
 					</template>
 				</el-table-column>
-        <!-- <el-table-column prop="createTime" label="创建时间" :formatter="formatTime">
-        </el-table-column> -->
+        <el-table-column prop="createTime" label="创建时间" :formatter="formatTime" align="center">
+        </el-table-column>
 				<el-table-column  label="操作" align="center" width="300">
 					<template scope="scope">
 						<el-button type="darnge" icon="edit" size="small" @click="handleDetail(scope.row)">编辑</el-button>
@@ -74,7 +77,7 @@
 		</el-col>
 
 		<!--编辑界面-->
-		<el-dialog :title="editFormTile" v-model="editFormVisible" :close-on-click-modal="false" size="samll">
+		<el-dialog :title="editFormTile" v-model="editFormVisible" :close-on-click-modal="false" size="mini">
 			<el-form :model="editForm" label-width="100px" :rules="editFormRules" ref="editForm">
 				<el-form-item label='巡检机房' prop="roomId">
 					<el-select style="width:100%" v-model="editForm.roomId" @change="changeFormRoom">
@@ -91,16 +94,11 @@
 						</el-option>
 					</el-select>
 				</el-form-item>
-				<!-- <el-form-item prop="active" label="任务状态">
-					<el-radio-group v-model="editForm.active">
-						<el-radio-button :label="true" size="small">启用</el-radio-button>
-						<el-radio-button :label="false" size="small">禁用</el-radio-button>
-					</el-radio-group>
-				</el-form-item> -->
+			 
 				<el-form-item required label="使用模版">
 					<el-col :span="8">
 						<el-form-item prop="useTemplate">
-							<el-radio-group v-model="editForm.useTemplate" @change="changeTpl">
+							<el-radio-group v-model="editForm.useTemplate">
 								<el-radio-button :label="true">是</el-radio-button>
 								<el-radio-button :label="false">否</el-radio-button>
 							</el-radio-group>
@@ -156,10 +154,9 @@
                <el-tree :data="areaData" :props="defaultProps" @node-click="handleNodeClick" style="min-height:40vh" default-expand-all></el-tree>
             </el-col>
             <el-col :span="11">
-                <div class="sign">导航点指令</div>
-               <el-table :data="cmdData">
-                    <el-table-column prop="nvPointName" label="导航点" width="150"></el-table-column>
-                    <!-- <el-table-column property="areaId" label="所属巷道" :formatter="formatArea1" width="200"></el-table-column> -->
+               <div class="sign">导航点指令</div>
+               <el-table :data="cmdData" v-loading="cmdLoading" @sort-change="sortPoint">
+                    <el-table-column prop="nvPointName" label="导航点" width="150" sortable></el-table-column>
                     <el-table-column property="commandTypes" label="导航点指令">
                     <template scope="scope">
                         <el-checkbox-group v-model="scope.row.cmdType">
@@ -181,6 +178,26 @@
                         </template>
                      </el-table-column>
                 </el-table>
+                <el-col class="tpl">
+                  <el-col :span="10">
+                      <el-select   v-model="filterTypes" multiple placeholder="指令筛选" @change="filterType" style="width:100%">  
+                        <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+                        </el-option>
+                      </el-select>
+                  </el-col>
+                  <el-col :span="11">
+                      <el-select  v-model="values" multiple placeholder="批量选取" @change="handleSelectedAction" :disabled="cmdData.length===0" style="width:100%">
+                        <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+                        </el-option>
+                      </el-select>
+                  </el-col>
+                  <el-col :span="1">
+                      &emsp;<el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
+                  </el-col>
+                </el-col>
+                <el-col :span="24" class="toolbar" style="text-align:right">
+                    <el-button type="info" size="small" @click="batchAddNav">批量添加</el-button>
+                </el-col>
             </el-col>
             <el-col :span="10">
                 <div class="sign">任务导航点队列(拖动排序)</div>
@@ -217,12 +234,48 @@
             <el-button type="primary" @click="selectCmd" size="small">确定</el-button>
          </div>
     </el-dialog>
+    <!-- 临时任务 --> 
+    <el-dialog title="临时任务" v-model="tempVisible" :close-on-click-modal="false" size="mini">
+			<el-form :model="tempForm" label-width="100px" :rules="tempRules" ref="tempForm">
+        <el-form-item prop="robotId" label="机器人">
+					<el-select style="width:350px" v-model="tempForm.robotId"  placeholder="请选择机器人">
+						<el-option v-for="item in robots" :key="item.roomId" :label="item.robotName" :value="item.robotId">
+						</el-option>
+					</el-select>
+				</el-form-item>
+        <el-form-item  label="机房巷道" >
+				    <el-select style="width:100%" v-model="tempForm.areaId"  placeholder="请选择巷道" @change="changeArea">
+              <el-option v-for="item in areasByRoom" :key="item.areaId" :label="item.areaName" :value="item.areaId">
+              </el-option>
+            </el-select>
+				</el-form-item>
+				<el-form-item label="导航点">
+				    <el-select style="width:100%" v-model="tempForm.nvPointName"  placeholder="请选择导航点"  :disabled="tempForm.areaId==='none'">
+              <el-option v-for="item in navPointsByArea" :key="item.nvPointId" :label="item.nvPointName" :value="item.nvPointName">
+              </el-option>
+            </el-select>
+				</el-form-item>
+        <el-form-item prop="audioUrl" label="音频文件">
+				    <el-select style="width:100%" v-model="tempForm.audioUrl">
+              <el-option v-for="item in audios" :key="item.fileId" :label="item.fileName" :value="item.fileUrl">
+              </el-option>
+            </el-select>
+				</el-form-item>
+        <el-form-item label="指令">
+             <i :class="cmd?'fa fa-pause cmd':'fa fa-play cmd'" @click="cmd=!cmd"></i><el-progress style="width:90%;float:right;margin-top:7px;"  :stroke-width="6" :percentage="70"></el-progress>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="tempVisible = false">取 消</el-button>
+        <el-button type="primary" @click="sendTempTask">确 定</el-button>
+      </span>
+    </el-dialog>
 	</section>
 </template>
 
 <script>
 import NProgress from "nprogress";
-import { parseTime, compare } from "utils";
+import { parseTime,compare,cloneObj } from "utils";
 import { getRobotList } from "api/robot";
 import {
   getTaskList,
@@ -230,10 +283,10 @@ import {
   updateTask,
   deleteTask,
   templateList,
-  cmdListByRoom,
-  pauseTask
+  pauseTask,
+  sendTempTask
 } from "api/results";
-import { getRoomList, getRoomDetail, roadwayList } from "api/room";
+import { getRoomList, getRoomDetail, roadwayList,stagList,getAudiosByRoom } from "api/room";
 import { TASKEXECTYPES, CMDTYPES,CMDSTATUS } from "@/const";
 import Sortable from 'sortablejs'
 
@@ -254,6 +307,11 @@ export default {
         roomName: "",
         active: "2"
       },
+      options:CMDTYPES,
+      filterTypes:[],
+      values:[],
+      checkAll:true,
+      isIndeterminate: true,
       types:CMDSTATUS,
       robotList: [],
       roomRobots: [],
@@ -268,7 +326,7 @@ export default {
       editForm: {
         roomId: "",
         robotId: "",
-        useTemplate: false,
+        useTemplate: null,
         prohibitedAreaId: "",
         timeSection: [],
         templateId: "",
@@ -313,6 +371,7 @@ export default {
       delLoading:false,
       btnEditText: "提交",
       cmdVisible: false,
+      navPointData:[],
       cmdData: [],
       execArea:[],
       dateOpt: {
@@ -324,23 +383,54 @@ export default {
 			page: 1,
 			size:20,
       areaData:[],
+      cmdLoading:false,
       defaultProps: {
         children: 'children',
         label: 'areaName'
+      },
+      tempVisible:false,
+      robots:[],
+      audios:[],
+      areasByRoom:[],
+      navPointsByArea:[],
+      tempForm:{
+        robotId:'',
+        nvPointName:'',
+        audioUrl:'',
+      },
+      cmd:false,
+      tempRules:{
+        robotId: [
+            { required: true, message: '请选择机器人', trigger: 'change' }
+          ],
+        audioUrl: [
+          { required: true, message: '请选择播放文件', trigger: 'blur' }
+        ],
+         
       }
     };
   },
   methods: {
+    changeCmd(){
+       this.cmd =!this.cmd
+    },
+    sortPoint(obj){
+       this.cmdData.reverse();
+    },
     handleCurrentChange(val) {
       this.page = val;
-      this.getList();
+      this.getTaskByRoom();
     },
     handleSizeChange(size) {
       this.page = 1;
       this.size = size;
-      this.getList();
+      this.getTaskByRoom();
     },
     getTaskByRoom() {
+       let id = this.filters.roomId;
+      const currentroom = this.rooms.find(item => item.roomId === id);
+      this.robotList = currentroom.robotList;
+      this.filters.roomName = currentroom.roomName;
       let para = {
         roomId: this.filters.roomId,
         page: this.page,
@@ -389,7 +479,7 @@ export default {
           self.getRooms();
         } else {
           self.roadwayData = [];
-          self.$message("通信故障");
+          console.log('get area error')
         }
       });
     },
@@ -439,7 +529,6 @@ export default {
             });
           } else {
             params.scheduleId = _this.editForm.scheduleId;
-            params.status ="0";
             updateTask(_this, params).then(res => {
               if (res.body.result == 200) {
                 _this.$notify({
@@ -468,13 +557,12 @@ export default {
         _this = this;
       this.editFormTile = "编辑";
       this.changeFormRoom(r.roomId)
-      this.roomRobots = this.rooms.find(item => item.roomId === id).robotList;
       this.roadwayData
         .find(item => item.roomId === id)
         .rbAreaInfoList.forEach(r => {
           _this.prohibitedAreas[r.areaId] = r.areaName;
         });
-      this.editForm ={}={
+      this.editForm={
         ...r,
         timeSection:r.prohibitedStartTime&&r.prohibitedEndTime? [
           new Date(r.prohibitedStartTime),
@@ -515,30 +603,11 @@ export default {
       });
     },
     getRooms() {
-      let para = {
-        page: 0,
-        roomstatus: 1,
-        pageSize: 0
-      };
-      let self = this;
-      getRoomList(self, para).then(res => {
-        if (res.body.data && res.body.data.rows) {
-          this.rooms = res.body.data.rows;
-          this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
-          this.getTaskByRoom();
-        } else {
-          this.rooms = [];
-          this.filters.roomId = "";
-        }
-      });
+       this.rooms = this.$store.state.rooms;
+       this.filters.roomId =  this.$store.state.robotId.roomId;
+       this.getTaskByRoom();
     },
-    changeRoom() {
-      let id = this.filters.roomId;
-      const currentroom = this.rooms.find(item => item.roomId === id);
-      this.robotList = currentroom.robotList;
-      this.filters.roomName = currentroom.roomName;
-      this.getTaskByRoom();
-    },
+    
     changeFormRoom(id) {
        /* roomRobots;
         * areaData
@@ -558,21 +627,28 @@ export default {
           this.prohibitedAreas[r.areaId] = r.areaName;
         });
         this.cmdData=[];
-      
+        this.getTemplates(id);
     },
+    
     handleNodeClick(data){
-       if(data.areaId){
-         let _this= this;  
-         cmdListByRoom(_this, { roomId: _this.editForm.roomId }).then(res => {
-           if (res.data.result === 200) {
-                this.cmdData = res.data.data.filter(item=>item.areaId===data.areaId)
-                .map(r => {
-                r.cmdType = [];
-                return r;
-                });
-           } 
-        }) 
+       if(!data.areaId){
+         return;
        }
+      this.filterTypes=[];
+      this.values=[];
+      let _this = this;
+      this.cmdLoading = true;
+      stagList(_this,{areaId:data.areaId}).then(res=>{
+        this.cmdLoading= false;
+        if(res.data.data){
+          this.navPointData = res.data.data.map(r => {r.cmdType = [];return r;});
+          this.cmdData = res.data.data.map(r => {r.cmdType = [];return r;});
+        }else{
+          this.navPointData = [];
+          this.cmdData =[];
+        }
+      })
+       
     },
     addArea(r){
         if(r.cmdType.length===0){
@@ -581,10 +657,20 @@ export default {
         }
         const index = this.execArea.findIndex(i=>i.nvPointId===r.nvPointId)
        if(index!==-1){
-          this.execArea.splice(index,1,r)
+          this.execArea.splice(index,1);
        }else{
           this.execArea.push(r);
        }
+    },
+    batchAddNav(){
+      let arr = this.cmdData.filter(item=>(item.cmdType.length>0));
+      for(var i=0,l=arr.length;i<l;i++){
+         let index =this.execArea.findIndex(item=>(item.nvPointId===arr[i].nvPointId));
+         if(index>-1){
+           this.execArea.splice(index,1);
+         } 
+         this.execArea.push(arr[i]);
+      }
     },
     deleteRow(index, rows) {
         rows.splice(index, 1);
@@ -606,7 +692,47 @@ export default {
     cmdName(type) {
       return CMDTYPES.find(i => i.value == type).label;
     },
-     
+    filterType() {
+      const types = this.filterTypes;
+      if (types.length === 0) {
+        this.cmdData= cloneObj(this.navPointData);
+      } else {
+        this.cmdData = cloneObj(this.navPointData).filter(item => {
+          return item.commandTypes.some(i => types.includes(i + ""));
+        });
+      }
+    },
+    handleCheckAllChange(e) {
+      const state = e.target.checked;
+      this.cmdData.map(item => {
+        item.cmdType = state ? item.commandTypes.map(m => m + "") : [];
+        return item;
+      });
+      this.isIndeterminate = false;
+    },
+    handleSelectedAction() {
+      const values = this.values;
+      this.cmdData.map(item => {
+        item.cmdType = [];
+        item.commandTypes.forEach(m => {
+          if (values.includes(m + "")) {
+            item.cmdType.push(m + "");
+          }
+        });
+        return item;
+      });
+      this.handleCheckedActionChange();
+    },
+    handleCheckedActionChange() {
+      this.checkAll = this.cmdData.every(
+        item => item.cmdType.length === item.commandTypes.length
+      );
+      this.isIndeterminate =
+        this.cmdData.some(item => item.cmdType.length > 0) &&
+        this.cmdData.some(
+          item => item.cmdType.length < item.commandTypes.length
+        );
+    }, 
     selectCmd() {
       if(this.execArea.some(i=>i.cmdType.length===0)){
          this.$message.error("请删除没有指令的导航点");
@@ -641,14 +767,64 @@ export default {
     formatTime(r){
        return parseTime(r.createTime)
     },
-    formatArea(r, c) {
-      const area = this.roadwayData
-        .find(m => m.roomId === r.roomId)
-        .rbAreaInfoList.find(i => i.areaId === r.prohibitedAreaId);
-      return area ? area.areaName : "未知";
+    changeArea(areaId){
+       this.navPointsByArea=[];
+       this.tempForm.nvPointName = '';
+      if(areaId!=="none"){
+         let _this = this; 
+         stagList(_this,{areaId}).then(res=>{
+            this.navPointsByArea= res.data.data?res.data.data:[];
+         })
+      }   
     },
-    formatArea1(r, c) {
-      return r.areaName || this.prohibitedAreas[r.areaId] || "未知";
+    tempTask(){
+      let _this = this;
+       this.tempForm={
+        robotId:'',
+        nvPointName:'',
+        audioUrl:'',
+        command:'6'
+      },
+      this.robots = this.rooms.find(i=>(i.roomId===_this.filters.roomId)).robotList;
+       getAudiosByRoom(_this,{roomId:this.filters.roomId,taskType:'4'}).then(res=>{
+          if(res.body.result==200){
+            this.audios = res.body.data?res.body.data:[];
+            this.tempVisible = true;
+          }
+       })
+      roadwayList(_this, {
+        customerId: _this.$store.state.user.customId
+      }).then(res => {
+         if(res.body.data){
+            this.areasByRoom= res.body.data.find(i=>(i.roomId===_this.filters.roomId)).rbAreaInfoList;
+            this.areasByRoom.unshift({areaName:'空',areaId:'none'})
+         }
+      })
+    },
+    sendTempTask(){
+      let _this = this;
+       this.$refs.tempForm.validate(valid=>{
+          if(valid){
+             let param={
+                customId:_this.$store.state.user.customId,
+                nvPointName:_this.tempForm.nvPointName?_this.tempForm.nvPointName:'',
+                audioUrl:_this.tempForm.audioUrl,
+                command:_this.tempForm.cmd?'6':'5',
+                robotId:_this.tempForm.robotId,
+             }
+             sendTempTask(_this,param).then(res=>{
+                 if(res.body.result===200){
+                      _this.$message({
+                        message: '临时任务下发成功',
+                        type: 'success'
+                      });
+                 }else{
+                     this.$message.error("临时任务下发失败");
+                 }
+                 this.tempVisible =false;
+             })
+          }
+       })
     },
     removeDomain(item) {
       var index = this.editForm.domains.indexOf(item);
@@ -661,11 +837,6 @@ export default {
         value: "",
         key: Date.now()
       });
-    },
-    changeTpl(v){
-       if(v){
-         this.getTemplates(this.editForm.roomId);
-       }
     },
     getTemplates(id) {
       let _this = this;
@@ -709,14 +880,26 @@ export default {
 .el-row {
   margin-bottom: 20px;
 }
-.sign{
-    text-indent:1rem;
-    height:30px;
-    line-height: 30px;
-    background:rgb(38, 144, 243);
-    color:#fff;
-    border:1px solid transparent;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
+.sign {
+  text-indent: 1rem;
+  height: 30px;
+  line-height: 30px;
+  background: rgb(38, 144, 243);
+  color: #fff;
+  border: 1px solid transparent;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+.tpl {
+  padding: 10px;
+  border: 1px solid rgba(250, 250, 250, 0.15);
+  border-radius: 4px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  line-height: 9px;
+}
+.cmd{
+  font-size:20px;
+  color:#00ffff;
 }
 </style>

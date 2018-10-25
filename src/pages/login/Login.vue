@@ -700,12 +700,12 @@ img {
 }
 
 .loginform {
-  width: 260px;
+  width: 12%;
   padding: 35px 35px 15px 35px;
 }
 .custom-theme .el-form-item__content .loginBtn {
   cursor: pointer;
-  width: 270px;
+  width: 100%;
   height: 40px;
   margin-top: 25px;
   padding: 0;

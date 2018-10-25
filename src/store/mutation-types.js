@@ -9,3 +9,5 @@ export const SET_FILTERROOM = 'SET_FILTERROOM';
 
 export const SET_TASK = 'SET_TASK'
 
+export const SET_ROOMS ='SET_ROOMS'
+

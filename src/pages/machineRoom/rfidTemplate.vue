@@ -214,7 +214,7 @@ export default {
       } else {
         return (
           <span>
-            <span style="display:inline-block;width:40%;overflow:hidden;text-overflow: ellipsis;">{node.label}</span>
+            <span style="display:inline-block;width:30%;overflow:hidden;text-overflow: ellipsis;">{node.label}</span>
             <span style="float: right; margin-right: 20px">
               <el-button
                 size="mini"

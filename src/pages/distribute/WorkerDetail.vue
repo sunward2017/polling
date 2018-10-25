@@ -1,14 +1,12 @@
 <template>
 	<section>
 		<div class="toolbar">
-			<el-col :span="12">
         <router-link :to="{path:'taskDetail'}" >
 					<el-button type="text" icon="d-arrow-left" size="small">任务切换</el-button>
 			  </router-link>
 			   	&emsp;&emsp;当前任务:&emsp; {{taskName}} 
           &emsp;&emsp;
           <el-button @click.native="getCurrentTaskDetail" size="small" type="primary">刷新</el-button> 
-			</el-col>
 		</div>
 		<el-row :gutter="20">
 			<el-col :span="6">

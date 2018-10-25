@@ -3,7 +3,7 @@
 		<!--工具条-->
 		<el-col :span="24" class="toolbar">
 			<el-form :inline="true" :model="filters">
-				 <el-form-item label="巡检机房">
+				 <el-form-item>
 					<el-select v-model="filters.roomId">
 						<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 						</el-option>
@@ -69,7 +69,6 @@
 <script>
 	import NProgress from 'nprogress'
 	import { parseTime } from 'utils';
-	import { getRoomList } from 'api/room';
 	import { getWarningByDetect } from 'api/results';
 	import { baseImgUrl } from 'api/api';
  
@@ -110,21 +109,9 @@
 				this.getList();
 			},
 			getRooms() {
-				let para = {
-					page: 0,
-					roomstatus: 1,
-					pageSize: 0
-				};
-				let self = this;
-				NProgress.start();
-				getRoomList(self, para).then((res) => {
-					if(res.data.data) {
-						this.rooms = res.body.data.rows;
-						this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
-						this.getList();
-					}
-
-				})
+				this.rooms = this.$store.state.rooms
+				this.filters.roomId = this.$store.state.robotId.roomId;
+				this.getList();
 			},
 			getList() {
 				let para = {

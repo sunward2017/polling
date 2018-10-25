@@ -20,7 +20,7 @@ const Workers = r => require.ensure([], () => r(require('./pages/workers/Table.v
 const Room = r => require.ensure([], () => r(require('./pages/machineRoom/Table.vue')), 'Room');
 const Device = r => require.ensure([], () => r(require('./pages/machineRoom/device.vue')), 'Device');
 const Stagnation = r => require.ensure([], () => r(require('./pages/machineRoom/Stagnation.vue')), 'Stagnation');
-// const Stagnation = r => require.ensure([], () => r(require('./pages/machineRoom/InspectionConfig.vue')), 'Stagnation');
+ 
 const rfidTemplate = r => require.ensure([], () => r(require('./pages/machineRoom/rfidTemplate.vue')), 'rfidTemplate');
 
 const Template = r => require.ensure([], () => r(require('./pages/template/Table.vue')), 'Template');
@@ -78,7 +78,6 @@ const routes = [{
 	name: "INDEX",
 	leaf: true,
 	iconCls: 'fa fa-area-chart',
-	hidden: false,
 	children: [{
 		path: 'dashboard',
 		component: Dashboard,
@@ -88,18 +87,19 @@ const routes = [{
 	path: '/',
 	component: Home,
 	name: '巡检结果',
-	iconCls: 'fa fa-address-book', //图标样式class
+	iconCls: 'fa fa-envelope-open', //图标样式class
+	leaf: false, 
 	children: [
 		{
 			path: '/photoReport',
 			component: PhotoReport,
 			name: '巡检照片'
 		},
-		// {
-		// 	path: '/Collection',
-		// 	component: CollectionResult,
-		// 	name: '图像识别'
-		// },
+		{
+			path: '/Collection',
+			component: CollectionResult,
+			name: '图像识别',
+		},
 		 {
 			path: '/thermalResult',
 			component: Thermal,
@@ -115,12 +115,14 @@ const routes = [{
 		}, {
 			path: '/smokeWarning',
 			component: SmokeWarning,
-			name: '异味检测'
+			name: '异味检测',
+			hidden: true
 
 		}, {
 			path: '/noiseWarning',
 			component: NoiseWarning,
-			name: '异响检测'
+			name: '异响检测',
+			hidden: true
 		}
 		, {
 			path: '/report',
@@ -133,7 +135,8 @@ const routes = [{
 	path: '/',
 	component: Home,
 	name: '任务管理',
-	iconCls: 'fa fa-address-book', //图标样式class
+	iconCls: 'fa fa-microchip', //图标样式class
+	leaf: false, 
 	children: [{
 		path: 'histTask',
 		component: TaskList,
@@ -162,7 +165,7 @@ const routes = [{
 	children: [{
 		path: 'machineRoom',
 		component: Room,
-		name: '机房列表'
+		name: '机房编辑'
 	}, {
 		path: 'device',
 		component: Device,
@@ -181,10 +184,11 @@ const routes = [{
 	component: Home,
 	name: '机器人管理',
 	iconCls: 'fa fa-male', //图标样式class
+	leaf: false, 
 	children: [{
 		path: 'robot',
 		component: Robot,
-		name: '机器人列表'
+		name: '机器人配置'
 	},
 		// { path: '/user', component: user, name: '列表' },
 	]
@@ -193,6 +197,7 @@ const routes = [{
 	component: Home,
 	name: '告警管理',
 	iconCls: 'fa fa-address-card-o',
+	leaf: false, 
 	children: [{
 		path: 'template',
 		component: Template,
@@ -208,8 +213,8 @@ const routes = [{
 	path: '/',
 	component: Home,
 	name: '人员管理',
-	iconCls: 'fa fa-id-card-o',
-	hidden: false,
+	iconCls: 'fa fa-user-plus',
+	leaf: false, 
 	children: [{
 		path: 'admin',
 		component: Admin,
@@ -226,6 +231,7 @@ const routes = [{
 	component: Home,
 	name: '随工监督',
 	iconCls: 'fa fa-address-book', //图标样式class
+	leaf: false,
 	children: [{
 		path: 'realTime',
 		component: Super,

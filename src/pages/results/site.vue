@@ -1,7 +1,7 @@
  <template>
 	<section >
 		<el-form :inline="true" v-model="filters" class="toolbar">
-			<el-form-item label="巡检机房">
+			<el-form-item>
 				<el-select v-model="filters.roomId" placeholder="请选择机房" @change="changeRoom">
 					<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 					</el-option>
@@ -22,13 +22,13 @@
 				</el-select> 	
 			</el-form-item>
 			<el-form-item>
-				<el-button  type="warning" icon="search" @click="getList">任务检索</el-button>
+				<el-button  type="primary" icon="date" @click="getList">任务检索</el-button>
 			</el-form-item>
 			<el-form-item v-if="hasTask" label="当前任务">
 				<el-tag> {{filters.taskName}}</el-tag>
 			</el-form-item>
 			<el-form-item v-if="hasTask"> 
-				<el-button type="primary" icon="search" @click.native="handleTask">刷新</el-button>
+				<el-button type="info" icon="search" @click.native="handleTask">查询</el-button>
 			</el-form-item>
 		</el-form>
         <template>
@@ -84,12 +84,11 @@
 <script>
 	import NProgress from 'nprogress';
 	import { parseTime } from 'utils';
-	import { getRoomList } from 'api/room';
 	import { currentTask, getTaskDetail } from 'api/results';
     import { Request, Response } from 'utils/Cipher';
 	import { baseImgUrl } from 'api/api';
 	import { TASKEXECTYPES, CMDSTATUS } from "@/const";
-
+     
 	export default {
 		data() {
 			return {
@@ -136,22 +135,6 @@
 				this.size = size;
 				this.getList();
 			},
-			getRooms() {
-				let para = {
-					page: 0,
-					roomstatus: 1,
-					pageSize: 0
-				};
-				let self = this;
-				NProgress.start();
-				getRoomList(self, para).then((res) => {
-					NProgress.done();
-					if(res.data.data) {
-						this.rooms = res.body.data.rows;
-					    this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
-					}
-				})
-			},
 			changeRoom(){
 				this.filters.taskId="";
 				this.filters.taskName="",
@@ -171,7 +154,7 @@
 				this.taskVisible = true;
 				NProgress.start();
 				let self = this;
-				 currentTask(self, para).then(res => {
+				currentTask(self, para).then(res => {
 					this.listLoading = false;
 					NProgress.done();
 					if (res.body.data && res.body.data.list) {
@@ -236,7 +219,8 @@
 			}
 		},
 		mounted() {
-			this.getRooms();
+		   this.rooms = this.$store.state.rooms;
+		   this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
 		}
 	}
 </script>

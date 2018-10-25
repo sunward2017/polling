@@ -3,7 +3,7 @@
 		<!--工具条-->
 		<el-col :span="24" class="toolbar">
 			<el-form :inline="true" :model="filters">
-				 <el-form-item label="巡检机房">
+				 <el-form-item>
 					<el-select v-model="filters.roomId">
 						<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 						</el-option>
@@ -35,7 +35,7 @@
 						<span :class="parseFloat(scope.row.minHumidity)<parseFloat(scope.row.warnLowerH)||parseFloat(scope.row.minHumidity)>parseFloat(scope.row.warnUpperH)?'darnger':''">{{scope.row.minHumidity}}</span>
 					</template>	
 				</el-table-column>
-				<el-table-column prop="avHumidity" label="平均湿度" width="120" align="center" sortable>
+				<el-table-column prop="avgHumidity" label="平均湿度" width="120" align="center" sortable>
 					
 				</el-table-column>
 				<el-table-column prop="maxTemperature" label="最高温度" width="120" align="center" sortable>
@@ -48,7 +48,7 @@
 						<span :class="parseFloat(scope.row.minTemperature)<parseFloat(scope.row.warnLower)||parseFloat(scope.row.minTemperature)>parseFloat(scope.row.warnUpper)?'darnger':''">{{scope.row.minTemperature}}</span>
 					</template>	
 				</el-table-column>
-				<el-table-column prop="avTemperature" label="平均温度" width="120" align="center" sortable>
+				<el-table-column prop="avgTemperature" label="平均温度" width="120" align="center" sortable>
 				</el-table-column>
 				<el-table-column prop="taskTime" label="巡检时间" width="180" align="center" sortable :formatter="formatTime">
 				</el-table-column>
@@ -74,162 +74,127 @@
 	</section>
 </template>
 <script>
-	import NProgress from 'nprogress'
-	import { parseTime } from 'utils';
-	import { getRoomList,uploadThe} from 'api/room';
-	import { getThermalResults } from 'api/results';
-	import { baseImgUrl } from 'api/api';
+import NProgress from "nprogress";
+import { parseTime } from "utils";
+import { uploadThe } from "api/room";
+import { getThermalResults } from "api/results";
+import { baseImgUrl } from "api/api";
+import { mapState } from "vuex";
 
-	export default {
-		 
-		data() {
-			return {
-				filters: {
-					roomId: '',
-				},
-				total: 0,
-				page: 1,
-				size: 20,
-				rooms: [],
-				rows: [],
-				listLoading: false,
-				bigImgVisible: false,
-				currentUrl: '',
-				bigImgTitle: "原始图",
-				dialogSize:'small'
-			}
-		},
-		methods: {
-			formatTime(r, c) {
-				return parseTime(r.taskTime, '{y}-{m}-{d} {h}:{i}')
-			},
-			formatterStatus(row, column) {
-				let statu = row.warnStatus === 1 ? '异常' : "正常";
-				return statu;
-			},
-			handleCurrentChange(val) {
-				this.page = val;
-				this.getList();
-			},
-			handleSizeChange(size) {
-				this.page = 1;
-				this.size = size;
-				this.getList();
-			},
-			getRooms() {
-				let para = {
-					page: 0,
-					roomstatus: 1,
-					pageSize: 0
-				};
-				let self = this;
-				NProgress.start();
-				getRoomList(self, para).then((res) => {
-					NProgress.done();
-					if(res.data.data) {
-						this.rooms = res.body.data.rows;
-						this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
-						this.getList();
-					}
-
-				})
-			},
-			getList() {
-				let para = {
-					page: this.page,
-					pageSize: this.size,
-					roomId: this.filters.roomId
-				};
-				this.listLoading = true;
-				NProgress.start();
-				let self = this;
-				getThermalResults(self, para).then((res) => {
-					if(res.body.data && res.body.data.list) {
-						this.rows = res.body.data.list.map((item) => {
-							let obj = {};
-							obj.robotName = item.robotName;
-							obj.taskName = item.taskName;
-							obj.taskTime = item.taskTime;
-							obj.maxHumidity = item.thermalequilibrium.maxHumidity;
-							obj.minHumidity = item.thermalequilibrium.minHumidity;
-							obj.avHumidity = item.thermalequilibrium.avgHumidity;
-							obj.maxTemperature = item.thermalequilibrium.maxTemperature;
-							obj.minTemperature = item.thermalequilibrium.minTemperature;
-							obj.avTemperature = item.thermalequilibrium.avgTemperature;
-							obj.HumidityUrl = item.thermalequilibrium.humidityUrl||'';
-							obj.imgUrl = item.thermalequilibrium.imageUrl||'';
-							obj.thermometrys = item.thermometrys||[];
-							obj.customId= item.robotInfo.customId;
-							obj.robotId = item.robotId;
-							obj.taskId = item.taskId;
-							obj.warnLower = item.roomInfo.warnLower||15;
-							obj.warnLowerH = item.roomInfo.warnLowerH||15;
-							obj.warnUpper = item.roomInfo.warnUpper||45;
-							obj.warnUpperH = item.roomInfo.warnUpperH||45;
-							return obj;
-						}); 
-						this.total = res.data.data.total;
-					} else {
-						this.total = 0;
-						this.rows = [];
-					}
-					this.listLoading = false;
-					NProgress.done();
-				});
-			},
-			showDetail(obj) {
-				this.dialogSize ='small';
-				if(obj.flag === 1&&obj.r.taskName) {
-					this.bigImgTitle = obj.r.taskName + "_湿度分布图";
-					this.currentUrl = `${baseImgUrl}/${obj.r.HumidityUrl}?`+ new Date().valueOf();
-				} else if(obj.flag === 2&&obj.r.taskName) {
-					this.bigImgTitle = obj.r.taskName + "_温度分布图";
-					this.currentUrl = `${baseImgUrl}/${obj.r.imgUrl}?`+new Date().valueOf();
-				}
-				let _this = this;
-				this.$nextTick(() => {
-					_this.bigImgVisible = true;
-				})
-			},
-			create(row){
-				 
-				this.listLoading = true;
-				let params={
-					customId:row.customId,
-					robotId:row.robotId,
-					taskId:row.taskId,
-				}
-				let _this = this;
-				uploadThe(_this,params).then((res)=>{
-					 _this.listLoading = false;
-					 _this.getList();
-					 if(res.body.result==200){
-				       _this.$notify({
-							title: '成功',
-							message: '修改成功',
-							type: 'success'
-							});	
-				     }else{
-					   _this.$notify({
-							title: '失败',
-							message: res.message,
-							type: 'danger'
-						});	
-					}
-				})
-			},
-			changeSize(){
-				this.dialogSize=this.dialogSize==="small"?'full':'small';	 
-			}
-		},
-		mounted() {
-			this.getRooms();
-		}
-	}
+export default {
+  data() {
+    return {
+      filters: {
+        roomId: ""
+      },
+      total: 0,
+      page: 1,
+      size: 20,
+      rows: [],
+      listLoading: false,
+      bigImgVisible: false,
+      currentUrl: "",
+      bigImgTitle: "原始图",
+      dialogSize: "small"
+    };
+  },
+  computed:{
+     ...mapState(['rooms','robotId'])
+  },
+  methods: {
+    formatTime(r, c) {
+      return parseTime(r.startTime, "{y}-{m}-{d} {h}:{i}");
+    },
+    formatterStatus(row, column) {
+      let statu = row.warnStatus === 1 ? "异常" : "正常";
+      return statu;
+    },
+    handleCurrentChange(val) {
+      this.page = val;
+      this.getList();
+    },
+    handleSizeChange(size) {
+      this.page = 1;
+      this.size = size;
+      this.getList();
+    },
+    
+    getList() {
+      let para = {
+        page: this.page,
+        pageSize: this.size,
+        roomId: this.filters.roomId
+      };
+      this.listLoading = true;
+      NProgress.start();
+      let self = this;
+      getThermalResults(self, para).then(res => {
+        if (res.body.data && res.body.data.list) {
+          this.rows = res.body.data.list.map(item =>({...item,...item.thermalequilibrium,...item.roomInfo,...item.robotInfo}));
+          this.total = res.data.data.total;
+        } else {
+          this.total = 0;
+          this.rows = [];
+        }
+        this.listLoading = false;
+        NProgress.done();
+      });
+    },
+    showDetail(obj) {
+      this.dialogSize = "small";
+      if (obj.flag === 1 && obj.r.taskName) {
+        this.bigImgTitle = obj.r.taskName + "_湿度分布图";
+        this.currentUrl =
+          `${baseImgUrl}/${obj.r.HumidityUrl}?` + new Date().valueOf();
+      } else if (obj.flag === 2 && obj.r.taskName) {
+        this.bigImgTitle = obj.r.taskName + "_温度分布图";
+        this.currentUrl =
+          `${baseImgUrl}/${obj.r.imgUrl}?` + new Date().valueOf();
+      }
+      let _this = this;
+      this.$nextTick(() => {
+        _this.bigImgVisible = true;
+      });
+    },
+    create(row) {
+      this.listLoading = true;
+      let params = {
+        customId: row.customId,
+        robotId: row.robotId,
+        taskId: row.taskId
+      };
+      let _this = this;
+      uploadThe(_this, params).then(res => {
+        _this.listLoading = false;
+        _this.getList();
+        if (res.body.result == 200) {
+          _this.$notify({
+            title: "成功",
+            message: "修改成功",
+            type: "success"
+          });
+        } else {
+          _this.$notify({
+            title: "失败",
+            message: res.message,
+            type: "danger"
+          });
+        }
+      });
+    },
+    changeSize() {
+      this.dialogSize = this.dialogSize === "small" ? "full" : "small";
+    }
+  },
+  mounted() {
+	 this.filters.roomId = this.robotId.roomId;
+	 this.getList();
+  }
+};
 </script>
 
 <style>
-.darnger{
-  color:#f00;
+.darnger {
+  color: #f00;
 }
 </style>
