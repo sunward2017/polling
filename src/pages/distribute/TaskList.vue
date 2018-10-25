@@ -809,7 +809,7 @@ export default {
                 customId:_this.$store.state.user.customId,
                 nvPointName:_this.tempForm.nvPointName?_this.tempForm.nvPointName:'',
                 audioUrl:_this.tempForm.audioUrl,
-                command:_this.tempForm.cmd?'6':'5',
+                command:_this.tempForm.cmd?'2':'2',
                 robotId:_this.tempForm.robotId,
              }
              sendTempTask(_this,param).then(res=>{
