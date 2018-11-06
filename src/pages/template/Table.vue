@@ -309,7 +309,7 @@
 					devices: [],
 					total: 0,
 					page: 1,
-					size:20,
+					size:10,
 					listLoading: false,
 					listLoading1: false,
 					isShow:false,

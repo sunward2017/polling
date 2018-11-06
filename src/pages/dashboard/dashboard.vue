@@ -91,18 +91,15 @@
 					//customId: "43abe352a38d4addb500ffbd0bed7d85"
 					customId: this.$store.state.user.customId
 				};
-
 				getRoomIndex(_this, para).then(res => {
 					if(res.body.data && res.body.data.length > 0) {
-						let body = res.body.data.filter(item => {
-							if(item.roomId == _this.filters.roomId) {
-								return item;
-							}
-						});
-						this.setRobotId({
-							robotId: body[0].robotRealtimes[0].robotId,
-							roomId: body[0].roomId
-						});
+						let body = res.body.data.find(item =>(item.roomId===_this.filters.roomId));
+						if(body){
+							this.setRobotId({
+								robotId: body.robotRealtimes.length>0?body.robotRealtimes[0].robotId:'',
+								roomId: body.roomId
+							});
+						}
                         
 						this.Date = [];
 						this.avgHumidity = [];
@@ -112,11 +109,10 @@
 						this.maxTemperature = [];
 						this.minTemperature = [];
 						let humitureList =
-							body.length > 0 && body[0].humitureList ? body[0].humitureList : 0;
+							body&&body.humitureList ? body.humitureList : 0;
 						let robotInfo =
-							body.length > 0 && body[0].robotRealtimes[0] ?
-							body[0].robotRealtimes[0] : {};
-
+							body&& body.robotRealtimes[0] ?
+							body.robotRealtimes[0] : {};
 						this.robotName = robotInfo.robotName;
 						this.robotCoorX = robotInfo.robotX;
 						this.robotCoorY = robotInfo.robotY;

@@ -62,7 +62,7 @@
 			</template>
 			<!--分页-->
 			<el-col :span="24" class="toolbar" style="padding-bottom:10px;">
-				<el-pagination layout="prev, pager, next,total,sizes,jumper" @current-change="handleCurrentChange" :page-sizes="[10, 15, 30, 40]" :page-size="size" :current-page="page" :total="total" style="float:right;" @size-change="handleSizeChange">
+				<el-pagination layout="prev, pager, next,total,sizes,jumper" @current-change="handleCurrentChange" :page-sizes="[10, 20, 30, 40]" :page-size="size" :current-page="page" :total="total" style="float:right;" @size-change="handleSizeChange">
 				</el-pagination>
 			</el-col>
 		</div>
@@ -141,7 +141,7 @@
 						</el-table-column>
 						<el-table-column prop="deviceName" label="所在机柜" align="center">
 						</el-table-column>
-						<el-table-column prop="uDetails" label="所在U位" align="center">
+						<el-table-column prop="uDetails" label="所在U位" align="center" sortable>
 						</el-table-column>
 						<el-table-column prop="uNumber" label="所占U位数量" align="center">
 						</el-table-column>
@@ -172,8 +172,7 @@
 				<el-col :span='4' :offset='9'> 单个机柜识别详情</el-col>
 			</el-row>
 			<div class="toolbar" style="font-size:14px;">
-				<div>
-					<el-col :span="20">
+				 <div style="width:75%;float:left">
 						<div>
 							<el-col :span="8"><span class="d_title">机柜名称:</span><span class="d_content">{{jgField.deviceName}} </span></el-col>
 							<el-col :span="16"><span class="d_title">设备已用U位:</span><span class="d_content">{{jgField.usedUNumbers}}</span></el-col>
@@ -182,12 +181,11 @@
 							<el-col :span="8"><span class="d_title">已识别设备数量:</span><span class="d_content">{{jgField.detectedSeverNumber}}</span></el-col>
 							<el-col :span="16"><span class="d_title">剩余U位:</span><span class="d_content">{{jgField.remainingUNumbers}}</span></el-col>
 						</div>
-					</el-col>
-					<el-col :span="4">
+					</div>
+					<div style="width:25%;float:right;text-align:center;">
 						<el-button type="info" size="small" @click="showDetail(3)">设备全图</el-button>
-						<el-button type="primary" size="small" @click="showDetail(4)">识别全图</el-button>
-					</el-col>
-				</div>
+						<el-button type="warning" size="small" @click="showDetail(4)">识别全图</el-button>
+					</div>
 			</div>
 
 			<el-row style="margin-bottom:15px;">
@@ -306,7 +304,7 @@ export default {
       },
       total: 0,
       page: 1,
-      size: 15,
+      size: 10,
       rows: [],
       listLoading: false,
       routeType: "index",
@@ -531,11 +529,12 @@ export default {
           _this.bigImgVisible = true;
         });
       } else {
+        console.log(this.$refs.device_o)
         let hash = {};
         this.allImgs = [];
         this.jgRows.forEach(item => {
-          if (!hash[item.rfid]) {
-            hash[item.rfid] = true;
+          if (!hash[item.ip]) {
+            hash[item.ip] = true;
             this.allImgs.push({
               psTime: parseTime(item.timeStamp, "{y}-{m}-{d} {h}:{i}:{s}"),
               imgUrl: type === 3 ? item.fileUrl : item.detectResultUrl
@@ -577,7 +576,7 @@ export default {
 .back {
   padding-bottom: 20px;
   color: #3480f1;
-  cursor: pointer;
+  cursor: default;
 }
 
 .back:hover {

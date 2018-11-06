@@ -209,7 +209,7 @@
 				:data="para"
 				drag
 				:file-list="fileList"
-				action="/apis/v1/uploadFile.action"
+				:action="uploadFileUrl"
 				:before-upload ="handlePreview"
 				:on-success="handleSuccess"
 				:on-error="handleError"
@@ -296,6 +296,7 @@
 	import NavConfigList from 'components/navConfig';
 	import NavConfigForm from 'components/navConfig/NavConfigForm';
 	import { getCustoms } from 'api/admin';
+	import{ uploadFileUrl } from 'api/api';
 
 	export default {
 		components: {
@@ -321,7 +322,7 @@
 				rooms: [],
 				total: 0,
 				page: 1,
-				size: 20,
+				size: 10,
 				listLoading: false,
 				isShow: false,
 				customs: [],
@@ -352,6 +353,7 @@
 					fileId: '',
 					startPoint: '',
 				},
+				uploadFileUrl,
 				robots: [],
 				//edit
 				editLoading: false,
@@ -497,14 +499,14 @@
                   if(res.body.result===200){
 					 this.$notify.success({
 						title: '成功',
-						message: '文件上传成功',
+						message: '删除成功',
 						duration:2000,
 						offset: 300
 					}); 
 				  }else{
 					this.$notify.error({
 						title: '失败',
-						message: '文件上传失败',
+						message: '删除失败',
 						duration:2000,
 						offset: 300
 					});	  

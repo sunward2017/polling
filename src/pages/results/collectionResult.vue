@@ -80,7 +80,7 @@
 				},
 				total: 0,
 				page: 1,
-				size: 20,
+				size: 10,
 				rooms: [],
 				collections: [],
 				listLoading: false,

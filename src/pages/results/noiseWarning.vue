@@ -49,7 +49,7 @@
 		</template>
 		<!--分页-->
 		<el-col :span="24" class="toolbar" style="padding-bottom:10px;">
-			<el-pagination layout="prev, pager, next,total,sizes,jumper" @current-change="handleCurrentChange" :page-sizes="[10, 15, 30, 40]" :page-size="size" :current-page="page" :total="total" style="float:right;" @size-change="handleSizeChange">
+			<el-pagination layout="prev, pager, next,total,sizes,jumper" @current-change="handleCurrentChange" :page-sizes="[10, 20, 30, 40]" :page-size="size" :current-page="page" :total="total" style="float:right;" @size-change="handleSizeChange">
 			</el-pagination>
 		</el-col>
 	</section>
@@ -97,7 +97,7 @@
 				},
 				total: 0,
 				page: 1,
-				size: 15,
+				size: 10,
 				rooms: [],
 				rows: [],
 				listLoading: false,

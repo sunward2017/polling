@@ -46,7 +46,7 @@
     <el-dialog :title="bigImgTitle" v-model="bigImgVisible" style="text-align: center;" :size="dialogSize">
 			<img :src="currentUrl" alt="异常图片,无法识别" width="100%" @click="changeSize()" ref='img'/>
 		</el-dialog>
-    <el-dialog :title="videoTitle" v-model="videoVisible" style="text-align: center;">
+    <el-dialog :title="videoTitle" v-model="videoVisible" style="text-align: center;" :before-close="closeVideo">
 			  <video id="video_1" class="video-js vjs-default-skin" controls>
           <source :src="videoUrl" type="video/mp4">
            Your browser does not support the video tag.
@@ -76,6 +76,7 @@ export default {
       videoVisible:false,
       videoUrl:'',
       taskId:'',
+      player:null,
     };
   },
   methods: {
@@ -106,11 +107,20 @@ export default {
     changeSize(){
 			this.dialogSize=this.dialogSize==="small"?'full':'small'; 
     },
+    closeVideo(done){
+				 this.player.pause();
+				 done()
+		},
     play(url){
       this.videoUrl = url;
       this.videoVisible = true;
+      if(this.player){
+        this.player.src(url);
+        this.player.load(url);
+        return;
+      }
       this.$nextTick(()=>{
-          var player = videoJs('video_1',{
+           this.player = videoJs('video_1',{
               autoplay : true,
               loop : false,
               muted : false,
@@ -149,5 +159,9 @@ export default {
   text-align: center;
   line-height: 34px;
   font-size: 14px;
+}
+.video-js{
+  width:100%;
+  height:60vh; 
 }
 </style>

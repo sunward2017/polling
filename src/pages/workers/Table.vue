@@ -187,7 +187,7 @@
 					users: [],
 					total: 0,
 					page: 1,
-					size:20,
+					size:10,
 					isShow: false,
 					listLoading: false,
 					editFormVisible: false, //编辑界面显是否显示

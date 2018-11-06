@@ -23,3 +23,5 @@ export const saveCorrection = (self,params,msg) => {return self.$http.jsonp(base
 export const getHumitureList = (self,params) => {return self.$http.jsonp(baseUrl+"/getHumitureFileList.action",{ params:params,jsonp:'callback'})};
 
 export const restartRobot = (self,params) => {return self.$http.jsonp(baseUrl+'/rebootRobot.action',{ params:params , jsonp:"callback"})};
+
+export const hardwareRestart = (self,param) => { return self.$http.post("http://120.55.240.188:9501/SendCmd", param, { emulateJSON: true })};

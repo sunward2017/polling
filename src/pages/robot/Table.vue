@@ -66,8 +66,9 @@
                 <el-table-column label="操作" :width="editWidth" align='center'>
 					<template scope="scope" >
 						<el-button-group v-if="scope.row.customName">
-							<el-button size="small" icon="edit" @click="handleEdit(scope.row)">编辑</el-button>
-							<el-button size="small" icon="check" type="success" @click="restart(scope.row)">重启</el-button>
+							<el-button size="small"  @click="handleEdit(scope.row)">编辑</el-button>
+							<el-button size="small" type="success" @click="restart(scope.row)">软件重启</el-button>
+							<el-button size="small"  type="info" @click="hardwareRestart(scope.row)">硬件重启</el-button>
 							<el-button  size="small" type="warning" icon="setting" @click="handleInt(scope.row)" v-if="isShow" :loading="scope.row.edit">{{scope.row.edit?'恢复中...':'初始化'}}</el-button>
 						</el-button-group>
 						<el-button-group v-else>
@@ -133,7 +134,7 @@
 	// import util from '../../common/util'
 	import NProgress from 'nprogress'
 	import { robotStatusForObj, realtimeStatus, realTimeTypes, robotCls } from '@/const';
-	import { getRobotList, getRobotDetail, editRobot, resetRobot, getCorrection, saveCorrection, restartRobot } from 'api/robot';
+	import { getRobotList, getRobotDetail, editRobot, resetRobot, getCorrection, saveCorrection, restartRobot ,hardwareRestart} from 'api/robot';
 	import { getRoomList } from 'api/room';
 	import Log from 'components/runLog';
 	import Humiture from 'components/Humiture';
@@ -165,7 +166,7 @@
 				setWidth: '',
 				total: 0,
 				page: 1,
-				size: 20,
+				size: 10,
 				isAll: false,
 				isShow: false,
 				columns: robotCls,
@@ -227,6 +228,25 @@
 			}
 		},
 		methods: {
+			hardwareRestart(row){
+			   let _this = this,para = {dev_id:row.robotSerial,cmd:"robotreset"};
+			   hardwareRestart(_this,para).then(res=>{
+				   if(res.body.result == 200) {
+						this.$notify({
+							title: '成功',
+							message:"重启成功",
+							type: 'success'
+						});
+					} else {
+						this.$notify({
+							title: '失败',
+							message: res.body.message,
+							type: 'error'
+						});
+					}  
+			   })
+
+			},
 			//显示转换
 			formatStatus: function(row, column) {
 				return robotStatusForObj[row.status];
@@ -532,7 +552,7 @@
 				this.isShow = true;
 				this.getCustoms();
 			}
-			this.editWidth = this.isShow ? 260 : 180;
+			this.editWidth = this.isShow ? 360 : 280;
 			this.setWidth = this.isShow ? 220 : 180;
 			this.getList();
 		}

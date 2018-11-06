@@ -89,7 +89,7 @@ export default {
       },
       total: 0,
       page: 1,
-      size: 20,
+      size: 10,
       rows: [],
       listLoading: false,
       bigImgVisible: false,

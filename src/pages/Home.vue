@@ -36,7 +36,7 @@
 			<section class="panel-c-c" :style="{marginLeft:isCollapse?'64px':'200px'}">
 				<div :class="isDashboard?'bg-purple-light':''">
 					<el-col :span="24" class="breadcrumb" v-if="isDashboard">
-            <i :class="isCollapse?'el-icon-d-arrow-right':'el-icon-d-arrow-left'" @click="isCollapse=!isCollapse"></i>
+            <i :class="isCollapse?'el-icon-d-arrow-right':'el-icon-d-arrow-left'" @click="isCollapse=!isCollapse" style="cursor:default"></i>
 						<strong style="width:200px;color: #fff;">&emsp;{{currentPathName}}</strong>
 						<el-breadcrumb separator="/" style="float:right;">
 							<el-breadcrumb-item :to="{ path:'/dashboard' }">首页</el-breadcrumb-item>
@@ -64,6 +64,7 @@ import {
   requestFullScreen,
   exitFullscreen
 } from 'utils'
+import { mapActions } from 'vuex'
 export default {
   data() {
     return {
@@ -100,6 +101,7 @@ export default {
     this.user = this.$store.state.user.account;
   },
   methods: {
+    ...mapActions(['setRooms','setRobotId']),
     handleSwitchScreen () {
       if (this.isFullScreen) {
         exitFullscreen()
@@ -116,7 +118,9 @@ export default {
         //type: 'warning'
       })
         .then(() => {
-          _this.$router.replace("/login");
+          this.$router.replace("/login");
+          this.setRooms('');
+          this.setRobotId('');
         })
         .catch(() => {});
     }

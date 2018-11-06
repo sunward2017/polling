@@ -33,6 +33,7 @@ const NoiseWarning = r => require.ensure([], () => r(require('./pages/results/no
 const Thermal = r => require.ensure([], () => r(require('./pages/results/Thermal.vue')), 'Thermal');
 const PhotoReport = r => require.ensure([], () => r(require('./pages/results/photoReport.vue')), 'PhotoReport');
 const Source = r => require.ensure([], () => r(require('./pages/results/sourceRec.vue')), 'Source');
+const taskVideos = r => require.ensure([], () => r(require('./pages/results/taskVideos.vue')), 'taskVideo');
 
 const HistoryVideo = r => require.ensure([], () => r(require('./pages/supervision/historyVideo.vue')), 'HistoryVideo');
 const Supervision = r => require.ensure([], () => r(require('./pages/supervision/supervision.vue')), 'Supervision');
@@ -42,6 +43,7 @@ const TaskList = r => require.ensure([], () => r(require('./pages/distribute/Tas
 const TaskDetail = r => require.ensure([], () => r(require('./pages/distribute/TaskDetail.vue')), 'TaskDetail');
 const TaskTemplate = r => require.ensure([], () => r(require('./pages/distribute/TaskTemplate.vue')), 'TaskTemplate');
 const WorkerDetail = r => require.ensure([], () => r(require('./pages/distribute/WorkerDetail.vue')), 'WorkerDetail');
+const tempTask =  r => require.ensure([], () => r(require('./pages/distribute/TempTask.vue')), 'tempTask');
 
 const Dashboard = r => require.ensure([], () => r(require('./pages/dashboard/dashboard.vue')), 'Dashboard');
 const Site = r => require.ensure([], () => r(require('./pages/results/site.vue')), 'site');
@@ -94,11 +96,16 @@ const routes = [{
 			path: '/photoReport',
 			component: PhotoReport,
 			name: '巡检照片'
+		},{
+			path:'/taskVideos',
+			component:taskVideos,
+			name:'巡检视频'
 		},
 		{
 			path: '/Collection',
 			component: CollectionResult,
 			name: '图像识别',
+			hidden:true,
 		},
 		 {
 			path: '/thermalResult',
@@ -116,7 +123,7 @@ const routes = [{
 			path: '/smokeWarning',
 			component: SmokeWarning,
 			name: '异味检测',
-			hidden: true
+			hidden: false
 
 		}, {
 			path: '/noiseWarning',
@@ -142,6 +149,10 @@ const routes = [{
 		component: TaskList,
 		name: '任务计划'
 	}, {
+		path:'tempTask',
+		component:tempTask,
+		name:'临时任务'
+	},{
 		path: 'taskDetail',
 		component: TaskDetail,
 		name: '任务查看'

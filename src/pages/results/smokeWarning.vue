@@ -133,22 +133,7 @@
 				this.size = size;
 				this.getList();
 			},
-			getRooms() {
-				let para = {
-					page: 0,
-					roomstatus: 1,
-					pageSize: 0
-				};
-				let self = this;
-				getRoomList(self, para).then((res) => {
-					if(res.data.data) {
-						this.rooms = res.body.data.rows;
-						this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
-						this.getList();
-					}
-
-				})
-			},
+		 
 			getList() {
 				if(!this.filters.timeStamp[0]||!this.filters.timeStamp[1]) return; 
 			    let	startTime=parseTime(this.filters.timeStamp[0], '{y}-{m}-{d} {h}:{i}:{s}');
@@ -168,10 +153,11 @@
 				NProgress.start();
 				let self = this;
 				var img = new Image();
-					img.src = `/upload/${this.filters.roomId}_base.png`;
-					this.initial.x = img.width;
-					this.initial.y = img.height;
-					
+					img.src = `/upload/${this.filters.roomId}_base.png`; 
+					img.onload=function(){
+					   self.initial.x = img.width;
+					   self.initial.y = img.height;
+					}
 				getSmokeWarning(self, para).then((res) => {
 						if(res.data.data&& res.data.data.list.length > 0) {
 							this.rows = res.data.data.list.map(item=>{
@@ -202,7 +188,9 @@
 			}
 		},
 		mounted() {
-			this.getRooms();
+		   this.rooms = this.$store.state.rooms;
+		   this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
+		   this.getList();
 		}
 	}
 </script>

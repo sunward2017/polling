@@ -136,7 +136,7 @@
             </el-option>
 				  </el-select>
 				</el-form-item>
-        <template v-if="workerForm.commandType==='1'||workerForm.commandType==='2'">
+        <template v-if="workerForm.commandType==='1'||workerForm.commandType==='2'||workerForm.commandType==='4'">
           <el-form-item label="升降高度" prop="neckHeight" class="form_col" >
               <el-input v-model="workerForm.neckHeight" placeholder="请输入升降高度（单位mm）"></el-input>
           </el-form-item>
@@ -146,7 +146,7 @@
           <el-form-item label="头部仰角" prop="elevation" class="form_col">
               <el-input v-model="workerForm.elevation" placeholder="请输入头部仰角"></el-input>
           </el-form-item>
-          <el-form-item label="检测仪器" prop="cameraId" class="form_col" v-if="workerForm.commandType==='1'" required>
+          <el-form-item label="检测仪器" prop="cameraId" class="form_col" v-if="workerForm.commandType==='1'||workerForm.commandType==='4'" required>
               <el-select v-model="workerForm.cameraId" placeholder="检测仪器选择" style="width:100%">
               <el-option
                 v-for="item in cameras"
@@ -172,7 +172,7 @@
                 <el-radio-button label="0">关闭</el-radio-button>
               </el-radio-group>
            </el-form-item>
-           <el-form-item v-if="workerForm.needDetect==1" prop="detectSettingId"  label='标签模板' class="form_col" :rules="{required:true,message:'不可为空',trigger:'change'}">
+           <el-form-item v-if="workerForm.commandType==='1'&&workerForm.needDetect==1" prop="detectSettingId"  label='标签模板' class="form_col" :rules="{required:true,message:'不可为空',trigger:'change'}">
                <el-select v-model="workerForm.detectSettingId">
                    <el-option
                       v-for="item in tpls"
@@ -183,8 +183,8 @@
                </el-select>
            </el-form-item>
         </template>
-        <template v-else-if="workerForm.commandType==='3'||workerForm.commandType==='4'||workerForm.commandType==='7'">
-          <el-form-item label="持续时长" prop="waitTime" class="form_col">
+        <template v-if="workerForm.commandType==='3'||workerForm.commandType==='4'||workerForm.commandType==='7'">
+          <el-form-item label="持续时长" prop="waitTime" class="form_col" required>
             <el-input v-model="workerForm.waitTime" placeholder="请输入时长（秒）">mm</el-input> 
           </el-form-item>
         </template> 
@@ -315,11 +315,16 @@ export default {
 						message: '指令类型不可为空',
 						trigger: 'change'
           }],
+          cameraId:[{
+            required:true,
+            message:'请选择摄像头',
+            trigger: 'change'
+          }],
           neckHeight:[{  required: true,validator: checkNum,	trigger: 'blur'}],
           levelAngle:[{  required: true,validator: checkNum,	trigger: 'blur'}],
           elevation:[{   required: true,validator: checkNum,	trigger: 'blur'}],
           cameraZoom:[{  required: true,validator: checkNum,	trigger: 'blur'}],
-          // waitTime:[{  required: true,validator: checkNum,	trigger: 'blur'}],
+          waitTime:[{  required: true,validator: checkNum,	trigger: 'blur'}],
       },
       areaSubmitLoading:false,
       stagSubmitLoading:false,

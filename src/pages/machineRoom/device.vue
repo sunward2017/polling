@@ -9,7 +9,7 @@
 					</el-select>
 				</el-form-item>
         <el-form-item>
-           <el-input v-model="filters.deviceName"></el-input>
+           <el-input v-model="filters.deviceName" placeholder="请输入设备名称"></el-input>
         </el-form-item>
 				<el-form-item>
           <el-button class="filter-item" icon="search" type="primary" @click="getDevList">查询</el-button>

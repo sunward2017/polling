@@ -21,37 +21,36 @@
 				<el-form-item>
 					<el-button  type="primary" @click="handlerAdd">制定计划</el-button>
 				</el-form-item>
-        <el-form-item>
-					<el-button  type="primary" @click="tempTask">语音播报</el-button>
-				</el-form-item>
+         
 			</el-form>
 		</el-col>
 		<template>
 			<el-table :data="rows" highlight-current-row v-loading="listLoading">
 				<el-table-column type="index" width="60" label="#" align="center">
 				</el-table-column>
-				<el-table-column prop="roomId" label="巡检机房" width="160" :formatter="formatterRoom">
+				<el-table-column prop="roomId" label="巡检机房" align="center" width="180" :formatter="formatterRoom">
 				</el-table-column>
-				<el-table-column prop="taskName" label="任务名称" align="center" min-width="180">
+				<el-table-column prop="taskName" label="任务名称" align="center" width="160">
 				</el-table-column>
 				<el-table-column prop="status" label="计划状态" align="center" width="100">
 					<template scope="scope">
 						<el-tag type="success">{{formatStatus(scope.row)}}</el-tag>
 					</template>
 				</el-table-column>
-				<el-table-column prop="robotId" label="巡检机器人"  align="center" :formatter="formatterRobot">
+				<el-table-column prop="robotId" label="巡检机器人"  min-width="200" align="center" :formatter="formatterRobot">
 				</el-table-column>
 				<!-- <el-table-column  label="避开时间区间" width="340" align="center" :formatter="formatTimeSction">
 				</el-table-column>
 				<el-table-column prop="prohibitedAreaId" label="避开巷道" width="240" align="center" sortable :formatter="formatArea">
 				</el-table-column> -->
-				<el-table-column prop="active" label="任务状态" width="180">
+				
+        <el-table-column prop="taskTimes" width="260" label="巡检时间" align="center">
+        </el-table-column>
+        <el-table-column prop="active" label="任务状态" width="100">
 					<template scope="scope">
 						<el-tag :type="scope.row.active?'success':'danger'">{{scope.row.active?" 可执行 ":"已挂起 "}}</el-tag>
 					</template>
 				</el-table-column>
-        <el-table-column prop="createTime" label="创建时间" :formatter="formatTime" align="center">
-        </el-table-column>
 				<el-table-column  label="操作" align="center" width="300">
 					<template scope="scope">
 						<el-button type="darnge" icon="edit" size="small" @click="handleDetail(scope.row)">编辑</el-button>
@@ -151,7 +150,7 @@
         <el-row :gutter="16">
             <el-col :span="3">
                <div class="sign">机房巷道</div>
-               <el-tree :data="areaData" :props="defaultProps" @node-click="handleNodeClick" style="min-height:40vh" default-expand-all></el-tree>
+               <el-tree :data="areaData" :props="defaultProps" highlight-current @node-click="handleNodeClick" style="min-height:40vh" default-expand-all></el-tree>
             </el-col>
             <el-col :span="11">
                <div class="sign">导航点指令</div>
@@ -234,42 +233,7 @@
             <el-button type="primary" @click="selectCmd" size="small">确定</el-button>
          </div>
     </el-dialog>
-    <!-- 临时任务 --> 
-    <el-dialog title="临时任务" v-model="tempVisible" :close-on-click-modal="false" size="mini">
-			<el-form :model="tempForm" label-width="100px" :rules="tempRules" ref="tempForm">
-        <el-form-item prop="robotId" label="机器人">
-					<el-select style="width:350px" v-model="tempForm.robotId"  placeholder="请选择机器人">
-						<el-option v-for="item in robots" :key="item.roomId" :label="item.robotName" :value="item.robotId">
-						</el-option>
-					</el-select>
-				</el-form-item>
-        <el-form-item  label="机房巷道" >
-				    <el-select style="width:100%" v-model="tempForm.areaId"  placeholder="请选择巷道" @change="changeArea">
-              <el-option v-for="item in areasByRoom" :key="item.areaId" :label="item.areaName" :value="item.areaId">
-              </el-option>
-            </el-select>
-				</el-form-item>
-				<el-form-item label="导航点">
-				    <el-select style="width:100%" v-model="tempForm.nvPointName"  placeholder="请选择导航点"  :disabled="tempForm.areaId==='none'">
-              <el-option v-for="item in navPointsByArea" :key="item.nvPointId" :label="item.nvPointName" :value="item.nvPointName">
-              </el-option>
-            </el-select>
-				</el-form-item>
-        <el-form-item prop="audioUrl" label="音频文件">
-				    <el-select style="width:100%" v-model="tempForm.audioUrl">
-              <el-option v-for="item in audios" :key="item.fileId" :label="item.fileName" :value="item.fileUrl">
-              </el-option>
-            </el-select>
-				</el-form-item>
-        <el-form-item label="指令">
-             <i :class="cmd?'fa fa-pause cmd':'fa fa-play cmd'" @click="cmd=!cmd"></i><el-progress style="width:90%;float:right;margin-top:7px;"  :stroke-width="6" :percentage="70"></el-progress>
-        </el-form-item>
-      </el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="tempVisible = false">取 消</el-button>
-        <el-button type="primary" @click="sendTempTask">确 定</el-button>
-      </span>
-    </el-dialog>
+    
 	</section>
 </template>
 
@@ -381,33 +345,15 @@ export default {
       },
       total: 0,
 			page: 1,
-			size:20,
+			size:10,
       areaData:[],
       cmdLoading:false,
       defaultProps: {
         children: 'children',
         label: 'areaName'
       },
-      tempVisible:false,
-      robots:[],
-      audios:[],
-      areasByRoom:[],
-      navPointsByArea:[],
-      tempForm:{
-        robotId:'',
-        nvPointName:'',
-        audioUrl:'',
-      },
-      cmd:false,
-      tempRules:{
-        robotId: [
-            { required: true, message: '请选择机器人', trigger: 'change' }
-          ],
-        audioUrl: [
-          { required: true, message: '请选择播放文件', trigger: 'blur' }
-        ],
-         
-      }
+     
+      
     };
   },
   methods: {
@@ -444,7 +390,7 @@ export default {
       let self = this;
       getTaskList(self, para).then(res => {
         if (res.data.data) {
-          this.rows = res.data.data?res.data.data.list:[];
+          this.rows = res.data.data?res.data.data.list.filter(i=>(i.type!==2)):[];
           this.total= res.data.data.total
         } else {
           this.rows = [];
@@ -766,65 +712,6 @@ export default {
     },
     formatTime(r){
        return parseTime(r.createTime)
-    },
-    changeArea(areaId){
-       this.navPointsByArea=[];
-       this.tempForm.nvPointName = '';
-      if(areaId!=="none"){
-         let _this = this; 
-         stagList(_this,{areaId}).then(res=>{
-            this.navPointsByArea= res.data.data?res.data.data:[];
-         })
-      }   
-    },
-    tempTask(){
-      let _this = this;
-       this.tempForm={
-        robotId:'',
-        nvPointName:'',
-        audioUrl:'',
-        command:'6'
-      },
-      this.robots = this.rooms.find(i=>(i.roomId===_this.filters.roomId)).robotList;
-       getAudiosByRoom(_this,{roomId:this.filters.roomId,taskType:'4'}).then(res=>{
-          if(res.body.result==200){
-            this.audios = res.body.data?res.body.data:[];
-            this.tempVisible = true;
-          }
-       })
-      roadwayList(_this, {
-        customerId: _this.$store.state.user.customId
-      }).then(res => {
-         if(res.body.data){
-            this.areasByRoom= res.body.data.find(i=>(i.roomId===_this.filters.roomId)).rbAreaInfoList;
-            this.areasByRoom.unshift({areaName:'空',areaId:'none'})
-         }
-      })
-    },
-    sendTempTask(){
-      let _this = this;
-       this.$refs.tempForm.validate(valid=>{
-          if(valid){
-             let param={
-                customId:_this.$store.state.user.customId,
-                nvPointName:_this.tempForm.nvPointName?_this.tempForm.nvPointName:'',
-                audioUrl:_this.tempForm.audioUrl,
-                command:_this.tempForm.cmd?'2':'2',
-                robotId:_this.tempForm.robotId,
-             }
-             sendTempTask(_this,param).then(res=>{
-                 if(res.body.result===200){
-                      _this.$message({
-                        message: '临时任务下发成功',
-                        type: 'success'
-                      });
-                 }else{
-                     this.$message.error("临时任务下发失败");
-                 }
-                 this.tempVisible =false;
-             })
-          }
-       })
     },
     removeDomain(item) {
       var index = this.editForm.domains.indexOf(item);

@@ -133,7 +133,7 @@
 					warnData: [],
 					total: 0,
 					page: 1,
-					size:20,
+					size:10,
 					listLoading: false,
 					editFormVisible: false, //编辑界面显是否显示
 					editFormTtile: '编辑', //编辑界面标题

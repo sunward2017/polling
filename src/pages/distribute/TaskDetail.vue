@@ -37,20 +37,20 @@
 				</el-table-column>
 				<el-table-column prop="roomId" label="巡检机房" width="160" :formatter="formatterRoom">
 				</el-table-column>
-				<el-table-column prop="taskName" label="任务名称" align="center" min-width="200">
+				<el-table-column prop="taskName" label="任务名称" align="center" width="200">
 				</el-table-column>
 				<el-table-column prop="status" label="执行状态" align="center" width="120">
 					<template scope="scope">
 						<el-tag :type="cmdStatus[+scope.row.taskStatus+1+'']">{{formatStatus(scope.row)}}</el-tag>
 					</template>
 				</el-table-column>
-				<el-table-column prop="robotId" label="巡检机器人" align="center" :formatter="formatterRobot" width="200">
+				<el-table-column prop="robotId" label="巡检机器人" align="center" :formatter="formatterRobot" min-width="200">
 				</el-table-column>
 				<!-- <el-table-column prop="startTime" label="开始时间"  width="200"  align="center" sortable :formatter="formatTimeSction">
 				</el-table-column> -->
 				<el-table-column prop="creatTime"  label="开始时间" min-width="200" align="center" :formatter="formatCTime">
 				</el-table-column>
-        <el-table-column prop="active" label="任务状态">
+        <el-table-column prop="active" label="任务状态" align="center" width="100">
 					<template scope="scope">
 						<el-tag :type="scope.row.active?'success':'danger'">{{scope.row.active?" 可执行 ":" 挂起 "}}</el-tag>
 					</template>
@@ -286,7 +286,7 @@ export default {
       let self = this;
       currentTask(self, para).then(res => {
         if (res.data.data) {
-          this.rows = res.data.data?res.data.data.list:[];
+          this.rows = res.data.data?res.data.data.list.filter(i=>(i.taskType!==2)):[];
           this.total = res.data.data.total
         } else {
           this.rows = [];
