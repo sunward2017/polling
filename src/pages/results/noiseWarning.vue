@@ -142,7 +142,7 @@
 				getRoomList(self, para).then((res) => {
 					if(res.data.data) {
 						this.rooms = res.body.data.rows;
-						this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
+						this.filters.roomId = this.$store.state.room;
 						this.getList();
 					}
 

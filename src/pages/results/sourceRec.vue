@@ -33,7 +33,7 @@
 					<span class="d_title">需要识别的机柜总数:</span><span class="d_content">{{cabinetTotal}}</span>
 				</el-col>
 				<el-col :span="4"  style="min-width:200px;">
-					<span class="d_title">单个机柜总U位数:</span><span class="d_content">{{47}}</span>
+					<span class="d_title">单个机柜总U位数:</span><span class="d_content">{{48}}</span>
 				</el-col>
 			</el-row>
 			<!--机柜-->
@@ -77,30 +77,35 @@
 			</el-row>
 			<div class="toolbar" style="font-size:14px;">
 				<el-row class="list_item">
-					<el-col :span="8"><span class="d_title">机房:</span><span class="d_content">{{rooms.find(i=>(i.roomId===filters.roomId)).roomName}}</span></el-col>
+					<el-col :span="6"><span class="d_title">巡检机房:&emsp;&emsp;&emsp;</span><span class="d_content">{{rooms.find(i=>(i.roomId===filters.roomId)).roomName}}</span></el-col>
+					<el-col :span="8"><span class="d_title">任务名称:&emsp;&emsp;</span><span class="d_content">{{detail.taskName}}</span></el-col>
+					<el-col :span="10"><span class="d_title">巡检时间:;&emsp;</span><span class="d_content">{{detail.timeField}}</span></el-col>
 				</el-row>
 				<el-row class="list_item">
-					<el-col :span="6"><span class="d_title">需要识别的机柜数:</span><span class="d_content">{{detail.totalDevices}}</span></el-col>
-					<el-col :span="8"><span class="d_title">巡检时间:</span><span class="d_content">{{detail.timeField}}</span></el-col>
-					<el-col :span="5"><span class="d_title">已识别机柜数:</span><span class="d_content">{{detail.recognizedDevices}}</span></el-col>
-					<el-col :span="5"><span class="d_title">设备已用U位:</span><span class="d_content">{{detail.usedUNumbers}}</span></el-col>
+					<el-col :span="6"><span class="d_title">计划识别机柜数:</span><span class="d_content">{{detail.totalDevices}} </span></el-col>
+					<el-col :span="8"><span class="d_title">已识别机柜数:</span><span class="d_content">{{detail.recognizedDevices}}</span></el-col>
+				  <el-col :span="5"><span class="d_title">空机柜数:&emsp;</span><span class="d_content">{{detail.nullDevices}} </span></el-col>
+          <el-col :span="5"><span class="d_title">已用U位:</span><span class="d_content">{{detail.usedUNumbers}}</span></el-col>
 				</el-row>
-				<el-row class="list_item">
-					<el-col :span="6"><span class="d_title">单个机柜U位数:</span><span class="d_content">{{47}} </span></el-col>
-					<el-col :span="8"><span class="d_title">巡检任务名称:</span><span class="d_content">{{detail.taskName}} </span></el-col>
-					<el-col :span="5"><span class="d_title">已识别设备数量:</span><span class="d_content">{{detail.serverNumbers}}</span></el-col>
+        <el-row class="list_item">
+          <el-col :span="6"><span class="d_title">未识别机柜数:&emsp;</span><span class="d_content">{{detail.totalDevices-detail.recognizedDevices}}</span></el-col>
+					<el-col :span="8"><span class="d_title">已识别设备数:</span><span class="d_content">{{detail.serverNumbers}} </span></el-col>
+          <el-col :span="5"><span class="d_title">非空机柜数:</span><span class="d_content">{{detail.notNullDevices}}</span></el-col>
 					<el-col :span="5"><span class="d_title">剩余U位:</span><span class="d_content">{{detail.remainingUNumbers}}</span></el-col>
 				</el-row>
 			</div>
 			<el-tabs v-model="activeName" type="border-card" @tab-click="changeTab()">
 				<el-tab-pane label="按机柜查看" name="first">
-					<el-row style="margin-bottom:15px;">
-						<el-col :span='5' :offset="17">
-							<el-input placeholder="请输入机柜名称" v-model="cabinetName"></el-input>
-						</el-col>
-					  <el-col :span="2" style="text-align: center;">
-							<el-button type="primary" v-on:click="getCabinet()">查询</el-button>
-						</el-col>
+					<el-row style="margin:0 30px 15px 0;text-align:right;">
+							<el-select v-model="devFlag" placeholder="请选择">
+                <el-option   label="全部"   value="0"></el-option>
+                <el-option   label="空机柜(设备数=0)"   value="2"></el-option>
+                <el-option   label="非空机柜(设备数>0)"   value="3"></el-option>
+              </el-select>
+              &emsp;
+              <el-input v-model="cabinetName" placeholder="请输入机柜名称" style="width:200px;" clearable></el-input>
+              &emsp;
+							<el-button type="primary" icon="search" v-on:click="getCabinet()">查询</el-button>
 					</el-row>
 					<el-table :data="detailCabinetRows" highlight-current-row v-loading="cabinetListLoading" style="width: 100%">
 						<el-table-column type="index" width="80" label="序号" align="center">
@@ -119,20 +124,24 @@
 							</template>
 						</el-table-column>
 					</el-table>
-
+          	<!--分页-->
+          <el-col :span="24" class="toolbar" style="padding-bottom:10px;">
+            <el-pagination layout="prev, pager, next,total,sizes,jumper" @current-change="handleCabinetChange" :page-sizes="[10, 20, 30, 40]" :page-size="c_size" :current-page="c_page" :total="c_total" style="float:right;" @size-change="handleCabinetSizeChange">
+            </el-pagination>
+          </el-col>
 				</el-tab-pane>
 				<!--设备详情-->
 				<el-tab-pane label="按设备查看" name="second">
 					<el-row style="margin-bottom:15px;">
 						<el-col :span='5' :offset="12">
-							<el-input placeholder="设备ip" v-model="ip" style="width:90%"></el-input>
+							<el-input placeholder="设备ip" v-model="ip" style="width:90%" clearable></el-input>
 						</el-col>
 
 						<el-col :span='5'>
-							<el-input placeholder="请输入机柜名称" v-model="devCabinet"></el-input>
+							<el-input placeholder="请输入机柜名称" v-model="devCabinet" clearable></el-input>
 						</el-col>
 						<el-col :span="2" style="text-align: center;">
-							<el-button type="primary" v-on:click="getDevCabinet()">查询</el-button>
+							<el-button type="primary" v-on:click="getDevCabinet">查询</el-button>
 						</el-col>
 					</el-row>
 
@@ -147,19 +156,22 @@
 						</el-table-column>
 						<el-table-column label="原始图" align="center" width="180">
 							<template scope="scope">
-								<el-button v-if="scope.row.fileUrl" type="info" @click="showDetail(1,scope.row)" size="small">原始图</el-button>
+								<el-button v-if="scope.row.fileUrls.length>0" type="text" @click="showDetail(1,scope.row)" size="small">原始图</el-button>
 							</template>
 						</el-table-column>
 						<el-table-column label="识别图" align="center" width="180">
 							<template scope="scope">
-								<el-button v-if="scope.row.detectResultUrl" type="primary" @click="showDetail(2,scope.row)" size="small">
+								<el-button v-if="scope.row.detectResultUrls.length>0" type="text" @click="showDetail(2,scope.row)" size="small">
 									识别图
 								</el-button>
 							</template>
 						</el-table-column>
 
 					</el-table>
-
+        <el-col :span="24" class="toolbar" style="padding-bottom:10px;">
+            <el-pagination layout="prev, pager, next,total,sizes,jumper" @current-change="handleDevChange" :page-sizes="[10, 20, 30, 40]" :page-size="d_size" :current-page="d_page" :total="d_total" style="float:right;" @size-change="handleDevSizeChange">
+            </el-pagination>
+        </el-col>
 				</el-tab-pane>
 			</el-tabs>
 		</div>
@@ -174,12 +186,12 @@
 			<div class="toolbar" style="font-size:14px;">
 				 <div style="width:75%;float:left">
 						<div>
-							<el-col :span="8"><span class="d_title">机柜名称:</span><span class="d_content">{{jgField.deviceName}} </span></el-col>
+							<el-col :span="8"><span class="d_title">机柜名称:&emsp;&emsp;&emsp;</span><span class="d_content">{{jgField.deviceName}} </span></el-col>
 							<el-col :span="16"><span class="d_title">设备已用U位:</span><span class="d_content">{{jgField.usedUNumbers}}</span></el-col>
 						</div>
 						<div>
 							<el-col :span="8"><span class="d_title">已识别设备数量:</span><span class="d_content">{{jgField.detectedSeverNumber}}</span></el-col>
-							<el-col :span="16"><span class="d_title">剩余U位:</span><span class="d_content">{{jgField.remainingUNumbers}}</span></el-col>
+							<el-col :span="16"><span class="d_title">剩余U位:&emsp;&emsp;</span><span class="d_content">{{jgField.remainingUNumbers}}</span></el-col>
 						</div>
 					</div>
 					<div style="width:25%;float:right;text-align:center;">
@@ -190,13 +202,13 @@
 
 			<el-row style="margin-bottom:15px;">
 				<el-col :span='5' :offset="12">
-					<el-input placeholder="请输入设备IP" v-model="ip" style="width:90%"></el-input>
+					<el-input placeholder="请输入设备IP" v-model="ip" style="width:90%" clearable></el-input>
 				</el-col>
 				<el-col :span="5">
-					<el-input placeholder="请输入U位" v-model="uDetails"></el-input>
+					<el-input placeholder="请输入U位" v-model="uDetails" clearable></el-input>
 				</el-col>
 				<el-col :span="2" style="text-align: center;">
-					<el-button type="primary" @click="getDevCabinet()" v-loading="devLoading">查询</el-button>
+					<el-button type="primary" @click="getDevCabinet" v-loading="devLoading">查询</el-button>
 				</el-col>
 			</el-row>
 			<el-table :data="jgRows" highlight-current-row v-loading="devLoading" style="width: 100%;">
@@ -205,23 +217,26 @@
 				<el-table-column prop="ip" label="已识别设备IP" align="center">
 				</el-table-column>
 				<el-table-column prop="uDetails" label="所在U位" align="center">
-
 				</el-table-column>
 				<el-table-column prop="uNumber" label="所占U位数量" align="center">
 				</el-table-column>
 				<el-table-column label="原始图" align="center" width="180">
 					<template scope="scope">
-						<el-button v-if="scope.row.fileUrl" type="text" @click="showDetail(1,scope.row)" size="small">原始图</el-button>
+						<el-button v-if="scope.row.fileUrls.length>0" type="text" @click="showDetail(1,scope.row)" size="small">原始图</el-button>
 					</template>
 				</el-table-column>
 				<el-table-column label="识别图" align="center" width="180">
 					<template scope="scope">
-						<el-button v-if="scope.row.detectResultUrl" type="text" @click="showDetail(2,scope.row)" size="small">
+						<el-button v-if="scope.row.detectResultUrls.length>0" type="text" @click="showDetail(2,scope.row)" size="small">
 							识别图
 						</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
+      <el-col :span="24" class="toolbar" style="padding-bottom:10px;">
+          <el-pagination layout="prev, pager, next,total,sizes,jumper" @current-change="handleDevChange" :page-sizes="[10, 20, 30, 40]" :page-size="d_size" :current-page="d_page" :total="d_total" style="float:right;" @size-change="handleDevSizeChange">
+          </el-pagination>
+      </el-col>
 		</div>
 		<el-dialog :title="bigImgTitle" v-model="bigImgVisible" style="text-align: center;" :size="dialogSize">
 			<el-row :gutter="20">
@@ -236,7 +251,9 @@
 				<el-col :span="5">拍摄时间：</el-col>
 				<el-col :span="19">{{jgDetail.time}}</el-col>
 			</el-row>
-			<img :src="currentUrl" alt="异常图片,无法识别" width="100%" />
+      <template v-for="(item,index) in currentUrls">
+			   <img :src="baseImgUrl+item" alt="异常图片,无法识别" width="100%"  :key="index"/>
+      </template>
 		</el-dialog>
 		<el-dialog v-model="allVisible" style="text-align: center;" :size="dialogSize" :title="`机柜 : ${jgField.deviceName}`">
 			<div v-for='(item,index) in allImgs' :key="index">
@@ -244,7 +261,7 @@
 					<el-col :span='24'>拍摄时间:{{item.psTime}}</el-col>
 				</el-row>
 				<el-row>
-					<img :src="item.imgUrl" alt="异常图片,无法识别" width="100%" />
+					<img :src="baseImgUrl+item" alt="异常图片,无法识别" width="100%" />
 				</el-row>
 			</div>
 		</el-dialog>
@@ -312,23 +329,30 @@ export default {
       dialogSize: "small",
       cabinetTotal: 0,
       detail: {},
+      c_total: 0,
+      c_page: 1,
+      c_size: 10,
+      cabinetName:'',
       detailCabinetRows: [],
       cabinetListLoading: false,
       currentCabinetId: "",
+      d_total:0,
+      d_page:1,
+      d_size:10,
       detailDevRows: [],
       bigImgTitle: "",
       bigImgVisible: false,
       dialogSize: "small",
       allVisible: false,
-      currentUrl: "",
+      currentUrls: "",
       jgDetails: [],
       devLoading: false,
-      cabinetName: "",
+      devFlag: "0",
       taskId: "",
       deviceId: "",
+      baseImgUrl:baseImgUrl,
       ip: "",
       uDetails: "",
-
       jgRows: [],
       jgField: {},
       jgDetail: {},
@@ -339,7 +363,7 @@ export default {
     };
   },
   computed:{
-    ...mapState(['rooms','robotId'])
+    ...mapState(['rooms','room'])
   },
   methods: {
     type(warnType) {
@@ -393,14 +417,12 @@ export default {
           this.listLoading = true;
           NProgress.start();
           let self = this;
-          devList(self,{roomId:this.filters.roomId}).then(res=>{
-            this.cabinetTotal = res.body.data?res.body.data.length:0;
+          devList(self,{roomId:this.filters.roomId, page:0, pageSize:0 }).then(res=>{
+            this.cabinetTotal = res.body.data?res.body.data.list.length:0;
           })
           getServersInfos(self, para).then(res => {
             if (res.data.data && res.data.data.list.length > 0) {
-              
               this.rows = res.data.data.list.map(i => {
-                
                 let timeStr =
                   parseTime(i.startTime, "{y}-{m}-{d} {h}:{i}:{s}") + "至";
                 timeStr += i.endTime
@@ -440,30 +462,54 @@ export default {
           break;
       }
     },
+    handleCabinetChange(val) {
+      this.c_page = val;
+      this.getCabinet();
+    },
+    handleCabinetSizeChange(size) {
+      this.c_page = 1;
+      this.c_size = size;
+      this.getCabinet();
+    },
     getCabinet() {
       let self = this;
       let param = {
         taskId: this.taskId,
-        deviceName: this.cabinetName ? this.cabinetName : ""
+        page: this.c_page,
+        pageSize: this.c_size,
       };
+      if(this.cabinetName)param.deviceName=this.cabinetName;
+      if(this.devFlag!=0){
+         param.empty=this.devFlag==="2"?true:false;
+      }
       this.cabinetListLoading = true;
       NProgress.start();
       getListCabinetsByTaskId(self, param).then(res => {
-       
-        if (res.data.data && res.data.data.length > 0) {
-          this.detailCabinetRows = res.data.data;
-         
+        if (res.data.data && res.data.data.list) {
+          this.detailCabinetRows = res.data.data.list;
+          this.c_total = res.data.data.total;
         } else {
-          this.total = 0;
+          this.c_total = 0;
           this.detailCabinetRows = [];
         }
         this.cabinetListLoading = false;
         NProgress.done();
       });
     },
+    handleDevChange(val) {
+      this.d_page = val;
+      this.getDevCabinet();
+    },
+    handleDevSizeChange(size) {
+      this.d_page = 1;
+      this.d_size = size;
+      this.getDevCabinet();
+    },
     getDevCabinet() {
       let param = {
-        taskId: this.taskId
+        taskId: this.taskId,
+        page:this.d_page,
+        pageSize:this.d_size
       };
       if (this.deviceId) {
         param.deviceId = this.deviceId;
@@ -475,25 +521,27 @@ export default {
       if (this.uDetails) {
         param.uDetails = this.uDetails;
       }
+      if(this.devCabinet){
+        param.deviceName = this.devCabinet;
+      }
       let self = this;
       NProgress.start();
       this.devLoading = true;
       getListServers(self, param).then(res => {
-        if (res.data.data && res.data.data.length > 0) {
-          this.jgRows = res.data.data.sort(compareU("uDetails"));
-          let ip = this.ip;
-          let devCabinet = this.devCabinet;
-          this.detailDevRows = res.data.data.map(item=>{
+        if (res.data.data && res.data.data.list) {
+          let list = res.data.data.list.map(item=>{
              item.deviceName=item.deviceInfo?item.deviceInfo.deviceName:"";
-             item.fileUrl = item.fileInfo?item.fileInfo.fileUrl:null;
-             item.detectResultUrl = item.fileInfo?item.fileInfo.detectResultUrl:null;
+             item.fileUrls = item.fileInfoList?item.fileInfoList.map(item=>(item.fileUrl)):null;
+             item.detectResultUrls = item.fileInfoList?item.fileInfoList.map(item=>(item.detectResultUrl)):null;
              return item;
-          }).filter(devs => {
-            if (devs.deviceName.indexOf(devCabinet) >= 0) return devs;
-          });
+          })
+          this.jgRows = list.sort(compareU("uDetails"));
+          this.detailDevRows = list;
+          this.d_total = res.data.data.total;
         } else {
           this.detailDevRows = [];
           this.jgRows = [];
+          this.d_total = res.data.data.total;
         }
         this.devLoading = false;
         NProgress.done();
@@ -511,40 +559,32 @@ export default {
         this.jgDetail.time = parseTime(r.timeStamp, "{y}-{m}-{d} {h}:{i}:{s}");
         this.bigImgTitle = "原始图";
         this.jgDetail.title = "原始设备IP";
-        this.currentUrl = baseImgUrl + r.fileUrl;
+        this.currentUrls = r.fileUrls.reverse() ;
 
         this.$nextTick(() => {
           _this.bigImgVisible = true;
         });
       } else if (type === 2) {
         this.jgDetail = r;
-
         this.jgDetail.time = parseTime(r.timeStamp, "{y}-{m}-{d} {h}:{i}:{s}");
         this.jgDetail.time = parseTime(r.timeStamp, "{y}-{m}-{d} {h}:{i}:{s}");
         this.bigImgTitle = "识别图";
         this.jgDetail.title = "已识别设备IP";
-        this.currentUrl = baseImgUrl + r.detectResultUrl;
+        this.currentUrls =  r.detectResultUrls.reverse() ;
 
         this.$nextTick(() => {
           _this.bigImgVisible = true;
         });
-      } else {
-        console.log(this.$refs.device_o)
-        let hash = {};
-        this.allImgs = [];
-        this.jgRows.forEach(item => {
-          if (!hash[item.ip]) {
-            hash[item.ip] = true;
-            this.allImgs.push({
-              psTime: parseTime(item.timeStamp, "{y}-{m}-{d} {h}:{i}:{s}"),
-              imgUrl: type === 3 ? item.fileUrl : item.detectResultUrl
-            });
-          }
-        });
-
+      } else if (type===3) {
+        this.allImgs = this.jgField.rbFileInfos?this.jgField.rbFileInfos.map(item=>(item.fileUrl)):[];
         this.$nextTick(() => {
           _this.allVisible = true;
         });
+      }else{
+          this.allImgs = this.jgField.rbFileInfos? this.jgField.rbFileInfos.map(item=>{ return item.detectResultUrl?item.detectResultUrl:item.fileUrl}):[];
+          this.$nextTick(() => {
+            _this.allVisible = true;
+          });
       }
     },
     changeSize() {
@@ -566,7 +606,7 @@ export default {
     }
   },
   mounted() {
-      this.filters.roomId =this.robotId.roomId;
+      this.filters.roomId =this.room;
       this.getList(); 
   }
 };

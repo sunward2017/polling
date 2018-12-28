@@ -22,7 +22,8 @@
 			<aside class="panel-c-t" :style="{width:isCollapse?'64px':'200px'}">
 				<!-- <h5 class="admin"></h5> -->
 				<el-menu style="border-top: 1px solid #475669;" text-color="#c0ccda" active-text-color="rgb(32, 160, 255)" :default-active="currentPath" class="el-menu-vertical-demo" :collapse="isCollapse" theme="dark" unique-opened router>
-					<template v-for="(item,index) in $router.options.routes" v-if="!item.hidden">
+					<el-menu-item  index="/dashboard" key="999"><i class="fa fa-area-chart"></i><span>首页</span></el-menu-item>
+          <template v-for="(item,index) in $router.options.routes" v-if="!item.hidden">
 						<!--查找路由配置$router.options.routes-->
 						<el-submenu :index="index+''" v-if="!item.leaf" :key="index">
 							<template slot="title"><i :class="item.iconCls"></i><span>{{item.name}}</span></template>
@@ -101,7 +102,7 @@ export default {
     this.user = this.$store.state.user.account;
   },
   methods: {
-    ...mapActions(['setRooms','setRobotId']),
+    ...mapActions(['setRooms','setRoom','setRobotId']),
     handleSwitchScreen () {
       if (this.isFullScreen) {
         exitFullscreen()
@@ -119,7 +120,8 @@ export default {
       })
         .then(() => {
           this.$router.replace("/login");
-          this.setRooms('');
+          this.setRooms([]);
+          this.setRoom('');
           this.setRobotId('');
         })
         .catch(() => {});

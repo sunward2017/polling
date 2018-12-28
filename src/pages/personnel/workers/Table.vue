@@ -40,7 +40,7 @@
 			<el-table :data="users" highlight-current-row v-loading="listLoading" style="width: 100%;">
 				<el-table-column type="index" width="80" label="序号" align="center">
 				</el-table-column>
-				<el-table-column prop="optName" label="姓 名" width="180" sortable>
+				<el-table-column prop="optName" label="姓 名" align="center" >
 				   <template scope="scope">
 			        <el-popover trigger="hover" placement="top">
 			          <p>姓名: <b>{{ scope.row.optName}}</b></p>
@@ -52,9 +52,9 @@
 			        </el-popover>
 			      </template> 
 				</el-table-column>
-				<el-table-column prop="optAccount" label="账 号" width="180" sortable>
+				<el-table-column prop="optAccount" label="账 号"  sortable>
 				</el-table-column>
-				<el-table-column prop="optJobNumber" label="工 号" width="180"  sortable>
+				<el-table-column prop="optJobNumber" label="工 号"   sortable>
 				</el-table-column>
 				<!-- <el-table-column prop="optContact1" label="联系方式" width="300" sortable>
 				</el-table-column> -->
@@ -67,7 +67,7 @@
 				      <el-tag :type="scope.row.optStatus==1?'success':'danger'">{{scope.row.optStatus==1?"启用":"禁用"}}</el-tag>
 				   </template>    
 				</el-table-column>
-				<el-table-column inline-template :context="_self" label="操作" width="180" align='center'>
+				<el-table-column inline-template :context="_self" label="操作" width="240" align='center'>
 					<span>
 						<el-button size="small" icon="edit" @click="handleEdit(row)">编辑</el-button>
 						<el-button type="warning" icon="delete" size="small" @click="handleDel(row)">删除</el-button>
@@ -151,11 +151,10 @@
 <script>
 	// import util from '../../common/util'
 	import NProgress from 'nprogress'
-	import { getUserList,saveUser ,showDetail,removeOpt} from '../../api/workers';
+	import { getUserList,saveUser ,showDetail,removeOpt,getCustoms} from 'api/personnel';
 	import { workerColumns } from '@/const';
 	import { getRoomList } from 'api/room';
 	import { isWscnEmail } from 'utils/validate';
-	import { getCustoms } from 'api/admin';
     
 	export default {
 		data() {

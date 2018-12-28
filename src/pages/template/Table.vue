@@ -283,7 +283,7 @@
 	import { guid } from 'utils';
 	import { getTemplateList,getTemplateDetail, saveTemplate,removeTemplate} from 'api/template';
     import { warnTypes,warnTypesForObj,templateCls} from '@/const';
-    import { getCustoms } from 'api/admin';
+    import { getCustoms } from 'api/personnel';
     import  Upload  from 'components/upload/upload';
 
 	export default {

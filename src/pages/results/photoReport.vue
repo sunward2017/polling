@@ -110,7 +110,7 @@ export default {
     };
   },
   computed:{
-     ...mapState(['rooms','robotId'])
+     ...mapState(['rooms','room'])
   },
   methods: {
     formatTime(r, c) {
@@ -168,7 +168,7 @@ export default {
       if (this.filters.taskId === "") {
         this.$notify.info({
           title: "提示",
-          message: "小主，你真的不选任务吗？"
+          message: "你真的不选任务吗？"
         });
         return;
       }
@@ -183,15 +183,16 @@ export default {
     getResult() {
       this.imgGather = [];
       let para = {
-        taskId: this.filters.taskId
+        taskId: this.filters.taskId,
+        fileType:'3'
       };
       var self = this;
       getTaskDetail(self, para).then(res => {
         if (res.body.data) {
           this.imgGather = res.body.data
         }else{
-			this.imgGather=[];
-		}
+          this.imgGather=[];
+        }
       });
     },
     showBigImg(device, url) {
@@ -212,12 +213,12 @@ export default {
     }
   },
   mounted() {
-     this.filters.roomId = this.robotId.roomId;
+     this.filters.roomId = this.room;
   }
 };
 </script>
 
-<style>
+<style scoped>
 .floor-item-content-wrap {
   float: left;
   width: 16%;

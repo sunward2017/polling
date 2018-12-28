@@ -75,15 +75,32 @@
 					    </el-option>
 					 </el-select>
 			    </el-form-item>
-				<el-form-item label="告警手机号" prop="warnMobile" >
-					 <el-input  v-model="editForm.warnMobile" placeholder="请输入手机号"></el-input >
-				</el-form-item>
-				<el-form-item label="告警邮箱" prop="warnEmail">
-					 <el-input  v-model="editForm.warnEmail" placeholder="请输入邮箱"></el-input >
-				</el-form-item>
 				<el-form-item label="上充电桩次数" prop="pileCount">
-					 <el-input v-model="editForm.pileCount"></el-input> 
+					<el-input v-model="editForm.pileCount"></el-input> 
 				</el-form-item>
+				<el-form-item
+					v-for="(domain, n) in editForm.mobiles"
+					:label="'手机号' + n"
+					:key="domain.key"
+					:prop="'mobiles.' + n + '.value'"
+					:rules="{
+					required: true, validator:checkContact, trigger: 'blur'
+					}"
+				>
+					<el-input v-model="domain.value" style="width:80%;margin-right:1%"></el-input><el-button icon="plus"  v-if="n===0" @click.prevent="addMobile()"></el-button><el-button v-else @click.prevent="removeMobile(domain)">删除</el-button>
+				</el-form-item>
+				<el-form-item
+					v-for="(email, i) in editForm.emails"
+					:label="'邮箱' + i"
+					:key="email.key"
+					:prop="'emails.' + i + '.value'"
+					:rules="{
+					required: true, validator:checkContact2, trigger: 'blur'
+					}"
+				>
+					<el-input v-model="email.value" style="width:80%;margin-right:1%"></el-input><el-button icon="plus"  v-if="i===0" @click.prevent="addEmail()"></el-button><el-button v-else @click.prevent="removeMobile(email)">删除</el-button>
+				</el-form-item>
+				
 			</el-form>
 			<div slot="footer" class="dialog-footer">
 				<el-button @click.native="cancel"  icon="circle-cross">取 消</el-button>
@@ -104,27 +121,6 @@
     
 	export default {
 		data() {
-				var checkContact = (rule,str, callback) => {
-					let reg =  /^0?(13[0-9]|15[012356789]|17[013678]|18[0-9]|14[57])[0-9]{8}$/;
-					let value = str.replace(/^\s*$/g,'');
-					if(value==''){
-                        return callback(new Error('手机号不能为空'));
-					}else if(!reg.test(value)) {
-						return callback(new Error('手机号码不正确'));
-					}else{
-						callback();
-					}
-
-				};
-				var checkContact2 =(rule,value,callback)=>{
-					if(value.trim()==""){
-                        return callback(new Error("邮箱不可为空"));
-					}else if(value&&!isWscnEmail(value)){
-                       return callback(new Error('邮箱格式不正确'));
-					}else{
-						callback();
-					}
-				}
 				return {
 					filters: {
 						key: 'robotName',
@@ -144,8 +140,8 @@
 					editForm: {
 						id:'',
 						robotId:'',
-						warnMobile:'',
-						warnEmail: '',
+						mobiles:[{value:''}],
+						emails:[{value:''}],
 						pileCount: '',
 					},
 					editLoading: false,
@@ -157,21 +153,32 @@
 							message: '机器人不可为空',
 							trigger: 'change'
 						}],
-						warnMobile: [{
-							required: true,
-							validator: checkContact,
-							trigger: 'blur'
-						}],
-						warnEmail:[{
-							validator: checkContact2,
-							trigger: 'blur'
-						}],
 					}
 
 				}
 			},
 			methods: {
-				//性别显示转换
+				checkContact(rule,str, callback){
+					let reg =  /^0?(13[0-9]|15[012356789]|17[013678]|18[0-9]|14[57])[0-9]{8}$/;
+					let value = str.replace(/^\s*$/g,'');
+					if(value==''){
+                        return callback(new Error('手机号不能为空'));
+					}else if(!reg.test(value)) {
+						return callback(new Error('手机号码不正确'));
+					}else{
+						callback();
+					}
+
+				},
+				checkContact2(rule,value,callback){
+					if(value.trim()==""){
+                        return callback(new Error("邮箱不可为空"));
+					}else if(value&&!isWscnEmail(value)){
+                       return callback(new Error('邮箱格式不正确'));
+					}else{
+						callback();
+					}
+				}, 
 				handleCurrentChange(val) {
 					this.page = val;
 					this.getWarnList();
@@ -269,8 +276,8 @@
 					this.getWorkerRobos();
 				    this.editForm.id= row.id;
 					this.editForm.robotId= row.robotId;
-					this.editForm.warnMobile=row.warnMobile;
-					this.editForm.warnEmail=row.warnEmail;
+					this.editForm.mobiles=row.warnMobile.split(',').map(i=>({value:i}));
+					this.editForm.emails=row.warnEmail.split(',').map(i=>({value:i}));;
 					this.editForm.pileCount= row.pileCount;
 				},
 				//编辑 or 新增
@@ -285,16 +292,14 @@
 								NProgress.start();
 								_this.btnEditText = '提交中';
 								  
-								if(_this.editForm.id == '') {
+								if(!_this.editForm.id) {
 									//新增
-									 
 								    let  para = {
-					                        robotId:_this.editForm.robotId,
-					                        warnMobile:_this.editForm.warnMobile,
-					                        warnEmail:_this.editForm.warnEmail,
-					                        pileCount:_this.editForm.pileCount
+										robotId:_this.editForm.robotId,
+										warnMobile:_this.editForm.mobiles.map(i=>(i.value)).join(','),
+										warnEmail:_this.editForm.emails.map(i=>(i.value)).join(','),
+										pileCount:_this.editForm.pileCount
 								   }
-								    
 									saveRobotWarn(_this,para,"新增告警发送").then((res) => {
 										_this.editLoading = false;
 										NProgress.done();
@@ -324,7 +329,6 @@
 					                    warnEmail:_this.editForm.warnEmail,
 					                    pileCount:_this.editForm.pileCount
 								    }
-								      
 									saveRobotWarn(_this,para,'修改告警发送').then((res) => {
 										_this.editLoading = false;
 										NProgress.done();
@@ -355,17 +359,40 @@
 					});
 
 				},
+				addMobile() {
+					this.editForm.mobiles.push({
+					value: '',
+					key: Date.now()
+					});
+				},
+				addEmail() {
+					this.editForm.emails.push({
+					value: '',
+					key: Date.now()
+					});
+				},
+				removeMobile(item) {
+					var index = this.editForm.mobiles.indexOf(item)
+					if (index !== -1) {
+					this.editForm.mobiles.splice(index, 1)
+					}
+				},
+				removeEmail(item) {
+					var index = this.editForm.emails.indexOf(item)
+					if (index !== -1) {
+					this.editForm.emails.splice(index, 1)
+					}
+				},
 				//显示新增界面
 				handleAdd: function() {
                     this.isEdit= false;    
 					this.editFormVisible = true;
 					this.editFormTtile = '新增';
-                    
                     this.getWorkerRobos();
                     this.editForm.id ="";
 					this.editForm.robotId = "";
-					this.editForm.warnMobile = "" ;
-					this.editForm.warnEmail ="";
+					this.editForm.mobiles = [{value:''}] ;
+					this.editForm.emails =[{value:''}];
 					this.editForm.pileCount ="";	 
 				}
 			},

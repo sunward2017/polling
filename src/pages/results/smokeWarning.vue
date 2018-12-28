@@ -189,7 +189,7 @@
 		},
 		mounted() {
 		   this.rooms = this.$store.state.rooms;
-		   this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
+		   this.filters.roomId = this.$store.state.room||this.rooms[0].roomId;
 		   this.getList();
 		}
 	}

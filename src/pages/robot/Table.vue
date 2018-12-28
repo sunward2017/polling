@@ -48,10 +48,15 @@
 				<el-table-column prop="sysVer" label="软件版本" width="120" >
 				</el-table-column>
 				<el-table-column prop="sysName" label="版本名称" >
+					<template scope="scope">
+                        <el-tooltip class="item" effect="dark" :content="scope.row.sysName" placement="top">
+						    <el-button size="mini">版本名称</el-button>
+						</el-tooltip>
+					</template>
 				</el-table-column>
 				<el-table-column prop="realtimeStatus" label="状态" width="100">
 					<template scope="scope" >
-						<el-tag v-if="scope.row.customName" :type="type(scope.row.realtimeStatus)">{{formatRealTimeStatus(scope.row)}}</el-tag>
+						<el-tag :type="type(scope.row.realtimeStatus)">{{formatRealTimeStatus(scope.row)}}</el-tag>
 					</template>
 				</el-table-column>
 				<el-table-column label="配置" :width="setWidth" align='center' v-if="isShow" >
@@ -138,7 +143,7 @@
 	import { getRoomList } from 'api/room';
 	import Log from 'components/runLog';
 	import Humiture from 'components/Humiture';
-	import { getCustoms } from 'api/admin';
+	import { getCustoms } from 'api/personnel';
 	import { baseImgUrl } from 'api/api';
  
 
@@ -327,7 +332,7 @@
 			},
 
 			//显示编辑界面
-			getRoomList: function(id) {
+			getRoomData: function(id) {
 				if(this.rooms.length === 0) {
 					let para = {
 						page: 0,
@@ -354,7 +359,7 @@
 					let robot = res.body.data
 					this.editForm.model = robot.model;
 					this.editForm.sysVer = robot.sysVer;
-					this.editForm.roomId = robot.relation ? robot.relation.roomId : '';
+					//this.editForm.roomId = robot.relation ? robot.relation.roomId : '';
 				})
 			},
 			handleEdit: function(row) {
@@ -364,7 +369,7 @@
 				this.editForm.robotName = row.robotName;
 				this.editForm.roomId = row.roomId?row.roomId:'';
 				this.editForm.custom = row.customId;
-				this.getRoomList(row.robotId);
+				this.getRoomData(row.robotId);
 
 			},
 			//编辑 or 新增

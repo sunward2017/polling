@@ -21,10 +21,7 @@ export default {
         format: function (date, pattern) {
             pattern = pattern || DEFAULT_PATTERN;
             return pattern.replace(SIGN_REGEXP, function ($0,$1) {
-            	//console.log($0); YYYY
-            	//console.log($1); y
                 switch ($0.charAt(0)) {
-                    //case 'y': return padding(date.getFullYear(), $0.length);
                     case 'y': date.getFullYear();
                     case 'M': return padding(date.getMonth() + 1, $0.length);
                     case 'd': return padding(date.getDate(), $0.length);

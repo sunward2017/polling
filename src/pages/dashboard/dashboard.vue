@@ -17,25 +17,31 @@
 				</el-col>
 			</el-col>
 			<el-col :span="6" class="robotInfo">
-                <div class="msg">
-                	机房选择：
-                </div>
-				<div class="msg">
-					<el-select v-model="filters.roomId" style="width:80%" size="mini" @change="roomData">
-						<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
-						</el-option>
-					</el-select>
-				</div>
 					<div class="msg">
-						机器人:&emsp;{{robotName}}&emsp;
+						机房选择：
+					</div>
+					<div class="msg">
+						<el-select v-model="filters.roomId" style="width:80%" size="mini" @change="changeRoom">
+							<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
+							</el-option>
+						</el-select>
+					</div>
+					<div class="msg">
+						机器人：
+					</div>
+					<div class="msg">
+						<el-select v-model="filters.robotId" style="width:80%" size="mini" @change="changeRobot">
+							<el-option v-for="item in robots" :key="item.robotId" :label="item.robotName" :value="item.robotId">
+							</el-option>
+						</el-select>
 					</div>
 					<div class="msg">
 						状态:&emsp;
-						<el-tag :type="robotStatusType">{{robotStatus}}</el-tag>
+						<el-tag :type="robotInfo.robotStatusType">{{robotInfo.robotStatus}}</el-tag>
 					</div>
 
 					<div class="msg">
-						当前位置:&emsp;X:&nbsp;{{ robotCoorX}}&emsp;Y:&nbsp;{{ robotCoorY}}
+						当前位置:&emsp;X:&nbsp;{{ robotInfo.robotX}}&emsp;Y:&nbsp;{{ robotInfo.robotY}}
 					</div>
 					<div class="msg">
 						剩余电量：
@@ -59,7 +65,8 @@
 		data() {
 			return {
 				filters: {
-					roomId: ""
+					roomId: "",
+					robotId:"",
 				},
 				chartBar: null,
 				chartLine: null,
@@ -72,35 +79,24 @@
 				minHumidity: [],
 				maxTemperature: [],
 				minTemperature: [],
-				robotStatus: "",
-				robotName: "",
-				robotCoorX: "",
-				robotCoorY: "",
-				robotEnergy: "",
-				robotStatusType: ""
+				robots:[],
+				robotInfo:{},
 			};
 		},
 		computed:{
-			...mapState(['rooms','robotId'])
+			...mapState(['rooms','room'])
 		},
 		methods: {
-			...mapActions(['setRooms','setRobotId']),
-			roomData() {
+			...mapActions(['setRooms','setRoom','setRobotId']),
+			changeRoom(r) {
+				this.setRoom(r)
 				let _this = this;
 				let para = {
-					//customId: "43abe352a38d4addb500ffbd0bed7d85"
-					customId: this.$store.state.user.customId
+					customId:this.rooms.find(i=>(i.roomId===r)).customId  
 				};
 				getRoomIndex(_this, para).then(res => {
 					if(res.body.data && res.body.data.length > 0) {
 						let body = res.body.data.find(item =>(item.roomId===_this.filters.roomId));
-						if(body){
-							this.setRobotId({
-								robotId: body.robotRealtimes.length>0?body.robotRealtimes[0].robotId:'',
-								roomId: body.roomId
-							});
-						}
-                        
 						this.Date = [];
 						this.avgHumidity = [];
 						this.avgTemperature = [];
@@ -110,16 +106,13 @@
 						this.minTemperature = [];
 						let humitureList =
 							body&&body.humitureList ? body.humitureList : 0;
-						let robotInfo =
-							body&& body.robotRealtimes[0] ?
-							body.robotRealtimes[0] : {};
-						this.robotName = robotInfo.robotName;
-						this.robotCoorX = robotInfo.robotX;
-						this.robotCoorY = robotInfo.robotY;
-						this.robotStatus = realtimeStatus[robotInfo.realtimeStatus];
-						this.robotEnergy = robotInfo.energy;
-						this.robotStatusType = realTimeTypes[robotInfo.realtimeStatus];
-
+						if(body&&body.robotRealtimes){
+							this.robots = body.robotRealtimes.map(item=>({...item,robotStatus:realtimeStatus[item.realtimeStatus],robotStatusType: realTimeTypes[item.realtimeStatus]}));
+						    this.filters.robotId = this.robots[0].robotId;
+						}else{
+							this.robots  =[];
+							this.filters.robotId = '';
+						}
 						for(var l = humitureList.length - 1, i = l; i >= 0; i--) {
 							this.Date.push(
 								parseTime(humitureList[i].createTime, "{m}-{d} {h}:{i}")
@@ -134,8 +127,6 @@
 							this.maxTemperature.push(humitureList[i].maxTemperature);
 						}
 					}
-
-					this.init();
 				});
 			},
 			getRooms() {
@@ -151,24 +142,21 @@
 						NProgress.done();
 						if(res.data.data) {
 						   this.setRooms(res.body.data.rows);
-						   this.filters.roomId = this.robotId?this.robotId.roomId:this.rooms[0].roomId;
+						   this.filters.roomId = this.rooms[0].roomId;
 						}
 					});
 				}else{
-					 this.filters.roomId = this.robotId.roomId; 
+					this.filters.roomId = this.room; 
 				}
 			},
-			init() {
-				Array.prototype.min = function() {
-					return Math.min.apply({}, this);
-				};
-
+			changeRobot(robot){
+				this.robotInfo = this.robots.find(item=>(item.robotId===robot));
+				this.setRobotId(robot)
+				this.init();
+			},
+			initRobot(){
 				var _this = this;
-				this.chartBar = echarts.init(document.getElementById("chartBar"));
-				this.chartLine = echarts.init(document.getElementById("chartLine"));
-				this.chartPie = echarts.init(document.getElementById("chartPie"));
-				this.energy = echarts.init(document.getElementById("energy"));
-				this.energy.setOption({
+              	this.energy.setOption({
 					tooltip: {
 						formatter: "{a} <br/>{b} : {c}%"
 					},
@@ -260,7 +248,7 @@
 							}
 						},
 						data: [{
-							value: _this.robotEnergy,
+							value: _this.robotInfo.energy,
 							name: "剩余电量",
 							top: 50,
 							textStyle: {
@@ -269,7 +257,17 @@
 						}]
 					}]
 				});
-
+			},
+			init() {
+				Array.prototype.min = function() {
+					return Math.min.apply({}, this);
+				};
+				var _this = this;
+				this.chartBar = echarts.init(document.getElementById("chartBar"));
+				this.chartLine = echarts.init(document.getElementById("chartLine"));
+				this.chartPie = echarts.init(document.getElementById("chartPie"));
+				this.energy = echarts.init(document.getElementById("energy"));
+	            this.initRobot();
 				this.chartBar.setOption({
 					backgroundColor: 'rgba(0,0,0,.35)',
 					title: {},

@@ -7,20 +7,6 @@
 					</el-option>
 				</el-select>
 			</el-form-item>
-			<el-form-item >
-				 <el-date-picker
-					v-model="filters.startTime"
-					type="datetime"
-					placeholder="任务开始时间">
-				</el-date-picker>
-			</el-form-item>
-			<el-form-item >
-				<el-select v-model="filters.taskStatus" placeholder="请选择任务状态" style="width:150px;">
-				   <el-option label="执行中"  value="1"></el-option>
-				   <el-option label="执行完毕"  value="2"></el-option>
-				   <el-option label="执行中断"  value="4"></el-option>
-				</el-select> 	
-			</el-form-item>
 			<el-form-item>
 				<el-button  type="primary" icon="date" @click="getList">任务检索</el-button>
 			</el-form-item>
@@ -37,7 +23,11 @@
 				</el-table-column>
 				 <el-table-column prop="position" label="测温点" width="200" align="center">
 				</el-table-column>
-				<el-table-column prop="description" label="测温点描述" align="center">
+				<el-table-column prop="maxTemp" label="最高温度(°c)" align="center">
+				</el-table-column>
+				<el-table-column prop="minTemp" label="最低温度(°c)" align="center">
+				</el-table-column>
+				<el-table-column prop="avgTemp" label="平均温度(°c)" align="center">
 				</el-table-column>
 				<el-table-column prop="fileUrl" label="图片详情" width="200" align="center" sortable>
 					 <template scope="scope" >
@@ -84,7 +74,7 @@
 <script>
 	import NProgress from 'nprogress';
 	import { parseTime } from 'utils';
-	import { currentTask, getTaskDetail } from 'api/results';
+	import { siteTask, getTaskDetail} from 'api/results';
     import { Request, Response } from 'utils/Cipher';
 	import { baseImgUrl } from 'api/api';
 	import { TASKEXECTYPES, CMDSTATUS } from "@/const";
@@ -96,8 +86,6 @@
 					roomId: '',
 					taskId: '',
 					taskName:'',
-					startTime:'',
-					taskStatus:'1',
 				},
 				rooms: [],
 				taskVisible: false,
@@ -145,16 +133,12 @@
 					page: this.page,
 					pageSize: this.size,
 					roomId: this.filters.roomId,
-					taskStatus:this.filters.taskStatus
 				};
-				if (this.filters.startTime) {
-					para.starttime = parseTime(this.filters.startTime,"{y}-{m}-{d} {h}:{i}:{s}");
-				}
 				this.listLoading = true;
 				this.taskVisible = true;
 				NProgress.start();
 				let self = this;
-				currentTask(self, para).then(res => {
+				siteTask(self, para).then(res => {
 					this.listLoading = false;
 					NProgress.done();
 					if (res.body.data && res.body.data.list) {
@@ -173,15 +157,13 @@
 				if(this.filters.taskId===""){
 					this.$notify.info({
 			          title: '提示',
-			          message: '小主，你真的不选任务吗？'
+			          message: '没有指定任务！'
 			        });
 			        return;
 				}
-				
 				this.taskVisible = false;
 				this.hasTask = true;
 				this.getResult();
-				 
 			},
 			setTask(row,e,c){
 				this.filters.taskId = row.taskId;
@@ -194,9 +176,9 @@
 				}
 				var self = this;
 				this.siteLoading =true;
-				Request(self, "/getThermometryDetail.action",para).then((res) => { 
+				Request(self, "/getThermometryDetail.action",para).then((res) => {
 					if(res.data.data){
-					   self.gather = JSON.parse(Response(res.data.data));
+					   self.gather = JSON.parse(Response(res.data.data)).map(item=>{item.maxTemp=item.maxTemp/100;item.minTemp=item.minTemp/100;item.avgTemp=item.avgTemp/100;return item;});
 					}else{
 					   self.gather =[];
 					}
@@ -204,7 +186,6 @@
 				})
 			},
 			showDetail(obj) {
-				 
 				this.dialogSize ='small';
 				this.bigImgTitle = "测试点_" + obj.position + "_温度分布图";
 				this.currentUrl = `${baseImgUrl}${obj.fileUrl}`;
@@ -220,7 +201,7 @@
 		},
 		mounted() {
 		   this.rooms = this.$store.state.rooms;
-		   this.filters.roomId = this.$store.state.robotId?this.$store.state.robotId.roomId:this.rooms[0].roomId;
+		   this.filters.roomId = this.$store.state.room;
 		}
 	}
 </script>

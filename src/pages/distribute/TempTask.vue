@@ -54,7 +54,7 @@
 			</el-pagination>
 		</el-col>
     <!-- 临时任务 -->  
-    <el-dialog title="临时任务" v-model="tempVisible" :close-on-click-modal="false" size="mini">
+    <el-dialog title="临时任务" v-model="tempVisible" :close-on-click-modal="false" size="small">
 		<el-form :model="tempForm" label-width="80px" :rules="tempRules" ref="tempForm">
         <el-form-item prop="robotId" label="机器人">
           <el-select style="width:100%" v-model="tempForm.robotId"  placeholder="请选择机器人">
@@ -98,7 +98,7 @@
 import NProgress from "nprogress";
 import { parseTime } from "utils";
 import { currentTask, sendTempTask } from "api/results";
-import { roadwayList, stagList, getAudiosByRoom,devList } from "api/room";
+import { roadwayList, stagList, getAudiosByRoom, devList } from "api/room";
 import { TASKEXECTYPES, CMDTYPES, CMDSTATUS } from "@/const";
 import Sortable from "sortablejs";
 
@@ -128,26 +128,41 @@ export default {
       tempVisible: false,
       robots: [],
       audios: [],
-      devs:[],
+      devs: [],
       tempForm: {
         robotId: "",
         audioUrl: [],
-        type:'',
-        devs:[]
+        type: "",
+        devs: []
       },
       tempRules: {
         robotId: [
           { required: true, message: "请选择机器人", trigger: "change" }
         ],
-        nvPointName:[{
-          required: true, type:'array', message: '导航点不可为空',trigger:'change'
-        }],
-        audioUrl: [{ 
-          required: true, type:'array', message: "播放文件不可为空", trigger: "change" 
-        }],
-        devs: [{ 
-          required: true, type:'array', message: "设备不能为空", trigger: "change" 
-        }]
+        nvPointName: [
+          {
+            required: true,
+            type: "array",
+            message: "导航点不可为空",
+            trigger: "change"
+          }
+        ],
+        audioUrl: [
+          {
+            required: true,
+            type: "array",
+            message: "播放文件不可为空",
+            trigger: "change"
+          }
+        ],
+        devs: [
+          {
+            required: true,
+            type: "array",
+            message: "设备不能为空",
+            trigger: "change"
+          }
+        ]
       }
     };
   },
@@ -170,7 +185,7 @@ export default {
     },
     getTaskByRoom() {
       let id = this.filters.roomId;
-      this.currentRoom = this.rooms.find(i => i.roomId ===id);
+      this.currentRoom = this.rooms.find(i => i.roomId === id);
       let para = {
         roomId: this.filters.roomId,
         page: this.page,
@@ -182,8 +197,10 @@ export default {
       let self = this;
       currentTask(self, para).then(res => {
         if (res.data.data) {
-          this.rows = res.data.data ? res.data.data.list.map(r=>({...r,cmd:true,})) : [];
-          
+          this.rows = res.data.data
+            ? res.data.data.list.map(r => ({ ...r, cmd: true }))
+            : [];
+
           this.total = res.data.data.total;
         } else {
           this.rows = [];
@@ -195,7 +212,7 @@ export default {
     },
     getRooms() {
       this.rooms = this.$store.state.rooms;
-      this.filters.roomId = this.$store.state.robotId.roomId;
+      this.filters.roomId = this.$store.state.room;
     },
     formatRoom() {
       return this.currentRoom.roomName;
@@ -207,20 +224,28 @@ export default {
     formatTime(r) {
       return parseTime(r.startTime);
     },
-   
-    changeType(v){
-      if(v==='2'){
-        this.tempForm.areaId='';
-        this.tempForm.nvPointName=[];
-        this.tempForm.audioUrl =[];
+
+    changeType(v) {
+      if (v === "2") {
+        this.tempForm.areaId = "";
+        this.tempForm.nvPointName = [];
+        this.tempForm.audioUrl = [];
         let _this = this;
-         devList(_this,{roomId:this.filters.roomId,page:1,pageSize:0}).then(res => {
-            if(res.body.data){
-              this.devs=res.body.data.list.filter(i=>{if(i.audioUrl&&i.point){ return i}});
-            }
-         })
-      }else{
-        this.tempForm.devs=[];
+        devList(_this, {
+          roomId: this.filters.roomId,
+          page: 1,
+          pageSize: 0
+        }).then(res => {
+          if (res.body.data) {
+            this.devs = res.body.data.list.filter(i => {
+              if (i.audioUrl && i.point) {
+                return i;
+              }
+            });
+          }
+        });
+      } else {
+        this.tempForm.devs = [];
       }
     },
     tempTask() {
@@ -229,42 +254,43 @@ export default {
         robotId: "",
         nvPointName: [],
         audioUrl: [],
-        type:'1',
-        devs:[],
+        type: "1",
+        devs: []
       }),
         (this.robots = this.rooms.find(
           i => i.roomId === _this.filters.roomId
         ).robotList);
       getAudiosByRoom(_this, {
+        page: 1,
+        pageSize: 0,
         roomId: this.filters.roomId,
         taskType: "4"
       }).then(res => {
         if (res.body.result == 200) {
-          this.audios = res.body.data ? res.body.data : [];
+          this.audios = res.body.data ? res.body.data.list : [];
           this.tempVisible = true;
         }
       });
-      
     },
     handleTempTask(r) {
       let _this = this;
       if (r) {
-        let flag = r.cmd?"_1":"_2"
+        let flag = r.cmd ? "_1" : "_2";
         let param = {
           ...JSON.parse(r.taskDetails),
           command: r.cmd ? "5" : "6",
-          taskId:r.taskId+flag
+          taskId: r.taskId + flag
         };
         sendTempTask(_this, param).then(res => {
-           let msg = r.cmd?"暂停":"播放"
+          let msg = r.cmd ? "暂停" : "播放";
           if (res.body.result === 200) {
             _this.$message({
-              message: msg+"下发成功",
+              message: msg + "下发成功",
               type: "success"
             });
-            r.cmd = !r.cmd
+            r.cmd = !r.cmd;
           } else {
-            this.$message.error(msg+"下发失败");
+            this.$message.error(msg + "下发失败");
           }
           this.tempVisible = false;
         });
@@ -272,32 +298,36 @@ export default {
         this.$refs.tempForm.validate(valid => {
           if (valid) {
             let param = null;
-            if(_this.tempForm.type==='1'){
+            if (_this.tempForm.type === "1") {
               param = {
-              customId: _this.$store.state.user.customId,
-              nvPointName: "",
-              audioUrl: _this.tempForm.audioUrl.join(","),
-              command: "2",
-              robotId: _this.tempForm.robotId,
-              roomId: this.filters.roomId
+                customId: _this.$store.state.user.customId,
+                nvPointName: "",
+                audioUrl: _this.tempForm.audioUrl.join(","),
+                command: "2",
+                robotId: _this.tempForm.robotId,
+                roomId: this.filters.roomId
+              };
+            } else {
+              let points = [],
+                audios = [],
+                devices = this.tempForm.devs,
+                l = devices.length,
+                devs = this.devs;
+              for (var i = 0; i < l; i++) {
+                (i => {
+                  let dev = devs.find(item => item.deviceId === devices[i]);
+                  points.push(dev.point.nvPointName);
+                  audios.push(dev.audioUrl);
+                })(i);
               }
-            }else{
-              let points =[],audios=[],devices = this.tempForm.devs,l= devices.length, devs = this.devs;
-              for(var i=0;i<l;i++){
-                ((i)=>{
-                let dev = devs.find(item=>(item.deviceId===devices[i]));
-                     points.push(dev.point.nvPointName);
-                     audios.push(dev.audioUrl);  
-                })(i)  
-              }
-              param={
-                  customId: _this.$store.state.user.customId,
-                  nvPointName: points.join(','),
-                  audioUrl: audios.join(","),
-                  command: "2",
-                  robotId: _this.tempForm.robotId,
-                  roomId: this.filters.roomId 
-              }
+              param = {
+                customId: _this.$store.state.user.customId,
+                nvPointName: points.join(","),
+                audioUrl: audios.join(","),
+                command: "2",
+                robotId: _this.tempForm.robotId,
+                roomId: this.filters.roomId
+              };
             }
             sendTempTask(_this, param).then(res => {
               if (res.body.result === 200) {
@@ -314,7 +344,7 @@ export default {
           }
         });
       }
-    }, 
+    }
   },
   mounted() {
     this.getRooms();
@@ -347,6 +377,6 @@ export default {
 .cmd {
   font-size: 20px;
   color: #00ffff;
-  cursor:default,
+  cursor: default;
 }
 </style>

@@ -15,11 +15,6 @@ export default {
 	}, room) {
 		commit(types.SET_ROOM,room);
 	},
-	setTask({
-		commit
-	}, task) {
-		commit(types.SET_TASK,task);
-	},
 	setRooms({
 		commit
 	},data){

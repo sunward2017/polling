@@ -4,15 +4,25 @@
 		<el-col :span="24" class="toolbar">
 			<el-form :inline="true" :model="filters">
 				<el-form-item label="巡检机房" prop="roomId"> 
-					<el-select v-model="filters.roomId" style="width:90%">
+					<el-select v-model="filters.roomId" style="width:90%"  @change="changeRoom">
 						<el-option v-for="item in rooms" :key="item.roomId" :label="item.roomName" :value="item.roomId">
 						</el-option>
 					</el-select>
 			    </el-form-item>
-				<!-- <el-form-item label="时间区间" style="width:320px;">
-					<el-date-picker style="width:110%" v-model="filters.timeStamp" type="daterange" unlink-panels range-separator=" __至__" start-placeholder="开始日期" value-format="yyyy-MM-dd" end-placeholder="结束日期" :picker-options="pickerOptions2">
+				<el-form-item>
+					<el-select v-model="filters.robotId" placeholder="请选择机器人" @change="changeRobot">
+					<el-option
+						v-for="item in robots"
+						:key="item.roomId"
+						:label="item.robotName"
+						:value="item.robotId"
+					></el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="时间区间" style="width:320px;">
+					<el-date-picker style="width:110%" v-model="filters.timeStamp" type="daterange" unlink-panels range-separator=" __至__" start-placeholder="开始日期" value-format="yyyy-MM-dd" end-placeholder="结束日期" :picker-options="pickerOptions">
 					</el-date-picker>
-				</el-form-item>  -->
+				</el-form-item> 
 				<el-form-item>
 					<el-button icon="search" type="primary" v-on:click="getList">查询</el-button>
 				</el-form-item>
@@ -22,7 +32,7 @@
 			<el-table :data="rows" highlight-current-row v-loading="listLoading" style="width: 100%;">
 				<el-table-column type="index" width="80" label="序号" align="center">
 				</el-table-column>
-				<el-table-column prop="nvPointName" label="导航点" align="center">
+				<el-table-column prop="fileName" label="视频名称" align="center">
 				</el-table-column>
 				<el-table-column prop="timeStamp" label="创建时间" align="center" sortable :formatter="formatTime">
 				</el-table-column>
@@ -48,7 +58,8 @@
 <script>
 	import NProgress from 'nprogress'
 	import { parseTime } from 'utils';
-	import { getAudiosByRoom,devList } from 'api/room';
+	import { getVideosByRoom} from 'api/room';
+	import {getRobotList} from 'api/robot';
     import Play from 'components/video'
 	
 	export default {
@@ -57,42 +68,44 @@
 		},
 		data() {
 			return {
-				// pickerOptions2: {
-				// 	shortcuts: [{
-				// 		text: '最近一周',
-				// 		onClick(picker) {
-				// 			const end = new Date();
-				// 			const start = new Date();
-				// 			start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
-				// 			picker.$emit('pick', [start, end]);
-				// 		}
-				// 	}, {
-				// 		text: '最近一个月',
-				// 		onClick(picker) {
-				// 			const end = new Date();
-				// 			const start = new Date();
-				// 			start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
-				// 			picker.$emit('pick', [start, end]);
-				// 		}
-				// 	}, {
-				// 		text: '最近三个月',
-				// 		onClick(picker) {
-				// 			const end = new Date();
-				// 			const start = new Date();
-				// 			start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
-				// 			picker.$emit('pick', [start, end]);
-				// 		}
-				// 	}]
-				// },
+				pickerOptions: {
+					shortcuts: [{
+						text: '最近一周',
+						onClick(picker) {
+							const end = new Date();
+							const start = new Date();
+							start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+							picker.$emit('pick', [start, end]);
+						}
+					}, {
+						text: '最近一个月',
+						onClick(picker) {
+							const end = new Date();
+							const start = new Date();
+							start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+							picker.$emit('pick', [start, end]);
+						}
+					}, {
+						text: '最近三个月',
+						onClick(picker) {
+							const end = new Date();
+							const start = new Date();
+							start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+							picker.$emit('pick', [start, end]);
+						}
+					}]
+				},
 				filters: {
 					roomId: '',
 					timeStamp:'',
+					robotId:'',
 				},
 				total: 0,
 				page: 1,
 				size: 10,
 				rooms: [],
 				rows: [],
+				robots:[],
 				listLoading: false,
 				videoUrl:'',
 				videoVisible:false,
@@ -125,25 +138,33 @@
 			closeVideo(done){
 				this.videoVisible = false; 
 			},
+            changeRoom(v) {
+				this.robots = this.rooms.find(i => i.roomId === v).robotList;
+				this.filters.robotId = this.robots.length > 0 ? this.robots[0].robotId : "";
+				if(this.filters.robotId){
+					this.getList();
+				}
+			},
+			 changeRobot() {
+				this.getList()
+			},
 			getList() {
-				// if(!this.filters.timeStamp[0]||!this.filters.timeStamp[1]) return; 
-			    // let	startTime=parseTime(this.filters.timeStamp[0], '{y}-{m}-{d} {h}:{i}:{s}');
-			    // let end =parseTime(this.filters.timeStamp[1], '{y}-{m}-{d} {h}:{i}:{s}' ); 
-			    // let  times = end.split(' ')[1].split(':');
-			    
-			    // let	 endTime = (times.every(i=>{return i==="00"}))?`${end.split(' ')[0]} 23:59:59`:end;    
-			    
-				
 				this.listLoading = true;
 				NProgress.start();
 				let self = this, 
 				para = {
 					page: this.page,
 					pageSize: this.size,
-					roomId: this.filters.roomId,
-				    fileType:'1',
+					robotId: this.filters.robotId,
 				};
-				getAudiosByRoom(self, para).then((res) => {
+				 
+				if(this.filters.timeStamp.length>1){
+                      let start = parseTime(this.filters.timeStamp[0], '{y}-{m}-{d}');
+					  let end = parseTime(this.filters.timeStamp[1], '{y}-{m}-{d}' );
+					 para.starttime = `${start} 00:00:00`;
+					 para.endtime = `${end} 23:59:59`
+				}
+				getVideosByRoom(self, para).then((res) => {
                     if(res.body.data) {
                         this.rows = res.body.data.list.map(item=>({...item,...item.nvPointInfo}));
                         this.total = res.data.data.total;
@@ -159,7 +180,6 @@
 		mounted() {
 		   this.rooms = this.$store.state.rooms;
 		   this.filters.roomId = this.$store.state.room||this.rooms[0].roomId;
-		   this.getList();
 		},
 	}
 </script>

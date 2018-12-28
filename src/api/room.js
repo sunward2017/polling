@@ -20,9 +20,12 @@ export const getRobotWarnList = (self, params) => { return self.$http.jsonp(base
 
 export const getAudiosByRoom = (self, params) => { return self.$http.get(baseUrl + '/v1/listFilesByRoomId.action', { params: params }) };
 
+export const getFilesByRoom = (self, params) => { return self.$http.get(baseUrl + '/v1/listFiles.action', { params: params }) };
+
 export const removeAudio = (self, params) => { return self.$http.get(baseUrl + '/v1/deleteFile.action', { params: params }) };
 
 export const uploadThe = (self, params) => { return self.$http.get(baseUrl + '/testUploadTh.action', { params: params }) };
+
 
 //巷道
 export const createArea = (self, param) => { return self.$http.post(baseUrl + '/v1/createAreaInfo.action', param, { emulateJSON: true }) };
@@ -61,6 +64,9 @@ export const saveDevices = (self, param) => {
 };
 
 export const delDevice = (self, param) => { return self.$http.post(baseUrl + '/v1/deleteDeviceInfo.action', param, { emulateJSON: true }) };
+
+//视频
+export const getVideosByRoom =   (self, params) => { return self.$http.get(baseUrl + '/v1/listHistoryVideos.action', { params: params }) };
 
 
 

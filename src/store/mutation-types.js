@@ -5,9 +5,5 @@ export const SET_ROBOTID = 'SET_ROBOTID';
 
 export const SET_ROOM = 'SET_ROOM';
 
-export const SET_FILTERROOM = 'SET_FILTERROOM';
-
-export const SET_TASK = 'SET_TASK'
-
 export const SET_ROOMS ='SET_ROOMS'
 

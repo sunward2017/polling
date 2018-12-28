@@ -235,15 +235,9 @@
 
 export function compareU(pro) { 
   return function (obj1, obj2) { 
-      var val1 = +obj1[pro].split(",")[0]; 
-      var val2 = +obj2[pro].split(',')[0]; 
-      if (val1 < val2 ) { //倒序
-          return 1; 
-      } else if (val1 > val2 ) { 
-          return -1; 
-      } else { 
-          return 0; 
-      } 
+      var val1 = +obj1[pro].split("-")[0]; 
+      var val2 = +obj2[pro].split('-')[0]; 
+      return val2-val1;
   } 
 }
 
@@ -279,7 +273,12 @@ export var cloneObj=function clone(obj){
 return result;
 }
 
-
+export function randomColor(){
+  var r = Math.floor(Math.random()*256);
+  var g = Math.floor(Math.random()*256);
+  var b = Math.floor(Math.random()*256);
+  return "rgba("+r+","+g+","+b+",0.2)";
+}
 
 // 进入全屏
 export function requestFullScreen () {
@@ -308,3 +307,4 @@ export function exitFullscreen () {
     document.msExitFullscreen()
   }
 }
+

@@ -18,7 +18,6 @@
 				<el-form-item>
 					<el-button class="filter-item" icon="plus" type="success" @click="handleAdd">新增</el-button>
 				</el-form-item>
-				
 			</el-form>
 		</el-col>
 		<!--列表-->
@@ -43,7 +42,7 @@
 						<!-- </el-popover> -->
 					</template>
 				</el-table-column>
-				<el-table-column prop="customName" label="所属机构" width="150" v-if="isShow">
+				<el-table-column prop="customName" label="所属机构" width="200" v-if="isShow">
 				</el-table-column>
 				<el-table-column prop="position" label="地址" >
 				</el-table-column>
@@ -61,7 +60,7 @@
 						<el-tag :type="scope.row.roomStatus==1?'success':'danger'">{{scope.row.roomStatus==1?"启用":"禁用"}}</el-tag>
 					</template>
 				</el-table-column>
-				<el-table-column inline-template :context="_self" label="操作" width="420" align="center">
+				<el-table-column inline-template :context="_self" label="操作" :width="isShow?520:420" align="center">
 					<span>
  						<el-button size="small" icon="edit" @click="handleEdit(row)">编辑</el-button>
  						<el-button type="primary" icon="information" size="small" v-if="isShow" @click="upRoomMap(row)">地图配置</el-button> 
@@ -92,7 +91,7 @@
 					</el-table-column>
 					<el-table-column prop="realtimeStatus" label="运行情况" align="center" :formatter="formatStatus">
 					</el-table-column>
-					<el-table-column prop="status" width="100" label="状态">
+					<el-table-column prop="status" width="120" label="状态" align="center">
 						<template scope="scope">
 							<!--<el-tag :type="scope.row.status==1?'success':'danger'">{{scope.row.status==1?"启用":"禁用"}}</el-tag>-->
 							<el-tag :type="type(scope.row.status)">{{formatRealTimeStatus(scope.row)}}</el-tag>
@@ -128,11 +127,11 @@
 				<el-form-item label="地址" prop='position'  >
 					<el-input v-model="editForm.position" auto-complete="off"></el-input>
 				</el-form-item>
-				<el-form-item label="机器人">
+				<!-- <el-form-item label="机器人">
 					<el-select v-model="editForm.robots" multiple placeholder="请选择机器人" style="width:100%">
 						<el-option v-for="item in robots" :key="item.robotId" :label="item.robotName" :value="item.robotId"></el-option>
 					</el-select>
-				</el-form-item>
+				</el-form-item> -->
 				<el-form-item label="初始化点" prop='startPoint' class="item">
 					<el-input v-model="editForm.startPoint" auto-complete="off"></el-input>
 				</el-form-item>
@@ -291,11 +290,10 @@
 	import { realtimeStatus, realTimeTypes, robotStatusForObj, robotStatusTypes } from '@/const';
 	import { getRoomList, getRoomDetail, saveRoom, removeRoom,removeAudio,getAudiosByRoom} from 'api/room';
 	import { parseTime } from 'utils';
-	import { getRobotList } from 'api/robot' 
 	import UpMapload from 'components/upload/upMap';
 	import NavConfigList from 'components/navConfig';
 	import NavConfigForm from 'components/navConfig/NavConfigForm';
-	import { getCustoms } from 'api/admin';
+	import { getCustoms } from 'api/personnel';
 	import{ uploadFileUrl } from 'api/api';
 
 	export default {
@@ -328,7 +326,6 @@
 				customs: [],
 				allCustom: [],
 				robotListLoading: false,
-				deviceListLoading: false,
 				editFormVisible: false, //编辑界面显是否显示
 				editFormTtile: '编辑', //编辑界面标题
 				//detial
@@ -444,10 +441,10 @@
 			handlePreview(file,fileList){
 				if(this.fileList.length>4){
 					this.$notify.info({
-							title: '提示',
-							message: '最多只能保存5条，请先删除后再上传',
-							duration:2000,
-							offset: 300
+						title: '提示',
+						message: '最多只能保存5条，请先删除后再上传',
+						duration:2000,
+						offset: 300
 					}); 
 					return false;
 				}else{
@@ -487,7 +484,7 @@
 			handleError(e,file,fileList){
 				this.$notify.error({
 					title: '失败',
-					message: '文件上传失败',
+					message: '通信失败',
 					duration:2000,
 					offset: 300
 				});
@@ -495,7 +492,7 @@
 			},
 			handleRemove(file,fileList){
 			   let _this = this;
-               removeAudio(_this,{fileId:file.fileId}).then(res=>{
+               removeAudio(_this,{fileId:file.fileId,fileUrl:file.fileUrl}).then(res=>{
                   if(res.body.result===200){
 					 this.$notify.success({
 						title: '成功',
@@ -511,26 +508,27 @@
 						offset: 300
 					});	  
 				  }
+				   this.getFileByRoom()
 			   })
-			   this.getFileByRoom()
+			  
 			},
 			uploadAudio(r){
 				let _this= this;
-				getAudiosByRoom(_this,{roomId:r.roomId,taskType:'4'}).then(res=>{
+				getAudiosByRoom(_this,{roomId:r.roomId,page:1,pageSize:0,taskType:'4'}).then(res=>{
 					let body = res.body
 				  if(body.result==200){
 					this.dialogVisible = true;
 				    this.para = {roomId:r.roomId,taskType:'4'}
-					this.fileList=body.data?body.data.map(item=>({name:item.fileName,fileId:item.fileId})):[];
+					this.fileList=body.data?body.data.list.map(item=>({name:item.fileName,fileId:item.fileId,fileUrl:item.fileUrl})):[];
 				  }
 				})	 
 			},
 			getFileByRoom(){
 				let _this =this;
-                getAudiosByRoom(_this,{roomId:this.currentRoom.roomId,taskType:'4'}).then(res=>{
+                getAudiosByRoom(_this,{roomId:this.currentRoom.roomId,taskType:'4',page:1,pageSize:0,}).then(res=>{
 					let body = res.body
 				  if(body.result==200){
-					this.fileList=body.data?body.data.map(item=>({name:item.fileName,fileId:item.fileId})):[];
+					this.fileList=body.data?body.data.list.map(item=>({name:item.fileName,fileId:item.fileId,fileUrl:item.fileUrl})):[];
 				  }
 				})
 			},
@@ -555,16 +553,6 @@
 				this.page = 1;
 				this.size = size;
 				this.getList();
-			},
-			getRobots() {
-				let self = this;
-				getRobotList(self, {page:1,pageSize:50}).then((res) => {
-					 if(res.body.result==200){
-						 this.robots=res.body.data?res.body.data.list:[]
-					 }else{
-						 console.log('get robots error')
-					 }
-				})
 			},
 			closeEditFrom: function() {
 				this.editFormVisible = false;
@@ -623,10 +611,8 @@
 			showDetail: function(r, e, c) {
 				this.currentRoom =r;
 				this.robotListLoading = true;
-				this.deviceListLoading = true;
 				if(!r.roomId || r.roomId == '') {
 					this.robotListLoading = false;
-					this.deviceListLoading = false;
 					return
 				}
 				let para = {
@@ -637,10 +623,9 @@
 				getRoomDetail(self, para).then((res) => {
 					if(res.body.data){
 						this.robotList = res.body.data.robotList;
-						this.deviceList = res.body.data.rbDeviceInfos?res.body.data.rbDeviceInfos.map(item=>({deviceName:item.deviceName,nvPointName:item.point.nvPointName})):[];
-						this.robotListLoading = false;
-						this.deviceListLoading = false;
+						this.deviceList = res.body.data.rbDeviceInfos?res.body.data.rbDeviceInfos:[];
 					}
+					this.robotListLoading = false;
 					NProgress.done();
 				})
 			},
@@ -687,26 +672,9 @@
 			},
 			//显示编辑界面
 			handleEdit: function(row) {
-				this.getRobots();
 				this.editFormVisible = true;
 				this.editFormTtile = '编辑';
-				this.editForm.roomId = row.roomId,
-				this.editForm.roomName = row.roomName,
-				this.editForm.description = row.description,
-				this.editForm.position = row.position,
-				this.editForm.robots = row.robotList?row.robotList.map(item=>(item.robotId)):[]; 
-				this.editForm.roomStatus = row.roomStatus.toString();
-				this.editForm.custom = row.customId;
-				this.editForm.scaleUpper = row.scaleUpper;
-				this.editForm.scaleLower = row.scaleLower;
-				this.editForm.warnUpper = row.warnUpper;
-				this.editForm.warnLower = row.warnLower;
-				this.editForm.scaleUpperH = row.scaleUpperH;
-				this.editForm.scaleLowerH = row.scaleLowerH
-				this.editForm.warnUpperH = row.warnUpperH;
-				this.editForm.warnLowerH = row.warnLowerH;
-				this.editForm.fileId = row.fileId;
-				this.editForm.startPoint = row.startPoint;
+				this.editForm={...row,robots:row.robotList?row.robotList.map(item=>(item.robotId)):[]}
 			},
 			//编辑 or 新增
 			editSubmit: function() {
@@ -819,7 +787,6 @@
 
 				this.editFormVisible = true;
 				this.editFormTtile = '新增';
-				this.getRobots();
 				this.editForm.custom = "",
 				this.editForm.roomId = '';
 				this.editForm.roomName = '';

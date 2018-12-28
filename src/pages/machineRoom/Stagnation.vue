@@ -96,7 +96,7 @@
 				<el-form-item label="导航点名称" prop="nvPointName">
 					<el-input v-model="stagnationForm.nvPointName"></el-input>
 				</el-form-item>
-				<el-form-item label="导航点坐标">
+				<el-form-item label="导航点坐标" :rules="{required: true, message: '坐标不可为空', trigger: 'blur'}">
 					<el-col :span="11">
 						<el-form-item prop="x">
 							<el-input v-model="stagnationForm.x" placeholder="请输入X轴坐标"></el-input>
@@ -156,7 +156,7 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="焦距" prop="cameraZoom" class="form_col" v-if="workerForm.commandType==='1'">
+          <el-form-item label="焦距" prop="cameraZoom" class="form_col" v-if="workerForm.commandType==='1'||workerForm.commandType==='4'">
             <el-input v-model="workerForm.cameraZoom" placeholder="请输入焦距"></el-input>
           </el-form-item>
           <el-form-item label="闪光灯" prop="cameraLight" class="form_col"  v-if="workerForm.commandType==='1'" required>
@@ -187,7 +187,10 @@
           <el-form-item label="持续时长" prop="waitTime" class="form_col" required>
             <el-input v-model="workerForm.waitTime" placeholder="请输入时长（秒）">mm</el-input> 
           </el-form-item>
-        </template> 
+        </template>
+        <el-form-item label="执行顺序" prop="orderId" class="form_col" required>
+            <el-input v-model="workerForm.orderId" placeholder="请输入数字"></el-input> 
+        </el-form-item> 
 			</el-form>
       <span slot="footer" class="dialog-footer">
         <el-button type="info" @click="workerVisible=false">取消</el-button>
@@ -218,17 +221,24 @@ import { listRfidTpl } from "api/template";
 export default {
   data() {
     var checkNum=(rule, value, callback)=>{
-       value += '';
+        if (value!==0&&!value) {
+          return callback(new Error('不能为空'));
+        }
+        let reg = null;
+        switch(rule.field){
+          case 'levelAngle':
+          case 'elevation': reg = /^-?[0-9]+.?[0-9]*$/; break;
+          case 'cameraZoom':
+          case 'neckHeight': reg = /^[0-9]+.?[0-9]*$/;break;
+          default: reg = /^[1-9]\d*$/
+        }
 				setTimeout(() => {
-					if(value !== '') {
-						if(isNaN(value) || value.replace(/^\s+|\s+$/gm, '') === '') {
-							callback(new Error('请输入数字型'));
-						} else {
-							callback();
-						}
+					if(!reg.test(value)) {
+							callback(new Error('输入类型错误'));
 					} else {
-						callback();
+							callback();
 					}
+				 
 				}, 500);
     };
     return {
@@ -325,6 +335,7 @@ export default {
           elevation:[{   required: true,validator: checkNum,	trigger: 'blur'}],
           cameraZoom:[{  required: true,validator: checkNum,	trigger: 'blur'}],
           waitTime:[{  required: true,validator: checkNum,	trigger: 'blur'}],
+          orderId:[{  required: true,validator: checkNum,	trigger: 'blur'}],
       },
       areaSubmitLoading:false,
       stagSubmitLoading:false,
@@ -342,7 +353,7 @@ export default {
     getTpls() {
       let self = this;
       listRfidTpl(self).then(res => {
-         if(res.body.result===200){
+         if(res.body.result===200||res.body.result===204){
             self.tpls = res.body.data?res.body.data:[];   
          }else{
             self.tpls = [];
@@ -571,7 +582,7 @@ export default {
         this.$message("请点击导航点图表，选择导航点");
         return;
       }
-      this.workerForm = { nvPointId: this.currentStag.nvPointId,cameraLight:"2",needDetect:"1" };
+      this.workerForm = { nvPointId: this.currentStag.nvPointId,cameraLight:"2",needDetect:"0" };
       this.workerVisible = true;
     },
     saveWorker() {
@@ -632,7 +643,7 @@ export default {
         i.cameraLight || i.cameraLight === 0 ? i.cameraLight + "" : null;
       i.needDetect =
         i.needDetect || i.needDetect === 0 ? i.needDetect + "" : null;
-      this.workerForm = i;
+      this.workerForm = {...i};
       this.workerVisible = true;
     },
     handleDeleteWorker(row) {
@@ -715,6 +726,7 @@ export default {
   margin-bottom: 20px;
   font-size: 14px;
   color: #333;
+  text-align: right;
 }
 
 .line {

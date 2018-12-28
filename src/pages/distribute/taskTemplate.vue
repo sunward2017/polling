@@ -84,7 +84,7 @@ export default {
     };
   },
   computed:{
-     ...mapState(['rooms','robotId'])
+     ...mapState(['rooms','room'])
   },
   methods: {
     //获取模板
@@ -144,9 +144,7 @@ export default {
         cancelButtonText: "取消",
         showClose:false,
         inputPattern: /^(?![0-9])[\u4e00-\u9fa5a-zA-Z0-9]+$/,
-        inputErrorMessage:
-          "模板名称只能是中文、英文、数字组合，且不可以数字开头！"
-      }).then(({ value }) => {
+        inputErrorMessage: "模板名称只能是中文、英文、数字组合，且不可以数字开头！" }).then(({ value }) => {
           this.tplTreeData[0].children.push({templateName:value,tempId:guid()})
       }).then()
     },
@@ -277,7 +275,7 @@ export default {
     },
   },
   mounted() {
-    this.filters.roomId = this.robotId.roomId;
+    this.filters.roomId = this.room;
     this.rowDrop();
   }
 };

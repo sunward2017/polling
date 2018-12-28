@@ -55,8 +55,8 @@
 				<el-table-column prop="HumidityUrl" label="分布图" align="center" width="220">
 					<template scope="scope">
 						<el-button-group>
-						<el-button type="primary" v-if="scope.row.HumidityUrl" @click="showDetail({flag:1,r:scope.row})" size="small">湿度 </el-button>
-						<el-button  v-if="scope.row.imgUrl" @click="showDetail({flag:2,r:scope.row})" size="small">温度</el-button>
+						<el-button type="primary" v-if="scope.row.humidityUrl" @click="showDetail({flag:1,r:scope.row})" size="small">湿度 </el-button>
+						<el-button  v-if="scope.row.imageUrl" @click="showDetail({flag:2,r:scope.row})" size="small">温度</el-button>
 						<el-button  type="success" @click="create(scope.row)" size="small">生成</el-button>
 						</el-button-group>
 					</template>
@@ -99,7 +99,7 @@ export default {
     };
   },
   computed:{
-     ...mapState(['rooms','robotId'])
+     ...mapState(['rooms','room'])
   },
   methods: {
     formatTime(r, c) {
@@ -145,11 +145,11 @@ export default {
       if (obj.flag === 1 && obj.r.taskName) {
         this.bigImgTitle = obj.r.taskName + "_湿度分布图";
         this.currentUrl =
-          `${baseImgUrl}/${obj.r.HumidityUrl}?` + new Date().valueOf();
+          `${baseImgUrl}/${obj.r.humidityUrl}?` + new Date().valueOf();
       } else if (obj.flag === 2 && obj.r.taskName) {
         this.bigImgTitle = obj.r.taskName + "_温度分布图";
         this.currentUrl =
-          `${baseImgUrl}/${obj.r.imgUrl}?` + new Date().valueOf();
+          `${baseImgUrl}/${obj.r.imageUrl}?` + new Date().valueOf();
       }
       let _this = this;
       this.$nextTick(() => {
@@ -187,7 +187,7 @@ export default {
     }
   },
   mounted() {
-	 this.filters.roomId = this.robotId.roomId;
+	 this.filters.roomId = this.room;
 	 this.getList();
   }
 };

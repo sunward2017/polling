@@ -117,12 +117,12 @@
               </el-form-item>
           </el-col>
 				</el-form-item>
-				<el-form-item label="避开巷道" prop="prohibitedAreaId">
+				<!-- <el-form-item label="避开巷道" prop="prohibitedAreaId">
 					<el-select v-model="editForm.prohibitedAreaId" clearable  placeholder="请选择避开巷道" style="width:100%">
 						<el-option v-for="(k,v,index) in prohibitedAreas" :key="index" :label="k" :value="v">
 						</el-option>
 					</el-select>
-				</el-form-item>
+				</el-form-item> -->
 				<el-form-item label="避开时区">
 					 <el-date-picker
               v-model="editForm.timeSection"
@@ -250,7 +250,7 @@ import {
   pauseTask,
   sendTempTask
 } from "api/results";
-import { getRoomList, getRoomDetail, roadwayList,stagList,getAudiosByRoom } from "api/room";
+import { getRoomDetail, roadwayList,stagList } from "api/room";
 import { TASKEXECTYPES, CMDTYPES,CMDSTATUS } from "@/const";
 import Sortable from 'sortablejs'
 
@@ -422,11 +422,11 @@ export default {
       }).then(res => {
         if (res.data.result === 200) {
           self.roadwayData = res.data.data;
-          self.getRooms();
         } else {
           self.roadwayData = [];
           console.log('get area error')
         }
+         self.getRooms();
       });
     },
     editSubmit() {
@@ -550,7 +550,7 @@ export default {
     },
     getRooms() {
        this.rooms = this.$store.state.rooms;
-       this.filters.roomId =  this.$store.state.robotId.roomId;
+       this.filters.roomId =  this.$store.state.room;
        this.getTaskByRoom();
     },
     

@@ -86,11 +86,11 @@ export default {
         //绑定验证规则
         account: [
           { required: true, trigger: "blur", validator: validateEmail }
-          //{ validator: validaePass }
+           
         ],
         password: [
           { required: true, trigger: "blur", validator: validatePass }
-          //{ validator: validaePass2 }
+          
         ]
       },
       checked: true,
@@ -103,6 +103,19 @@ export default {
   methods: {
     handleReset2() {
       this.$refs.ruleForm2.resetFields();
+    },
+    renderMenu(auth,menus){
+        function roleAuth(data){
+          data.map(item=>{
+             if(item.children){
+                item.hidden = !item.children.some(m=>(auth.includes(m.key+'')))
+                roleAuth(item.children)  
+             }else{
+                item.hidden = !auth.includes(item.key+'');
+             } 
+          })
+       }
+       roleAuth(menus)
     },
     handleSubmit2(ev) {
       var _this = this;
@@ -127,13 +140,8 @@ export default {
               this.$store.dispatch("setAccount", body.data);
               if (this.$route.query.redirect) {
                 this.$router.push({ path: this.$route.query.redirect }); //指定路由；
-              } else {
-                this.$router.options.routes[8].children[0].hidden =
-                  this.ruleForm2.account === "admin" ? false : true;
-                this.$router.options.routes[9].children[1].hidden =
-                  res.data.data.customId === "a6a4b85d74d44341bfd53265521248a5"
-                    ? false
-                    : true;
+              } else {   
+                this.renderMenu(body.data.perminsStrlist,this.$router.options.routes)
                 this.$router.push({ path: "/" });
               }
             } else {

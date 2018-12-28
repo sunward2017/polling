@@ -8,7 +8,6 @@ const state = {
    user:'',
    robotId:'',
    room:'',
-   task:'',
    rooms:[],
 };
 

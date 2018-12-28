@@ -39,7 +39,7 @@
 <script scoped>
 	//import util from '../../common/util'
 	import NProgress from 'nprogress'
-	import { getCustomList, saveCustom, removeCustom } from '../../api/admin';
+	import { getCustomList, saveCustom, removeCustom } from 'api/personnel';
 
 	export default {
 		name: 'Custom',

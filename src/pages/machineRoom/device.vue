@@ -80,12 +80,12 @@
 				   </el-select>
 				</el-form-item>
         <el-form-item label="U位数" prop="units">
-				   <el-input v-model.number="devEditForm.units"></el-input>
+				   <el-input v-model.number="devEditForm.units" placeholder="范围1~99数值"></el-input>
 				</el-form-item>
 			</el-form>
 			<div slot="footer">
 			   <el-button @click="devFormVisible = false">取 消</el-button>
-         <el-button type="primary" @click.native="editSubmit">提交</el-button>
+         <el-button type="primary" @click.native="editSubmit" v-loading="subLoading">提交</el-button>
 			</div>
 		 </el-dialog>
 		<el-dialog title="上传设备EXCEL" v-model="uploadVisible" size="tiny" top="25%">
@@ -103,7 +103,6 @@
 // import util from '../../common/util'
 import NProgress from "nprogress";
 import {
-  getRoomList,
   devList,
   stagList,
   saveDevices,
@@ -120,20 +119,22 @@ export default {
     var checkNum = (rule, value, callback) => {
       setTimeout(() => {
         if (!Number.isInteger(value)) {
-          callback(new Error("请输入数字值"));
+          callback(new Error("请输入数字型"));
+        } else if (value < 0 || value > 99) {
+          callback(new Error("输入的数值已超出范围"));
         } else {
           callback();
         }
-      }, 1000);
+      }, 0);
     };
     return {
       filters: {
         roomId: "",
-        deviceName:'',
+        deviceName: ""
       },
       total: 0,
-			page: 1,
-			size: 10,
+      page: 1,
+      size: 10,
       uploadUrl: uploadAudioUrl,
       rooms: [],
       devRows: [],
@@ -147,47 +148,51 @@ export default {
         deviceName: [
           { required: true, message: "请输入设备名称", trigger: "change" }
         ],
-        units: [{ required:true,validator: checkNum, trigger: "blur" }]
+        nvPointId: [
+          { required: true, message: "请选择导航点", trigger: "change" }
+        ],
+        units: [{ required: true, validator: checkNum, trigger: "change" }]
       },
-      fileList:[],
-      audioVisible:false,
-      audioUrl:null,
+      fileList: [],
+      audioVisible: false,
+      audioUrl: null,
+      subLoading: false
     };
   },
   methods: {
     getRooms() {
-          this.rooms = this.$store.state.rooms;
-          let id=this.filters.roomId = this.$store.state.robotId.roomId
-          this.getStagList(id);
+      this.rooms = this.$store.state.rooms;
+      let id = (this.filters.roomId = this.$store.state.room);
+      this.getStagList(id);
     },
     handleCurrentChange(val) {
-				this.page = val;
-				this.getDevList();
-			},
-		handleSizeChange(size) {
-				this.page = 1;
-				this.size = size;
-				this.getDevList();
-			},
+      this.page = val;
+      this.getDevList();
+    },
+    handleSizeChange(size) {
+      this.page = 1;
+      this.size = size;
+      this.getDevList();
+    },
     getDevList() {
       let _this = this;
       NProgress.start();
       this.devListLoading = true;
       let para = {
         roomId: _this.filters.roomId,
-        deviceName:_this.filters.deviceName,
-        page:_this.page,
-        pageSize:_this.size
-      }
-      devList(_this,para).then(res => {
+        deviceName: _this.filters.deviceName,
+        page: _this.page,
+        pageSize: _this.size
+      };
+      devList(_this, para).then(res => {
         NProgress.done();
         this.devListLoading = false;
         if (res.data.data) {
           this.total = res.body.data.total;
-          this.devRows =  res.data.data.list;
+          this.devRows = res.data.data.list;
         } else {
           this.devRows = [];
-          this.total= 0;
+          this.total = 0;
         }
       });
     },
@@ -197,36 +202,44 @@ export default {
       this.getStagList();
     },
     handleEdit(r) {
-      this.devEditForm = { ...r };
+      this.devEditForm = {
+        ...r,
+        nvPointId: r.nvPointId != "undefined" ? r.nvPointId : ""
+      };
       this.devFormVisible = true;
     },
     editSubmit() {
       let _this = this;
+
       _this.$refs.editForm.validate(valid => {
         if (valid) {
-          _this.devEditForm.customerId = _this.$store.state.user.customId;
-          let para = {
-            roomId: _this.devEditForm.roomId,
-            nvPointId: _this.devEditForm.nvPointId,
-            deviceName: _this.devEditForm.deviceName,
-            units: _this.devEditForm.units
-          };
-          if (_this.devEditForm.deviceId) {
-            para.deviceId = _this.devEditForm.deviceId;
-          }
-          saveDevices(_this, para).then(res => {
-            if (res.data.result === 200) {
-              _this.$message({
-                message: "保存成功",
-                type: "success"
-              });
-            } else {
-              _this.$message.error("保存失败，请重试");
+          _this.$confirm("确认提交吗？", "提示", {}).then(() => {
+            _this.subLoading = true;
+            _this.devEditForm.customerId = _this.$store.state.user.customId;
+            let para = {
+              roomId: _this.devEditForm.roomId,
+              nvPointId: _this.devEditForm.nvPointId,
+              deviceName: _this.devEditForm.deviceName,
+              units: _this.devEditForm.units
+            };
+            if (_this.devEditForm.deviceId) {
+              para.deviceId = _this.devEditForm.deviceId;
             }
-            _this.devFormVisible = false;
-            _this.getDevList();
-          });
-        }
+            saveDevices(_this, para).then(res => {
+              _this.subLoading = false;
+              if (res.data.result === 200) {
+                _this.$message({
+                  message: "保存成功",
+                  type: "success"
+                });
+              } else {
+                _this.$message.error("保存失败，请重试");
+              }
+              _this.devFormVisible = false;
+              _this.getDevList();
+            });
+          }).catch(()=>{});
+        }  
       });
     },
     handleDel(row) {
@@ -272,11 +285,9 @@ export default {
       });
     },
     handlePreview(file) {
-      var strRegex =
-        "(.CD|.OGG|.MP3)$";
+      var strRegex = "(.CD|.OGG|.MP3)$";
       var reg = new RegExp(strRegex);
       if (reg.test(file.name.toUpperCase())) {
-        
         return true;
       } else {
         this.$notify.info({
@@ -296,8 +307,7 @@ export default {
         offset: 300
       });
       this.getDevList();
-      this.fileList=[];
-      
+      this.fileList = [];
     },
     handleError(e, file, fileList) {
       this.$notify.error({
@@ -306,8 +316,7 @@ export default {
         duration: 2000,
         offset: 300
       });
-      this.fileList=[];
-      
+      this.fileList = [];
     },
     formatStag(r, c) {
       return r.point ? r.point.nvPointName : "";
@@ -318,31 +327,31 @@ export default {
     closeUp() {
       this.uploadVisible = false;
     },
-    showAudio(r){
-      if(r.audioUrl){
+    showAudio(r) {
+      if (r.audioUrl) {
         this.audioUrl = r.audioUrl;
         this.audioVisible = true;
-        this.$nextTick(()=>{
-          document.getElementById('audio').load()
-        })
+        this.$nextTick(() => {
+          document.getElementById("audio").load();
+        });
       }
     }
   },
   mounted() {
-    this.getRooms()
+    this.getRooms();
   }
 };
 </script>
 <style scoped>
 .upload {
-   display: flex;
-   align-items: center;
+  display: flex;
+  align-items: center;
 }
-.audio{
-	  width: 100%;
-	  display: block;
-    background: rgb(1, 41, 41);
-    height: 32px;
-    color: #fff;
+.audio {
+  width: 100%;
+  display: block;
+  background: rgb(1, 41, 41);
+  height: 32px;
+  color: #fff;
 }
 </style>

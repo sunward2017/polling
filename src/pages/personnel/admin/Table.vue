@@ -27,10 +27,11 @@
 				</el-table-column>
 				<el-table-column prop="customId" label="所属机构" :formatter="formatCustom" sortable>  
 				</el-table-column>
-				<el-table-column inline-template :context="_self" label="操作" width="180">
+				<el-table-column inline-template :context="_self" label="操作" width="280">
 					<span>
 						<el-button size="small" icon="edit" @click="handleEdit(row)" align="center">编辑</el-button>
 						<el-button type="warning" icon="delete" size="small" @click="handleDel(row)">删除</el-button>
+						<el-button size="small" type="info" class="fa fa-cog" @click="handleRoles(row)" align="center">角色配置</el-button>
 					</span>
 				</el-table-column>
 			</el-table>
@@ -83,13 +84,26 @@
 			</div>
 		</el-dialog>
 
-		<el-dialog
-		  title="机构信息"
-		  v-model="dialogVisible"
-		  size="tiny"
-		  @close="close"
-		   >
+		<el-dialog title="机构信息" v-model="dialogVisible" size="tiny" @close="close">
 		   <Custom  ref="custom"></Custom>
+		</el-dialog>
+		<el-dialog title="角色配置" v-model="roleVisible" :close-on-click-modal="false" size="tiny">
+			<el-form :inline="true" :model="rolesForm" ref="roleForm"   class="demo-form-inline" label-width="60px">
+				<el-form-item label="角色" prop="roles" :rules="{ required: true, type:'array', message: '角色不能为空', trigger: 'blur' }" style="width:80%">
+				    <el-select v-model="rolesForm.roles" multiple placeholder="请选择" style="width:130%">
+						<el-option
+							v-for="item in options"
+							:key="item.id"
+							:label="item.roleName"
+							:value="item.id">
+						</el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item>
+					<el-button type="primary" @click="saveRole">保存</el-button>
+				</el-form-item>
+			</el-form>
+            
 		</el-dialog>
 	</section>
 </template>
@@ -97,7 +111,7 @@
 <script>
 	// import util from '../../common/util'
 	import NProgress from 'nprogress'
-	import { getAdminList,saveAccount,removeAccount,getCustoms} from 'api/admin';
+	import { getAdminList,saveAccount,removeAccount,getCustomList, getRoles,saveRoleWithManage,getRolesByManage} from 'api/personnel';
 	import  Custom  from 'components/custom';
 	export default {
 		name:'Table',
@@ -145,8 +159,13 @@
 							message: '请输入密码',
 							trigger: 'blur'
 						}],
+					},
+					roleVisible:false,
+					options:[],
+					rolesForm:{
+						uid:'',
+						roles:[],
 					}
-
 				}
 			},
 		methods: {
@@ -191,12 +210,17 @@
 			},
 			getCustoms:function(){
 			   let _this = this;
-			   let obj ={};
-			   getCustoms(_this,{}).then(function(res){
-			   	  _this.customList = res.body.data;
-			      res.body.data.forEach(function(v){
-			      	  obj[v.customId] = v.customName
-			      })
+			   let obj ={
+				   page:1,
+				   pageSize: 100,
+			   };
+			   getCustomList(_this,obj).then(function(res){
+				  if(res.body.data){ 
+					_this.customList = res.body.data.rows;
+					res.body.data.rows.forEach(function(v){
+						obj[v.customId] = v.customName
+					})
+				  }
 			   })
 			   this.customs=obj;
 			},
@@ -339,6 +363,53 @@
 			close:function(){
 				this.refreshCustom();
 				this.$refs.custom.finish();
+			},
+			handleRoles(r){
+				
+                let _this = this;
+				const { customId} = this.$store.state.user;
+				this.tableLoading = true,
+				getRoles(_this,{customId:customId}).then(res=>{
+					let {result,data} = res.data
+					if(result===200){
+						_this.options=data?data:[];
+					}
+				
+				})
+				getRolesByManage(_this,{uid:r.id,customId}).then(res=>{
+                    if(res.data.result==200){
+						let roles = res.data.data?res.data.data.filter(i=>(i.checked===1)).map(item=>(item.id)):[];
+						_this.rolesForm = {uid:r.id,roles}
+						_this.roleVisible = true;
+					}else{
+					   _this.$message.error("获取用户角色失败，请重试");
+					}
+				})
+
+				
+			},
+			
+			saveRole(){
+				let _this = this;
+               this.$refs.roleForm.validate((valid) => {
+					if(valid) {
+						_this.$confirm('确认提交吗？', '提示', {}).then(() => {
+							 let {roles,uid}= _this.rolesForm
+							     roles=roles.map(i=>({rid:i}))
+                               saveRoleWithManage(_this,{xinfo:JSON.stringify({roles,uid})}).then(res=>{
+                                if (res.data.result === 200) {
+									_this.$message({
+									message: "保存成功",
+									type: "success"
+									});
+								} else {
+									_this.$message.error("保存失败，请重试");
+								}
+								_this.roleVisible = false;
+							}).catch(e=>{})  
+						}).catch(e=>{})
+					}
+			   })		
 			}
 		},
 		mounted() {

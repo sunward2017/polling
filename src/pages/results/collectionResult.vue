@@ -24,14 +24,18 @@
 			<el-table :data="collections" highlight-current-row v-loading="listLoading" style="width: 100%;">
 				<el-table-column type="index" width="80" label="序号" align="center">
 				</el-table-column>
-				<el-table-column prop="deviceName" label="设备名称" width="200" align="center" sortable>
+				<el-table-column prop="deviceName" label="设备名称" width="200"   align="center"  >
 				</el-table-column>
-				<el-table-column prop="rfidId" label="巡检驻点" width="150" align="center" sortable>
+			    <el-table-column prop="resultType" label="告警类型" align="center"  width='120'>
+				  <template scope="scope">
+				     <el-tag> 
+						 {{scope.row.resultType===1?"指示灯告警":''}}
+					 </el-tag>
+				  </template>	 
 				</el-table-column>
-				<el-table-column prop="mark" label="告警标识" align="center" sortable>
-					<template scope="scope">
-						<el-tag type="warning">{{scope.row.mark}}</el-tag>
-					</template>
+				<el-table-column prop="detectValue" label="所在U位" align="center" sortable>
+				</el-table-column>
+				<el-table-column prop="description" label="告警标识" align="center" sortable>
 				</el-table-column>
 				<!--<el-table-column prop="normalValue" label="正常值" align="center" width="150">
 				</el-table-column>-->
@@ -47,7 +51,7 @@
 				</el-table-column>
 				<el-table-column prop="detectUrl" label="识别图" align="center" width="180">
 					<template scope="scope">
-						<el-button type="primary" @click="showDetail(2,scope.row.detectUrl)" size="small">
+						<el-button type="primary" @click="showDetail(2,scope.row.detectResultUrl)" size="small">
 							识别图
 						</el-button>
 					</template>
@@ -110,7 +114,7 @@
 			},
 			getRooms() {
 				this.rooms = this.$store.state.rooms
-				this.filters.roomId = this.$store.state.robotId.roomId;
+				this.filters.roomId = this.$store.state.room;
 				this.getList();
 			},
 			getList() {
@@ -124,19 +128,7 @@
 				let self = this;
 				getWarningByDetect(self, para).then((res) => {
 					if(res.data.data && res.data.data.list.length > 0) {
-						this.collections = res.data.data.list.map((item) => {
-							item.deviceName = item.irDeviceInfo && item.irDeviceInfo.deviceName ? item.irDeviceInfo.deviceName : '未知';
-							item.rfidId = item.irDeviceInfo && item.irDeviceInfo.rfidId ? item.irDeviceInfo.rfidId : '未知';
-							item.fileUrl =item.fileInfos[0].fileUrl;
-							item.detectUrl =item.fileInfos[0].detectResultUrl;
-//							if(this.$store.state.user.customId === "a6a4b85d74d44341bfd53265521248a5") {
-//								var pct=item.fileInfos[0].fileName.split(".");
-//								item.detectUrl=`/ordinary/picture/output/${pct[0]}_out.${pct[1]}`;
-//							} else {
-//								item.detectUrl="/image/" + item.fileInfos[0].fileUrl.split('/')[4]
-//							};
-							return item;
-						})
+						this.collections = res.data.data.list.map((item) => ({...item,...item.deviceInfo,...item.fileInfo}));
 						this.total = res.data.data.total;
 					} else { 
 						this.total = 0;

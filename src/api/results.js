@@ -22,6 +22,7 @@ export const currentTask = (self, params) => { return self.$http.post(baseUrl + 
 
 export const currentTaskDetail = (self, params) => { return self.$http.post(baseUrl + "/v1/listTaskDetailsByTask.action", params, { emulateJSON: true }) };
 
+export const siteTask = (self, params) => { return self.$http.post(baseUrl + "/v1/listTasksWithInfraredPictures.action", params, { emulateJSON: true }) };
 
 
 //任务模版
@@ -34,7 +35,8 @@ export const templateList = (self, params) => { return self.$http.post(baseUrl +
 
 export const deleteTemplate = (self, params) => { return self.$http.post(baseUrl + "/v1/deleteTemplateInfo.action", params, { emulateJSON: true }) };
 
-
+export const updateTaskCurrent = (self, params) => { return self.$http.post(baseUrl + "/v1/updateTaskCurrent.action", params, { emulateJSON: true }) };
+ 
 
 export const getThermalResults = (self, params) => { return self.$http.get(baseUrl+"/v1/getTaskResultList.action", { params: params }) };
 
@@ -42,7 +44,8 @@ export const getTaskResults = (self, params) => { return self.$http.get("/web/ge
 
 export const getTaskDetail = (self, params) => { return self.$http.get(baseUrl+"/v1/listFilesByTaskId.action", { params: params }) };
 
-export const getWarningByDetect = (self, params) => { return self.$http.get("/web/getImageDetectedResultList.action", { params: params }) };
+// export const getWarningByDetect = (self, params) => { return self.$http.get("/web/getImageDetectedResultList.action", { params: params }) };
+export const getWarningByDetect =  (self, param) => { return self.$http.post(baseUrl + '/v1/listImageDetectResults.action', param, { emulateJSON: true }) };
 
 export const getSmokeWarning = (self, params) => { return self.$http.get("/web/listSmokeWarning.action", { params: params }) };
 

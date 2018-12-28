@@ -1,9 +1,9 @@
  
-export const realtimeStatus={'0':'空 闲','10':'手工控制中','20':'自动巡检中','30':'随工监督中','40':'充电中','50':'掉  线'};        
+export const realtimeStatus={'0':'空 闲','10':'手工控制中','20':'自动巡检中','30':'随工监督中','40':'充电中','50':'掉  线','70':'原地待命'};        
 
 export const robotStatusForObj = {'0':'工作中','10':'已闲置','20':'已故障','30':'维修中','40':'已报废'};
 
-export const realTimeTypes={'0':'gray','10':'primary','20':'success','50':'warning','40':'','30':'danger'}; 
+export const realTimeTypes={'0':'gray','10':'init','20':'success','50':'warning','40':'danger','30':'primary','70':'info'}; 
 
 export const robotStatusTypes={'0':'success','10':'gray','20':'danger','40':'','30':'warning'};
 
