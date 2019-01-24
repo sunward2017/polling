@@ -44,7 +44,7 @@ export default {
     }
 }
 </script>
-<style>
+<style lang='less'>
 .gauge_d,
 .gauge_t,
 .gauge_o {
