@@ -46,7 +46,11 @@
 							</el-form-item>
 							<span>~</span>
 							<el-form-item prop="high" :rules="{ validator: checkNum, trigger: 'blur' }">
+<<<<<<< HEAD
 								<el-input v-model="gauge.high" placeholder="高位值" style="width:100px;"></el-input>
+=======
+								<el-input v-model="gauge.high" placeholder="高位值" style="width:100px;"></el-input>   
+>>>>>>> xmdx
 							</el-form-item>
 							<span style="font-weight:bold;"> &nbsp;{{gauge.unit}}&emsp;</span>
 						</el-form-item>
@@ -63,6 +67,7 @@
 		<el-dialog title="指示灯配置" :visible.sync="lightVisible" size="tiny">
 			<el-form :model="lightForm" ref="form" label-width="80px" class="demo-dynamic" :rules="rules">
 				<el-form-item label="颜色" prop="color">
+<<<<<<< HEAD
 					 <el-radio-group v-model="lightForm.color" size="small">
 						<el-radio-button label="red">红色</el-radio-button>
 						<el-radio-button label="green">绿色</el-radio-button>
@@ -74,13 +79,27 @@
 						<el-radio-button label="on">开</el-radio-button>
 						<el-radio-button label="off">关</el-radio-button>
 					</el-radio-group>
+=======
+					<el-radio-group v-model="lightForm.color" size="small">
+						<el-radio label="red" border>红色</el-radio>
+						<el-radio label="green" border>绿色</el-radio>
+						<el-radio label="yellow" border>黄色</el-radio>
+					</el-radio-group>
+				</el-form-item>
+				<el-form-item label="状态" prop="state">
+					<el-switch v-model="lightForm.state" on-color="#13ce66" off-color="#ff4949" on-value="on" off-value="off"></el-switch>
+>>>>>>> xmdx
 				</el-form-item>
 				<el-form-item label="描述" prop="description">
 					<el-input v-model="lightForm.description"></el-input>
 				</el-form-item>
 				<el-form-item>
 					<el-button type="primary" @click="submitForm">提交</el-button>
+<<<<<<< HEAD
 					<el-button @click="resetForm">还原</el-button>
+=======
+					<el-button @click="resetForm">重置</el-button>
+>>>>>>> xmdx
 				</el-form-item>
 			</el-form>
 		</el-dialog>
@@ -410,6 +429,10 @@
 				}
 
 				let row = cloneObj(this.row);
+<<<<<<< HEAD
+=======
+				console.log(row)
+>>>>>>> xmdx
 				let para = [];
 				for(var i = 0, l = row.length; i < l; i++) {
 					let r = [];
@@ -432,6 +455,10 @@
 								_this.$message.error("指示灯没有配置");
 								return;
 							} else {
+<<<<<<< HEAD
+=======
+								
+>>>>>>> xmdx
 								obj = Object.assign({},{description,value,type});
 								r.push(obj)
 							}
@@ -439,6 +466,7 @@
 					}
 					para.push(r)
 				}
+<<<<<<< HEAD
 
 				this.$prompt("请输入模板名称", "提示", {
 						confirmButtonText: "确定",
@@ -565,6 +593,134 @@
 	#right {
 	min-height: 75vh;
 	background: rgba(0, 0, 0, 0.35);
+=======
+
+				this.$prompt("请输入模板名称", "提示", {
+						confirmButtonText: "确定",
+						cancelButtonText: "取消",
+						inputValue: tpl ? tpl.detectSettingName : "",
+						inputPattern: /^[\u4e00-\u9fa5a-zA-Z0-9]+$/,
+						inputErrorMessage: "模板名称只能是中文、英文、数字组合"
+					})
+					.then(({
+						value
+					}) => {
+						let params = {
+							detectSettingName: value,
+							detectSetting: JSON.stringify(para)
+						};
+						let msg = "";
+						if(tpl) {
+							params.detectSettingId = tpl.detectSettingId;
+							msg = "标签模板修改";
+						} else {
+							msg = "标签模板新增";
+						}
+
+						editRfidTpl(_this, params).then(res => {
+							_this.getTpls();
+							if(res.data.result === 200) {
+								_this.$notify({
+									title: "成功",
+									message: msg + "成功",
+									type: "success"
+								});
+							} else {
+								_this.$notify({
+									title: "失败",
+									message: msg + "失败",
+									type: "error"
+								});
+							}
+						});
+						this.row = [
+							[]
+						];
+						this.isEdit = false;
+					})
+					.catch(() => {});
+			},
+			configLight(id) {
+				let {
+					value,
+					type,
+					state,
+					description,
+				} = this.lights[id];
+				let color = value.split('_')[0]==="info"?'red':value.split('_')[0];
+				this.lightForm = Object.assign({}, {
+					id,
+					type,
+					color,
+					state: value.split('_')[1],
+					description
+				});
+				this.lightVisible = true;
+			},
+			submitForm() {
+				this.$refs.form.validate((valid) => {
+					if(valid) {
+						let {color,id,state,description,type} = this.lightForm;
+					    this.lights[id] = Object.assign({},{value:`${color}_${state}`,id,type,description});
+					    this.lightVisible= false;
+					} else {
+						return false;
+					}
+				});
+			},
+			resetForm() {
+				this.$refs.form.resetFields();
+			},
+			configGauge(key) {
+				this.data = this.gauges[key];
+				this.dialogVisible = true;
+			},
+			changeType(gauge) {
+				let val = gauge.type;
+				switch(val) {
+					case "8":
+						gauge.unit = "%";
+						break;
+					case "5":
+						gauge.unit = "A";
+						break;
+					case "6":
+						gauge.unit = "V";
+						break;
+					default:
+						gauge.unit = "℃";
+				}
+			}
+		},
+		beforeDestroy() {
+			if(this.drake) {
+				this.drake.destroy();
+				this.drake = null;
+			}
+		},
+		mounted() {
+			this.getTpls();
+			this.init();
+		}
+	};
+</script>
+<style>
+	#left,
+	#right,
+	.rfidTree {
+		border: 1px solid rgba(250, 250, 250, 0.35);
+		min-height: 80.5vh;
+		min-width: 200px;
+	}
+	
+	#left {
+		background: #191d22;
+	}
+	
+	#right {
+		min-height: 75vh;
+		background:#042f54;
+>>>>>>> xmdx
 	}
 	
 	.rf_content {

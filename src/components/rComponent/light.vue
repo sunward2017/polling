@@ -20,8 +20,13 @@ export default {
       },
       state:function(){
       	switch(this.data.value.split("_")[1]){
+<<<<<<< HEAD
       		case 'on': return "开";
       		case 'off': return "关";
+=======
+      		case 'on': return "亮";
+      		case 'off': return "灭";
+>>>>>>> xmdx
       		default: return "未设置"; 
       	}
       }

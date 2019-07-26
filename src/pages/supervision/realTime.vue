@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<iframe src="/super.html" frameborder="0" style="width:100%;height:calc(100vh - 175px)"></iframe>
+		<iframe src="https://localhost:8443/#/call" frameborder="0" style="width:100%;height:calc(100vh - 175px)"></iframe>
 	    <input type="hidden" id="custom"  :value="custom" />
 	</div>
 </template>
