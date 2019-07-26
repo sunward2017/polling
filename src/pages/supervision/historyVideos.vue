@@ -145,7 +145,7 @@
 					this.getList();
 				}
 			},
-			 changeRobot() {
+			changeRobot() {
 				this.getList()
 			},
 			getList() {

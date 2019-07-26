@@ -178,7 +178,6 @@
 			editTpl(store, data) {
 				this.currentTpl = data;
 				this.isEdit = true;
-				console.log(data.detectSetting)
 				this.row = JSON.parse(data.detectSetting).map(item => {
 					return item.map(m => {
 						m.id = guid();
