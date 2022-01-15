@@ -55,7 +55,7 @@
     "ora": "^1.0.0",
     "sass-loader": "^6.0.5",
     "semver": "^5.3.0",
-    "shelljs": "^0.7.6",
+    "shelljs": "^0.8.5",
     "url-loader": "^0.5.7",
     "vue-lazyload": "^1.1.4",
     "vue-loader": "^10.0.2",
